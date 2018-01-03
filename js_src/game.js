@@ -38,7 +38,7 @@ export let Game = {
     renderMain: function(){
       let d = this.display.main.o;
       for(let i = 0; i < 10; i++){
-        d.drawText(5, i + 5, "hello world");
+        d.drawText(5, i + 5, "hello markus");
       }
     }
 };
