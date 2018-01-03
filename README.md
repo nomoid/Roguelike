@@ -1,2 +1,3 @@
-# Roguelike
-CSCI 14 Creating a Roguelike Game
+# Weed Strike Roguelike
+
+Weed Strike is a simple roguelike game for teaching/demonstration purposes.
