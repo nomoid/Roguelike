@@ -22,6 +22,9 @@ export let Game = {
         height: this.display.main.h,
         spacing: this.display.SPACING
       });
+
+      U.printTest();
+
     },
 
     getDisplay: function(displayId){
