@@ -2,7 +2,7 @@
 
 ### Goals
 
-Weed Strike is a fairly standard, simple roguelike. As such, the player gets
+_____ is a fairly standard, simple roguelike. As such, the player gets
 * character advancement/progression (on the mechanics side of things, not necessarily the story side)
   * some opponents that are too challenging to fight in the early stages of the game are easy to beat by the later stages of the game
 * inventory management
@@ -13,22 +13,11 @@ Weed Strike is a fairly standard, simple roguelike. As such, the player gets
 * a simple framing story to engage the player and justify the avatar actions, but nothing to deep and little in the way of narrative progression
 * a final battle/goal
 * other standard roguelike experiences (permadeath, turn-based action, etc.)
-  
+
 ### Story
 
-The national arboretum has been enspelled by a particularly mischievous fairy. The plants have come alive and taken over the entire area, the creatures have gone strange and dangerous, and generally everything is a mess. The head gardener went in two months ago. The assistant gardener 6 weeks ago. The assistant to the assistant 3 weeks ago. The royal court has since issued a proclamation calling for any landscaper/adventurer to come set things aright, and of course be suitably rewarded upon success. Hearing this, you leave behind your little kitchen garden in the small village where you grew up and leave with nothing but the clothes on your back, and bit of travel food, and your trusty trowel to seek your fortune.
+You find yourself in the top of a tower, and you need to get down. The tower is standing in an abyss, you can't see ground out the window. The tower is perilous and it appears easy to fall off the sides or through the floor.
+You see very powerful monsters outside the tower in the distance and hear more on the floors below you. You need to make your way down the tower safely, combating the monsters you come across. Hopefully there is a way to escape at the bottom.
 
-1. find and rescue the missing people
-  * head gardener
-  * assistant gardener
-  * assistant to the assistant gardener
-  * anyone else encountered that needs it
-1. find the fairy
-1. get the fairy to put things back to normal
-  * defeat it in combat
-  * convince it
-  * bribe it / trade it
-  * solve its problems
 
 ### Mechanics
-
