@@ -50,10 +50,10 @@ export let Game = {
     },
 
     setupModes: function(){
-      this.modes.startup = new StartupMode();
-      this.modes.play = new PlayMode();
-      this.modes.win = new WinMode();
-      this.modes.lose = new LoseMode();
+      this.modes.startup = new StartupMode(this);
+      this.modes.play = new PlayMode(this);
+      this.modes.win = new WinMode(this);
+      this.modes.lose = new LoseMode(this);
     },
 
     switchMode: function(newModeName){
@@ -88,6 +88,7 @@ export let Game = {
 
     renderDisplayMain: function(){
       //if (this.curMode.hasOwnProperty('render')){
+      this._display.main.o.clear();
       this.curMode.render(this._display.main.o);
       //}
       // let d = this._display.main.o;

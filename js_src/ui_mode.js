@@ -1,8 +1,9 @@
 import * as U from './util.js';
 
 class UIMode{
-  constructor(){
+  constructor(game){
     console.log("created "+this.constructor.name);
+    this.game = game;
   }
 
   enter(){
@@ -11,21 +12,21 @@ class UIMode{
   exit(){
     console.log("exiting "+this.constructor.name);
   }
-  handleInput(){
-    console.log("handling input for "+this.constructor.name);
+  handleInput(eventType, evt){
+    console.log("handing input for "+this.constructor.name);
+    console.log(`event type is ${eventType}`);
+    console.dir(evt);
+    return false;
   }
   render(display){
     display.drawText(2, 2, "rendering "+this.constructor.name)
-  }
-  handleInput(eventType, evt){
-    return false;
   }
 
 }
 
 export class StartupMode extends UIMode{
-  constructor(){
-    super();
+  constructor(game){
+    super(game);
   }
 
   render(display){
@@ -38,33 +39,69 @@ export class StartupMode extends UIMode{
     U.drawTextWithSpaces(display, 2, 7, " |_|   |_|\\___|_|\\_\\_|\\___|\\__,_|_|   \\___/| .__/ \\___\\___/|_|  |_| |_|");
     U.drawTextWithSpaces(display, 2, 8, "                                           | |                         ");
     U.drawTextWithSpaces(display, 2, 9, "                                           |_|                         ");
+    display.drawText(2, 15, "Press any key to continue...")
+  }
 
+  handleInput(eventType, evt){
+    if(eventType == "keyup"){
+      this.game.switchMode('play');
+      return true;
+    }
+    return false;
   }
 }
 
 export class PlayMode extends UIMode{
-  constructor(){
-    super();
+  constructor(game){
+    super(game);
   }
 
   render(display){
-    display.drawText(2, 2,"Playing the game");
+    display.drawText(2, 2, "Playing the game");
+    display.drawText(2, 3, "w to win, l to lose");
+  }
+
+  handleInput(eventType, evt){
+    if(eventType == "keyup"){
+      if(evt.key == "w"){
+        this.game.switchMode('win');
+        return true;
+      }
+      else if(evt.key == "l"){
+        this.game.switchMode('lose');
+        return true;
+      }
+    }
+    return false;
   }
 }
 
 export class WinMode extends UIMode{
-  constructor(){
-    super();
+  constructor(game){
+    super(game);
+  }
+
+  enter(){
+    console.log("You win");
   }
 
   render(display){
     display.drawText(2, 2, "You have won the game of PickledPopcorn")
+    display.drawText(2, 15, "Press any key to restart...")
+  }
+
+  handleInput(eventType, evt){
+    if(eventType == "keyup"){
+      this.game.switchMode('startup');
+      return true;
+    }
+    return false;
   }
 }
 
 export class LoseMode extends UIMode{
-  constructor(){
-    super();
+  constructor(game){
+    super(game);
   }
 
   enter(){
@@ -73,5 +110,14 @@ export class LoseMode extends UIMode{
 
   render(display){
     display.drawText(2, 2, "You lose!");
+    display.drawText(2, 15, "Press any key to restart...")
+  }
+
+  handleInput(eventType, evt){
+    if(eventType == "keyup"){
+      this.game.switchMode('startup');
+      return true;
+    }
+    return false;
   }
 }
