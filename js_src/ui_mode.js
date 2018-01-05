@@ -42,11 +42,19 @@ export class PlayMode extends UIMode{
   constructor(){
     super();
   }
+
+  render(display){
+    display.drawText(2, 2,"Playing the game");
+  }
 }
 
 export class WinMode extends UIMode{
   constructor(){
     super();
+  }
+
+  render(display){
+    display.drawText(2, 2, "You have won the game of PickledPopcorn")
   }
 }
 

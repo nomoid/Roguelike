@@ -1,6 +1,6 @@
 import ROT from 'rot-js';
 import * as U from './util.js';
-import {StartupMode} from './ui_mode.js'
+import {StartupMode, PlayMode, WinMode, LoseMode} from './ui_mode.js'
 
 export let Game = {
 
@@ -43,7 +43,7 @@ export let Game = {
       }
 
       this.setupModes();
-      this.switchMode('startup');
+      this.switchMode('play');
       console.log("game:");
       console.dir(this);
 
@@ -51,6 +51,9 @@ export let Game = {
 
     setupModes: function(){
       this.modes.startup = new StartupMode();
+      this.modes.play = new PlayMode();
+      this.modes.win = new WinMode();
+      this.modes.lose = new LoseMode();
     },
 
     switchMode: function(newModeName){
