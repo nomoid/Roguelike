@@ -84,7 +84,6 @@ export let Game = {
     },
 
     renderDisplayMain: function(){
-      console.log("rendering main?");
       //if (this.curMode.hasOwnProperty('render')){
       this.curMode.render(this._display.main.o);
       //}
