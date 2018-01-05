@@ -34,7 +34,7 @@ export class StartupMode extends UIMode{
   }
 
   enter(){
-    Message.clear();
+    
   }
 
   renderMain(display){

@@ -1,21 +1,32 @@
 export let Message = {
-  _curMessage: '',
+  _messages: Array(),
   _targetDisplay: '',
+  _bufferLength: 3,
+  _historyLength: 50,
   init: function(targetDisplay){
     this._targetDisplay = targetDisplay;
+    console.dir(this);
   },
   render: function(){
     if(!this._targetDisplay){
       return;
     }
     this._targetDisplay.clear();
-    this._targetDisplay.drawText(1, 1, this._curMessage, '#fff', '#000');
+    for (let i=0; i<this._bufferLength; i++){
+      if(this._messages.length >= this._bufferLength-i){
+        this._targetDisplay.drawText(1, i+1, this._messages[this._messages.length-this._bufferLength+i], '#fff', '#000');
+      }
+    }
+    //this._targetDisplay.drawText(1, 1, this._messages[this._messages.length-1], '#fff', '#000');
   },
   send: function(msg){
-    this._curMessage = msg;
+    this._messages.push(msg);
+    if(this._messages.length > this._historyLength){
+      this._messages.shift();
+    }
     this.render();
   },
   clear: function(){
-    this._curMessage = '';
+    this._messages = Array();
   },
 };
