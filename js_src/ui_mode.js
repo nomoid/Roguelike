@@ -1,4 +1,5 @@
 import * as U from './util.js';
+import {Message} from './message.js';
 
 class UIMode{
   constructor(game){
@@ -30,6 +31,10 @@ class UIMode{
 export class StartupMode extends UIMode{
   constructor(game){
     super(game);
+  }
+
+  enter(){
+    Message.clear();
   }
 
   renderMain(display){
@@ -86,6 +91,7 @@ export class WinMode extends UIMode{
 
   enter(){
     console.log("You win");
+    Message.send("You win!")
   }
 
   renderMain(display){
@@ -109,6 +115,7 @@ export class LoseMode extends UIMode{
 
   enter(){
     console.log("You lose");
+    Message.send("You lose!")
   }
 
   renderMain(display){

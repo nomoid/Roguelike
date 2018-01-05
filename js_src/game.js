@@ -1,6 +1,7 @@
 import ROT from 'rot-js';
 import * as U from './util.js';
 import {StartupMode, PlayMode, WinMode, LoseMode} from './ui_mode.js'
+import {Message} from './message.js';
 
 export let Game = {
 
@@ -35,6 +36,8 @@ export let Game = {
       ROT.RNG.setSeed(this._randomSeed);
 
       this.setupDisplays();
+
+      Message.init(this._display.message.o);
 
       this.setupModes();
       this.switchMode('startup');
@@ -106,6 +109,8 @@ export let Game = {
     },
 
     renderDisplayMessage: function(){
+      this._display.message.o.clear();
+      Message.render();
       // let d = this._display.message.o;
       // d.clear();
       // if(this.curMode===null || this.curMode==''){
