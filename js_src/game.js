@@ -1,5 +1,6 @@
 import ROT from 'rot-js';
 import * as U from './util.js';
+import {StartupMode} from './ui_mode.js'
 
 export let Game = {
 
@@ -22,6 +23,11 @@ export let Game = {
       }
     },
 
+    modes: {
+      startup: ''
+    },
+    curMode: '',
+
     init: function(){
       this._randomSeed = 5 + Math.floor(Math.random() * 100000);
       //this._randomSeed = 76250;
@@ -36,8 +42,25 @@ export let Game = {
         });
       }
 
-      U.printTest();
+      this.setupModes();
+      this.switchMode('startup');
+      console.log("game:");
+      console.dir(this);
 
+    },
+
+    setupModes: function(){
+      this.modes.startup = new StartupMode();
+    },
+
+    switchMode: function(newModeName){
+      if (this.curMode) {
+        this.curMode.exit();
+      }
+      this.curMode = this.modes[newModeName];
+      if (this.curMode){
+        this.curMode.enter();
+      }
     },
 
     getDisplay: function(displayId){
@@ -61,10 +84,14 @@ export let Game = {
     },
 
     renderDisplayMain: function(){
-      let d = this._display.main.o;
-      for(let i = 0; i < 20; i++){
-        d.drawText(5, i, "main");
-      }
+      console.log("rendering main?");
+      //if (this.curMode.hasOwnProperty('render')){
+      this.curMode.render(this._display.main.o);
+      //}
+      // let d = this._display.main.o;
+      // for(let i = 0; i < 20; i++){
+      //   d.drawText(5, i, "main");
+      // }
     },
 
     renderDisplayMessage: function(){
