@@ -43,7 +43,7 @@ export let Game = {
       }
 
       this.setupModes();
-      this.switchMode('play');
+      this.switchMode('startup');
       console.log("game:");
       console.dir(this);
 

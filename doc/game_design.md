@@ -15,9 +15,9 @@ _____ is a fairly standard, simple roguelike. As such, the player gets
 
 ### Story
 
-You find yourself in the top of a tower, and you need to get down. The tower is standing in an abyss, you can't see land out the window. 
+You find yourself in the top of a tower, and you need to get down. The tower is standing in an abyss, you can't see land out the window.
 The tower is perilous and falling apart and it appears easy to fall off the sides or through the floor.
-You see very powerful monsters outside the tower in the distance and hear more on the floors below you. 
+You see very powerful monsters outside the tower in the distance and hear more on the floors below you.
 You need to make your way down the tower safely, combating the monsters you come across. Hopefully there is a way to escape at the bottom.
 
 
@@ -33,6 +33,13 @@ You need to make your way down the tower safely, combating the monsters you come
     * dark beings from the abyss are harder to fight
       * they drop good loot though
   * doors between outside and inside mean player can take either route or a mixed route through the floor
+* Dice roll based mechanics
+  * You have skills that determine how many dice you roll on certain actions
+  * You must roll above a value for something to happen
+    * Major failure
+    * Minor failure
+    * Minor success
+    * Major success
 * Knockback is a component of combat
   * knockback checks for your attacks
     * different weapons have different knockback rolls

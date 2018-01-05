@@ -26,6 +26,7 @@ export class StartupMode extends UIMode{
   }
 
   render(display){
+    display.drawText(2, 1, "Welcome to... (user must provide own drumroll)")
     U.drawTextWithSpaces(display, 2, 2, "  _____ _      _    _          _ _____                                 ");
     U.drawTextWithSpaces(display, 2, 3, " |  __ (_)    | |  | |        | |  __ \\                                ");
     U.drawTextWithSpaces(display, 2, 4, " | |__) |  ___| | _| | ___  __| | |__) |__  _ __   ___ ___  _ __ _ __  ");

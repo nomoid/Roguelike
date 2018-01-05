@@ -1,5 +1,5 @@
 {
-  "name": "weedstrikeroguelike",
+  "name": "pickledpopcorn",
   "version": "1.0.0",
   "description": "A demo roguelike game using rot.js",
   "main": "index.js",
@@ -13,18 +13,18 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/cwarren/weedstrikeroguelike.git"
+    "url": "git+https://github.com/assisstion/Roguelike.git"
   },
   "keywords": [
     "game",
     "roguelike"
   ],
-  "author": "Chris Warren",
-  "license": "ISC",
+  "author": "Jack Ellert-Beck and Markus Feng",
+  "license": "",
   "bugs": {
-    "url": "https://github.com/cwarren/weedstrikeroguelike/issues"
+    "url": "https://github.com/assisstion/Roguelike/issues"
   },
-  "homepage": "https://github.com/cwarren/weedstrikeroguelike#readme",
+  "homepage": "https://github.com/assisstion/Roguelike#readme",
   "dependencies": {
     "rot-js": "^0.6.5",
     "babel-polyfill": "^6.26.0"

@@ -13,9 +13,9 @@ window.onload = function(){
   Game.init();
 
   // Add the containers to our HTML page
-  document.getElementById('wsavatar').appendChild(Game.getDisplay('avatar').getContainer());
-  document.getElementById('wsmain').appendChild(Game.getDisplay('main').getContainer());
-  document.getElementById('wsmessage').appendChild(Game.getDisplay('message').getContainer());
+  document.getElementById('ppavatar').appendChild(Game.getDisplay('avatar').getContainer());
+  document.getElementById('ppmain').appendChild(Game.getDisplay('main').getContainer());
+  document.getElementById('ppmessage').appendChild(Game.getDisplay('message').getContainer());
 
   Game.render();
 }
