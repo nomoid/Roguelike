@@ -17,5 +17,9 @@ window.onload = function(){
   document.getElementById('ppmain').appendChild(Game.getDisplay('main').getContainer());
   document.getElementById('ppmessage').appendChild(Game.getDisplay('message').getContainer());
 
+  Game.bindEvent('keypress');
+  Game.bindEvent('keydown');
+  Game.bindEvent('keyup');
+
   Game.render();
 }

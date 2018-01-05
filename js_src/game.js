@@ -101,5 +101,20 @@ export let Game = {
       for(let i = 0; i < 5; i++){
         d.drawText(5, i, "message");
       }
+    },
+
+    bindEvent: function(eventType) {
+      window.addEventListener(eventType, (evt) => {
+        this.eventHandler(eventType, evt);
+      });
+    },
+
+    eventHandler: function (eventType, evt){
+      if (this.curMode !== null && this.curMode != ''){
+        if(this.curMode.handleInput(eventType, evt)){
+          this.render();
+          //Message.ageMessages();
+        }
+      }
     }
 };

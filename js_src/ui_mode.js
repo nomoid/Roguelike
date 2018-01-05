@@ -17,6 +17,9 @@ class UIMode{
   render(display){
     display.drawText(2, 2, "rendering "+this.constructor.name)
   }
+  handleInput(eventType, evt){
+    return false;
+  }
 
 }
 
