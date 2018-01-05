@@ -18,8 +18,11 @@ class UIMode{
     console.dir(evt);
     return false;
   }
-  render(display){
-    display.drawText(2, 2, "rendering "+this.constructor.name)
+  renderMain(display){
+    display.drawText(2, 2, "rendering "+this.constructor.name);
+  }
+  renderAvatar(display){
+    display.drawText(2, 2, "this is avatar");
   }
 
 }
@@ -29,7 +32,7 @@ export class StartupMode extends UIMode{
     super(game);
   }
 
-  render(display){
+  renderMain(display){
     display.drawText(2, 1, "Welcome to... (user must provide own drumroll)")
     U.drawTextWithSpaces(display, 2, 2, "  _____ _      _    _          _ _____                                 ");
     U.drawTextWithSpaces(display, 2, 3, " |  __ (_)    | |  | |        | |  __ \\                                ");
@@ -56,7 +59,7 @@ export class PlayMode extends UIMode{
     super(game);
   }
 
-  render(display){
+  renderMain(display){
     display.drawText(2, 2, "Playing the game");
     display.drawText(2, 3, "w to win, l to lose");
   }
@@ -85,7 +88,7 @@ export class WinMode extends UIMode{
     console.log("You win");
   }
 
-  render(display){
+  renderMain(display){
     display.drawText(2, 2, "You have won the game of PickledPopcorn")
     display.drawText(2, 15, "Press any key to restart...")
   }
@@ -108,7 +111,7 @@ export class LoseMode extends UIMode{
     console.log("You lose");
   }
 
-  render(display){
+  renderMain(display){
     display.drawText(2, 2, "You lose!");
     display.drawText(2, 15, "Press any key to restart...")
   }

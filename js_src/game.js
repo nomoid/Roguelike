@@ -34,6 +34,16 @@ export let Game = {
       console.log("using random seed" + this._randomSeed);
       ROT.RNG.setSeed(this._randomSeed);
 
+      this.setupDisplays();
+
+      this.setupModes();
+      this.switchMode('startup');
+      console.log("game:");
+      console.dir(this);
+
+    },
+
+    setupDisplays: function(){
       for(var display_key in this._display){
         this._display[display_key].o = new ROT.Display({
           width: this._display[display_key].w,
@@ -41,12 +51,6 @@ export let Game = {
           spacing: this._DISPLAY_SPACING
         });
       }
-
-      this.setupModes();
-      this.switchMode('startup');
-      console.log("game:");
-      console.dir(this);
-
     },
 
     setupModes: function(){
@@ -81,27 +85,35 @@ export let Game = {
 
     renderDisplayAvatar: function(){
       let d = this._display.avatar.o;
-      for(let i = 0; i < 20; i++){
-        d.drawText(5, i, "avatar");
+      d.clear();
+      if(this.curMode===null || this.curMode==''){
+        return;
+      }
+      else{
+        this.curMode.renderAvatar(d);
       }
     },
 
     renderDisplayMain: function(){
-      //if (this.curMode.hasOwnProperty('render')){
-      this._display.main.o.clear();
-      this.curMode.render(this._display.main.o);
-      //}
-      // let d = this._display.main.o;
-      // for(let i = 0; i < 20; i++){
-      //   d.drawText(5, i, "main");
-      // }
+      let d = this._display.main.o;
+      d.clear();
+      if(this.curMode===null || this.curMode==''){
+        return;
+      }
+      else{
+        this.curMode.renderMain(d);
+      }
     },
 
     renderDisplayMessage: function(){
-      let d = this._display.message.o;
-      for(let i = 0; i < 5; i++){
-        d.drawText(5, i, "message");
-      }
+      // let d = this._display.message.o;
+      // d.clear();
+      // if(this.curMode===null || this.curMode==''){
+      //   return;
+      // }
+      // else{
+      //   this.curMode.renderMessage(d);
+      // }
     },
 
     bindEvent: function(eventType) {
