@@ -51,6 +51,7 @@ export class StartupMode extends UIMode{
   }
 
   handleInput(eventType, evt){
+    console.dir(evt);
     if(eventType == "keyup"){
       this.game.switchMode('play');
       return true;
@@ -77,6 +78,10 @@ export class PlayMode extends UIMode{
       }
       else if(evt.key == "l"){
         this.game.switchMode('lose');
+        return true;
+      }
+      else if(evt.key == "m"){
+        this.game.switchMode('messages');
         return true;
       }
     }
@@ -115,7 +120,7 @@ export class LoseMode extends UIMode{
 
   enter(){
     console.log("You lose");
-    Message.send("You lose!")
+    Message.send("You lose!");
   }
 
   renderMain(display){
@@ -130,4 +135,54 @@ export class LoseMode extends UIMode{
     }
     return false;
   }
+}
+
+export class MessagesMode extends UIMode{
+  constructor(game){
+    super(game);
+  }
+
+  enter(){
+    console.log("Entering Messages mode");
+    this.messageIndex = Message.getMessages().length-1;
+    this.lines = 20;
+  }
+
+  renderMain(display){    
+    let messageQueue = Message.getMessages();
+    let bottom = 23;
+    display.drawText(2, 0, "Viewing message history. Arrow Keys to navigate")
+    display.drawText(2, 1, "Message " + (this.messageIndex+1) + "/" + messageQueue.length);
+    for(let i=0; i < this.lines; i++){
+      if(i > this.messageIndex){
+        break;
+      }
+      display.drawText(2, bottom-i, messageQueue[this.messageIndex-i]);
+    }
+  }
+
+  handleInput(eventType, evt){
+    if(eventType == "keyup"){
+      if(evt.key == "Escape" || evt.key == "m"){
+        this.game.switchMode('play');
+        return true;
+      }
+    }
+    if(eventType == "keypress"){
+      if(evt.key == "ArrowUp"){
+        if(this.messageIndex >= this.lines){
+          this.messageIndex--;
+          return true;
+        }
+      }
+      if(evt.key == "ArrowDown"){
+        if(this.messageIndex < Message.getMessages().length-1){
+          this.messageIndex++;
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
 }

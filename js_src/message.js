@@ -29,4 +29,7 @@ export let Message = {
   clear: function(){
     this._messages = Array();
   },
+  getMessages: function(){
+    return this._messages;
+  }
 };
