@@ -1,3 +1,5 @@
-# Weed Strike Roguelike
+# Pickled Popcorn
 
-Weed Strike is a simple roguelike game for teaching/demonstration purposes.
+Pickled Popcorn is a simple roguelike game for the CSCI 14 Creating a Roguelike Game course.
+
+By Jack Ellert-Beck and Markus Feng
