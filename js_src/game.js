@@ -32,7 +32,7 @@ export let Game = {
   },
   curMode: '',
   settings: {
-    activeTextColor: "#fff",
+    activeTextColor: "#ccc",
     disabledTextColor: "#555"
   },
 
@@ -43,10 +43,6 @@ export let Game = {
     if(this._uid){
       this._uid = Math.floor(Math.random() * 1000000000);
     }
-    this._randomSeed = 5 + Math.floor(Math.random() * 100000);
-    //this._randomSeed = 76250;
-    console.log("using random seed" + this._randomSeed);
-    ROT.RNG.setSeed(this._randomSeed);
 
     this.setupDisplays();
 
@@ -76,6 +72,12 @@ export let Game = {
     this.modes.lose = new LoseMode(this);
     this.modes.messages = new MessagesMode(this);
     this.modes.persistence = new PersistenceMode(this);
+  },
+
+  setupNewGame: function(){
+    this._randomSeed = 5 + Math.floor(Math.random() * 100000);
+    console.log("using random seed" + this._randomSeed);
+    ROT.RNG.setSeed(this._randomSeed);
   },
 
   switchMode: function(newModeName){
@@ -160,5 +162,6 @@ export let Game = {
   fromJSON: function(json){
     let state = JSON.parse(json);
     this._randomSeed = state.rseed;
+    ROT.RNG.setSeed(this._randomSeed);
   }
 };

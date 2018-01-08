@@ -65,9 +65,14 @@ export class PlayMode extends UIMode{
     super(game);
   }
 
+  enter(){
+    this.game.isPlaying = true;
+  }
+
   renderMain(display){
     display.drawText(2, 2, "Playing the game");
-    display.drawText(2, 3, "w to win, l to lose");
+    display.drawText(2, 3, "[w] to win, [l] to lose, [S] to save");
+    display.drawText(2, 5, "" + this.game._randomSeed);
   }
 
   handleInput(eventType, evt){
@@ -84,6 +89,10 @@ export class PlayMode extends UIMode{
         this.game.switchMode('messages');
         return true;
       }
+      else if(evt.key == "S"){
+        this.game.switchMode('persistence');
+        return true;
+      }
     }
     return false;
   }
@@ -95,6 +104,7 @@ export class WinMode extends UIMode{
   }
 
   enter(){
+    this.game.isPlaying = false;
     console.log("You win");
     Message.send("You win!")
   }
@@ -119,6 +129,7 @@ export class LoseMode extends UIMode{
   }
 
   enter(){
+    this.game.isPlaying = false;
     console.log("You lose");
     Message.send("You lose!");
   }
@@ -198,12 +209,16 @@ export class PersistenceMode extends UIMode{
     if (this.loadGameList().length > 0){
       this.game.hasSaved = true;
     }
+    this.loading = false;
   }
 
   renderMain(display){
     display.drawText(2, 0, 'Persistence Mode');
     if(!this.loading){
-      display.drawText(2, 3, '[n] - New game');
+      if(this.game.isPlaying){
+        display.drawText(2, 3, '[b/S] - Back to game');
+      }
+      display.drawText(2, 4, '[n] - New game');
       let loadColor = null;
       if(this.game.hasSaved){
         loadColor = this.game.settings.activeTextColor;
@@ -211,7 +226,7 @@ export class PersistenceMode extends UIMode{
       else{
         loadColor = this.game.settings.disabledTextColor;
       }
-      display.drawText(2, 4, U.applyColor('[l] - Load game', loadColor));
+      display.drawText(2, 5, U.applyColor('[l] - Load game', loadColor));
       let saveColor = null;
       if(this.game.isPlaying){
         saveColor = this.game.settings.activeTextColor;
@@ -219,10 +234,11 @@ export class PersistenceMode extends UIMode{
       else{
         saveColor = this.game.settings.disabledTextColor;
       }
-      display.drawText(2, 5, U.applyColor('[s] - Save game', saveColor));
+      display.drawText(2, 6, U.applyColor('[s] - Save game', saveColor));
     }
     else{
       display.drawText(2, 3, '[b/l] - Back');
+      display.drawText(2, 4, '[1] - Load game 1');
     }
   }
 
@@ -263,21 +279,29 @@ export class PersistenceMode extends UIMode{
     if(eventType == "keyup"){
       if(!this.loading){
         if(evt.key == "n"){
+          this.game.setupNewGame();
+          Message.send("New Game!");
           this.game.switchMode('play');
           return true;
         }
         if(evt.key == "l"){
-          //if(this.game.hasSaved){
+          if(this.game.hasSaved){
             this.loading = true;
             return true;
-          //}
+          }
         }
         if(evt.key == "s"){
-          //if(this.game.isPlaying){
+          if(this.game.isPlaying){
             this.save();
+            this.game.switchMode('startup');
+            return true;
+          }
+        }
+        if(this.game.isPlaying){
+          if(evt.key == "b" || evt.key == "S"){
             this.game.switchMode('play');
             return true;
-          //}
+          }
         }
       }
       else{
@@ -286,10 +310,13 @@ export class PersistenceMode extends UIMode{
           return true;
         }
         let loadList = this.loadGameList();
-        if (loadList.length > 0){
-          this.load(loadList[0]);
+        if(evt.key == "1"){
+          if (loadList.length > 0){
+            this.load(loadList[0]);
+            this.game.switchMode('play');
+            return true;
+          }
         }
-        return true;
       }
     }
     return false;
