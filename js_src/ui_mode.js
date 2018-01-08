@@ -200,7 +200,7 @@ export class PersistenceMode extends UIMode{
     }
   }
 
-  renderMain(){
+  renderMain(display){
     display.drawText(2, 0, 'Persistence Mode');
     if(!this.loading){
       display.drawText(2, 3, '[n] - New game');
@@ -211,7 +211,8 @@ export class PersistenceMode extends UIMode{
       else{
         loadColor = this.game.settings.disabledTextColor;
       }
-      display.drawText(2, 4, '[l] - Load game', loadColor);
+      console.log(loadColor);
+      display.drawText(2, 4, U.applyColor('[l] - Load game', loadColor));
       let saveColor = null;
       if(this.game.isPlaying){
         saveColor = this.game.settings.activeTextColor;
@@ -219,7 +220,7 @@ export class PersistenceMode extends UIMode{
       else{
         saveColor = this.game.settings.disabledTextColor;
       }
-      display.drawText(2, 5, '[s] - Save game', saveColor);
+      display.drawText(2, 5, U.applyColor('[s] - Save game', saveColor));
     }
     else{
       display.drawText(2, 3, '[b/l] - Back');
@@ -227,15 +228,15 @@ export class PersistenceMode extends UIMode{
   }
 
   loadGameList(){
-    if(!localStorageAvailable){
+    if(!this.localStorageAvailable()){
       return Array();
     }
     let saveListPath = this.game._PERSISTANCE_NAMESPACE + '_' + this.game._SAVE_LIST_NAMESPACE;
-    let saveListString = window.localStorage.getItem(savelist);
+    let saveListString = window.localStorage.getItem(saveListPath);
     if(!saveListString){
       return Array();
     }
-    return JSON.parse(saveList);
+    return JSON.parse(saveListString);
   }
 
   //Code from https://developer.mozilla.org/en-US/docs/Web/API/Web_Storage_API/Using_the_Web_Storage_API

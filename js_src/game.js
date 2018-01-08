@@ -1,10 +1,10 @@
 import ROT from 'rot-js';
 import * as U from './util.js';
-import {StartupMode, PlayMode, WinMode, LoseMode, MessagesMode} from './ui_mode.js'
+import {StartupMode, PlayMode, WinMode, LoseMode, MessagesMode, PersistenceMode} from './ui_mode.js'
 import {Message} from './message.js';
 
 export let Game = {
-  _PERSISTANCE_NAMESPACE: 'pickledpopcorn',
+  _PERSISTENCE_NAMESPACE: 'pickledpopcorn',
   _SAVE_LIST_NAMESPACE: 'savelist',
   _DISPLAY_SPACING: 1.1,
   _display: {
@@ -33,7 +33,7 @@ export let Game = {
   curMode: '',
   settings: {
     activeTextColor: "#fff",
-    disabledTextColor: "#aaa"
+    disabledTextColor: "#555"
   },
 
   init: function(){
@@ -69,7 +69,7 @@ export let Game = {
     this.modes.win = new WinMode(this);
     this.modes.lose = new LoseMode(this);
     this.modes.messages = new MessagesMode(this);
-    this.mode.persistence = new PersistenceMode(this);
+    this.modes.persistence = new PersistenceMode(this);
   },
 
   switchMode: function(newModeName){

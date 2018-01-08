@@ -19,3 +19,7 @@ export function drawTextWithSpaces(display, x, y, text){
   }
   display.drawText(x, y, text);
 }
+
+export function applyColor(text, color){
+  return '%c{' + color + '}' + text + '%c{}';
+}
