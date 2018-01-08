@@ -34,7 +34,7 @@ export class StartupMode extends UIMode{
   }
 
   enter(){
-
+    this.game.isPlaying = false;
   }
 
   renderMain(display){
@@ -209,6 +209,9 @@ export class PersistenceMode extends UIMode{
     if (this.loadGameList().length > 0){
       this.game.hasSaved = true;
     }
+    else{
+      this.game.hasSaved = false;
+    }
     this.loading = false;
   }
 
@@ -226,6 +229,7 @@ export class PersistenceMode extends UIMode{
       else{
         loadColor = this.game.settings.disabledTextColor;
       }
+      let deleteColor = loadColor;
       display.drawText(2, 5, U.applyColor('[l] - Load game', loadColor));
       let saveColor = null;
       if(this.game.isPlaying){
@@ -235,6 +239,7 @@ export class PersistenceMode extends UIMode{
         saveColor = this.game.settings.disabledTextColor;
       }
       display.drawText(2, 6, U.applyColor('[s] - Save game', saveColor));
+      display.drawText(2, 7, U.applyColor('[d] - Delete all data', deleteColor));
     }
     else{
       display.drawText(2, 3, '[b/l] - Back');
@@ -301,6 +306,15 @@ export class PersistenceMode extends UIMode{
           if(evt.key == "b" || evt.key == "S"){
             this.game.switchMode('play');
             return true;
+          }
+        }
+        if(evt.key == "d"){
+          if(this.game.hasSaved){
+            if(this.localStorageAvailable()){
+              window.localStorage.clear();
+              this.game.switchMode('startup');
+              return true;
+            }
           }
         }
       }
