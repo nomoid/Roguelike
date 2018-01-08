@@ -2,12 +2,14 @@
   padding: 4px;
   background: #000;
   float: left;
-}
-
-.dev-outline {
   border: 1px solid red;
   background: #500;
 }
+
+/*.dev-outline {
+  border: 1px solid red;
+  background: #500;
+}*/
 
 #ppavatar {
   padding-top: 8px;
