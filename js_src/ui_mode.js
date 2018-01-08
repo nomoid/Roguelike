@@ -53,7 +53,7 @@ export class StartupMode extends UIMode{
   handleInput(eventType, evt){
     console.dir(evt);
     if(eventType == "keyup"){
-      this.game.switchMode('play');
+      this.game.switchMode('persistence');
       return true;
     }
     return false;
@@ -183,6 +183,90 @@ export class MessagesMode extends UIMode{
       }
     }
     return false;
+  }
+
+}
+
+
+export class PersistenceMode extends UIMode{
+  constructor(game){
+    super(game);
+  }
+
+  enter(){
+    console.log("Entering Persistence mode");
+    if (this.loadGameList().length > 0){
+      this.game.hasSaved = true;
+    }
+  }
+
+  renderMain(){
+    display.drawText(2, 0, 'Persistence Mode');
+    display.drawText(2, 3, '[n] - New game');
+    if(this.game.hasSaved){
+      display.drawText(2, 4, '[l] - Load game');
+    }
+    if(this.game.isPlaying){
+      display.drawText(2, 5, '[s] - Save game');
+    }
+  }
+
+  loadGameList(){
+    if(!localStorageAvailable){
+      return Array();
+    }
+    let saveListPath = this.game._PERSISTANCE_NAMESPACE + '_' + this.game._SAVE_LIST_NAMESPACE;
+    let saveListString = window.localStorage.getItem(savelist);
+    if(!saveListString){
+      return Array();
+    }
+    return JSON.parse(saveList);
+  }
+
+  //Code from https://developer.mozilla.org/en-US/docs/Web/API/Web_Storage_API/Using_the_Web_Storage_API
+  //Retrieved 2018-01-08
+  localStorageAvailable() {
+    try {
+        var x = '__storage_test__';
+        window.localStorage.setItem(x, x);
+        window.localStorage.removeItem(x);
+        return true;
+    }
+    catch(e) {
+        Message.send('Browser cannot save or load!');
+        return false;
+    }
+  }
+
+  handleInput(eventType, evt){
+    if(eventType == "keyup"){
+      if(!this.loading){
+        if(evt.key == "n"){
+          this.game.switchMode('play');
+        }
+        if(evt.key == "l"){
+          if(this.game.hasSaved){
+            this.loading = true;
+          }
+        }
+        if(evt.key == "s"){
+          if(this.game.isPlaying){
+            this.save();
+            this.game.switchMode('play');
+            return true;
+          }
+        }
+      }
+      else{
+        //TODO implement more than 10 saves
+
+      }
+    }
+    return false;
+  }
+
+  save(){
+
   }
 
 }
