@@ -34,7 +34,7 @@ export class StartupMode extends UIMode{
   }
 
   enter(){
-    
+
   }
 
   renderMain(display){
@@ -148,7 +148,7 @@ export class MessagesMode extends UIMode{
     this.lines = 20;
   }
 
-  renderMain(display){    
+  renderMain(display){
     let messageQueue = Message.getMessages();
     let bottom = 23;
     display.drawText(2, 0, "Viewing message history. Arrow Keys to navigate")
@@ -168,7 +168,7 @@ export class MessagesMode extends UIMode{
         return true;
       }
     }
-    if(eventType == "keypress"){
+    if(eventType == "keydown"){
       if(evt.key == "ArrowUp"){
         if(this.messageIndex >= this.lines){
           this.messageIndex--;
