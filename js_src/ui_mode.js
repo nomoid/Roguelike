@@ -211,7 +211,6 @@ export class PersistenceMode extends UIMode{
       else{
         loadColor = this.game.settings.disabledTextColor;
       }
-      console.log(loadColor);
       display.drawText(2, 4, U.applyColor('[l] - Load game', loadColor));
       let saveColor = null;
       if(this.game.isPlaying){
@@ -228,15 +227,21 @@ export class PersistenceMode extends UIMode{
   }
 
   loadGameList(){
-    if(!this.localStorageAvailable()){
+    try{
+      if(!this.localStorageAvailable()){
+        return Array();
+      }
+      let saveListPath = this.game._PERSISTANCE_NAMESPACE + '_' + this.game._SAVE_LIST_NAMESPACE;
+      let saveListString = window.localStorage.getItem(saveListPath);
+      if(!saveListString){
+        return Array();
+      }
+      return JSON.parse(saveListString);
+    }
+    catch(e){
+      Message.send('Error loading saves list');
       return Array();
     }
-    let saveListPath = this.game._PERSISTANCE_NAMESPACE + '_' + this.game._SAVE_LIST_NAMESPACE;
-    let saveListString = window.localStorage.getItem(saveListPath);
-    if(!saveListString){
-      return Array();
-    }
-    return JSON.parse(saveListString);
   }
 
   //Code from https://developer.mozilla.org/en-US/docs/Web/API/Web_Storage_API/Using_the_Web_Storage_API
@@ -262,17 +267,17 @@ export class PersistenceMode extends UIMode{
           return true;
         }
         if(evt.key == "l"){
-          if(this.game.hasSaved){
+          //if(this.game.hasSaved){
             this.loading = true;
             return true;
-          }
+          //}
         }
         if(evt.key == "s"){
-          if(this.game.isPlaying){
+          //if(this.game.isPlaying){
             this.save();
             this.game.switchMode('play');
             return true;
-          }
+          //}
         }
       }
       else{
@@ -280,6 +285,11 @@ export class PersistenceMode extends UIMode{
           this.loading = false;
           return true;
         }
+        let loadList = this.loadGameList();
+        if (loadList.length > 0){
+          this.load(loadList[0]);
+        }
+        return true;
       }
     }
     return false;
@@ -287,6 +297,20 @@ export class PersistenceMode extends UIMode{
 
   save(){
     Message.send("Saving...");
+    if(!this.localStorageAvailable()){
+      Message.send("Error Saving!");
+    }
+    window.localStorage.setItem("u1", this.game.toJSON());
+    let saveListPath = this.game._PERSISTANCE_NAMESPACE + '_' + this.game._SAVE_LIST_NAMESPACE;
+    window.localStorage.setItem(saveListPath, JSON.stringify(['u1']));
+  }
+
+  load(uid){
+    Message.send("Loading " + uid + "...");
+    if(!this.localStorageAvailable()){
+      Message.send("Error Loading!");
+    }
+    this.game.fromJSON(window.localStorage.getItem("u1"));
   }
 
 }

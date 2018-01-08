@@ -36,7 +36,13 @@ export let Game = {
     disabledTextColor: "#555"
   },
 
+  //Game Save ID, load and save at this location always
+  _uid: null,
+
   init: function(){
+    if(this._uid){
+      this._uid = Math.floor(Math.random() * 1000000000);
+    }
     this._randomSeed = 5 + Math.floor(Math.random() * 100000);
     //this._randomSeed = 76250;
     console.log("using random seed" + this._randomSeed);
@@ -143,5 +149,16 @@ export let Game = {
         //Message.ageMessages();
       }
     }
+  },
+
+  toJSON: function(){
+    let json = '';
+    json = JSON.stringify({rseed: this._randomSeed});
+    return json;
+  },
+
+  fromJSON: function(json){
+    let state = JSON.parse(json);
+    this._randomSeed = state.rseed;
   }
 };
