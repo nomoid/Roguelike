@@ -202,12 +202,27 @@ export class PersistenceMode extends UIMode{
 
   renderMain(){
     display.drawText(2, 0, 'Persistence Mode');
-    display.drawText(2, 3, '[n] - New game');
-    if(this.game.hasSaved){
-      display.drawText(2, 4, '[l] - Load game');
+    if(!this.loading){
+      display.drawText(2, 3, '[n] - New game');
+      let loadColor = null;
+      if(this.game.hasSaved){
+        loadColor = this.game.settings.activeTextColor;
+      }
+      else{
+        loadColor = this.game.settings.disabledTextColor;
+      }
+      display.drawText(2, 4, '[l] - Load game', loadColor);
+      let saveColor = null;
+      if(this.game.isPlaying){
+        saveColor = this.game.settings.activeTextColor;
+      }
+      else{
+        saveColor = this.game.settings.disabledTextColor;
+      }
+      display.drawText(2, 5, '[s] - Save game', saveColor);
     }
-    if(this.game.isPlaying){
-      display.drawText(2, 5, '[s] - Save game');
+    else{
+      display.drawText(2, 3, '[b/l] - Back');
     }
   }
 
@@ -243,10 +258,12 @@ export class PersistenceMode extends UIMode{
       if(!this.loading){
         if(evt.key == "n"){
           this.game.switchMode('play');
+          return true;
         }
         if(evt.key == "l"){
           if(this.game.hasSaved){
             this.loading = true;
+            return true;
           }
         }
         if(evt.key == "s"){
@@ -258,15 +275,17 @@ export class PersistenceMode extends UIMode{
         }
       }
       else{
-        //TODO implement more than 10 saves
-
+        if(evt.key == "b" || evt.key == "l"){
+          this.loading = false;
+          return true;
+        }
       }
     }
     return false;
   }
 
   save(){
-
+    Message.send("Saving...");
   }
 
 }
