@@ -12,13 +12,26 @@ export class Map{
   render(display, camera_x, camera_y){
     let cx = 0;
     let cy = 0;
-    for(let xi = 0; xi < this.xdim; xi++){
+    let xstart = camera_x - Math.trunc(display.getOptions().width / 2);
+    let xend = xstart + display.getOptions().width;
+    let ystart = camera_y - Math.trunc(display.getOptions().height / 2);
+    let yend = ystart + display.getOptions().height;
+    for(let xi = xstart; xi < xend; xi++){
       cy = 0;
-      for(let yi = 0; yi < this.ydim; yi++){
-        this.tileGrid[xi][yi].render(display, cx, cy);
+      for(let yi = ystart; yi < yend; yi++){
+        this.getTile(xi, yi).render(display, cx, cy);
         cy++;
       }
       cx++;
+    }
+  }
+
+  getTile(mapx, mapy){
+    if(mapx < 0 || mapx > this.xdim - 1 || mapy < 0 || mapy > this.ydim - 1){
+      return TILES.NULLTILE;
+    }
+    else{
+      return this.tileGrid[mapx][mapy];
     }
   }
 }

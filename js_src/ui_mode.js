@@ -1,6 +1,7 @@
 import * as U from './util.js';
 import {Message} from './message.js';
 import {Map} from './map.js';
+import {DisplaySymbol} from './display_symbol.js'
 
 class UIMode{
   constructor(game){
@@ -64,6 +65,9 @@ export class StartupMode extends UIMode{
 export class PlayMode extends UIMode{
   constructor(game){
     super(game);
+    this.camerax = 5;
+    this.cameray = 8;
+    this.cameraSymbol = new DisplaySymbol("@", "#eb4");
   }
 
   enter(){
@@ -74,7 +78,8 @@ export class PlayMode extends UIMode{
     display.drawText(2, 12, "Playing the game");
     display.drawText(2, 13, "[w] to win, [l] to lose, [S] to save");
     display.drawText(2, 15, "" + this.game._randomSeed);
-    this.game.map.render(display, 0, 0);
+    this.game.map.render(display, this.camerax, this.cameray);
+    this.cameraSymbol.render(display, Math.trunc(display.getOptions().width/2), Math.trunc(display.getOptions().height/2));
   }
 
   handleInput(eventType, evt){
@@ -95,8 +100,28 @@ export class PlayMode extends UIMode{
         this.game.switchMode('persistence');
         return true;
       }
+      else{
+        let i = parseInt(evt.key);
+        if(!isNaN(i) && i != 0){
+          this.moveCamera(((i - 1) % 3) - 1, -(Math.trunc((i - 1) / 3) - 1));
+          return true;
+        }
+      }
     }
     return false;
+  }
+
+  moveCamera(dx, dy){
+    let newX = this.camerax + dx;
+    let newY = this.cameray + dy;
+    if(newX < 0 || newX > this.game.map.xdim - 1){
+      return;
+    }
+    if(newY < 0 || newY > this.game.map.ydim - 1){
+      return;
+    }
+    this.camerax = newX;
+    this.cameray = newY;
   }
 }
 
