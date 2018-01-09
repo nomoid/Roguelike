@@ -1,5 +1,6 @@
 import * as U from './util.js';
 import {Message} from './message.js';
+import {Map} from './map.js';
 
 class UIMode{
   constructor(game){
@@ -70,9 +71,10 @@ export class PlayMode extends UIMode{
   }
 
   renderMain(display){
-    display.drawText(2, 2, "Playing the game");
-    display.drawText(2, 3, "[w] to win, [l] to lose, [S] to save");
-    display.drawText(2, 5, "" + this.game._randomSeed);
+    display.drawText(2, 12, "Playing the game");
+    display.drawText(2, 13, "[w] to win, [l] to lose, [S] to save");
+    display.drawText(2, 15, "" + this.game._randomSeed);
+    this.game.map.render(display, 0, 0);
   }
 
   handleInput(eventType, evt){
