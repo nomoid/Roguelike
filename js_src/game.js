@@ -166,12 +166,6 @@ export let Game = {
 
   fromJSON: function(json){
     let state = JSON.parse(json);
-<<<<<<< HEAD
-    this._randomSeed = state.rseed;
-    this._uid = state.uid;
-    ROT.RNG.setSeed(this._randomSeed);
-=======
     this.setupNewGame(state);
->>>>>>> map
   }
 };
