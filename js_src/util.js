@@ -23,3 +23,14 @@ export function drawTextWithSpaces(display, x, y, text){
 export function applyColor(text, color){
   return '%c{' + color + '}' + text + '%c{}';
 }
+
+export function init2DArray(xdim, ydim, initialValue){
+  let a = Array();
+  for(let x = 0; x < xdim; x++){
+    a[x] = Array();
+    for(let y = 0; y < ydim; y++){
+      a[x][y] = initialValue;
+    }
+  }
+  return a;
+}

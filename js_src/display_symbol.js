@@ -1,6 +1,6 @@
 export class DisplaySymbol{
   constructor(chr, fg, bg){
-    this.chr = character || #' ';
+    this.chr = chr || ' ';
     this.fg = fg || '#fff';
     this.bg = bg || '#000';
   }

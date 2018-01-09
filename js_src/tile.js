@@ -9,6 +9,6 @@ class Tile extends DisplaySymbol{
 
 export let TILES = {
   NULLTILE: new Tile('nulltile', '#'),
-  WALL: new Wall('wall', '#'),
-  FLOOR: new Floor('floor', '.')
+  WALL: new Tile('wall', '#'),
+  FLOOR: new Tile('floor', '.')
 }
