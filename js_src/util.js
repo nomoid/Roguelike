@@ -23,3 +23,11 @@ export function drawTextWithSpaces(display, x, y, text){
 export function applyColor(text, color){
   return '%c{' + color + '}' + text + '%c{}';
 }
+
+export function removeByValue(array, element){
+  const index = array.indexOf(element);
+
+  if(index !== -1){
+    array.splice(index, 1);
+  }
+}

@@ -253,6 +253,19 @@ export class PersistenceMode extends UIMode{
         display.drawText(2, 4+i, '['+(i+1)+'] - Load game '+saveList[i]);
       }
     }
+    else if(this.currState == PersistenceMode.States.DELETING){
+      display.drawText(2, 3, '[b/d] - Back');
+      let saveList = this.loadSaveList();
+      //display.drawText(2, 4, '[1] - Load game 1');
+      let saveListLength = saveList.length;
+      if(saveListLength > 9){
+        saveListLength = 9;
+      }
+      for(let i = 0; i < saveListLength; i++){
+        display.drawText(2, 4+i, '['+(i+1)+'] - Delete game '+saveList[i]);
+      }
+      display.drawText(2, 14, '[D] - Delete all saves');
+    }
   }
 
   loadSaveList(){
@@ -318,11 +331,8 @@ export class PersistenceMode extends UIMode{
         }
         if(evt.key == "d"){
           if(this.game.hasSaved){
-            if(this.localStorageAvailable()){
-              window.localStorage.clear();
-              this.game.switchMode('startup');
-              return true;
-            }
+            this.currState = PersistenceMode.States.DELETING;
+            return true;
           }
         }
       }
@@ -341,6 +351,24 @@ export class PersistenceMode extends UIMode{
           }
         }
       }
+      else if(this.currState == PersistenceMode.States.DELETING){
+        if(evt.key == "D"){
+          if(this.localStorageAvailable()){
+            window.localStorage.clear();
+            this.game.switchMode('startup');
+            return true;
+          }
+        }
+        let saveList = this.loadSaveList();
+        let selectedSave = parseInt(evt.key);
+        if(!isNaN(selectedSave)){
+          if(saveList.length>=selectedSave && selectedSave != 0){
+            this.deleteSave(saveList[selectedSave-1])
+            this.game.switchMode('startup');
+            return true;
+          }
+        }
+      }
     }
     return false;
   }
@@ -349,6 +377,7 @@ export class PersistenceMode extends UIMode{
     Message.send("Saving...");
     if(!this.localStorageAvailable()){
       Message.send("Error Saving!");
+      return;
     }
     window.localStorage.setItem(this.game._uid, this.game.toJSON());
     let saveListPath = this.game._PERSISTANCE_NAMESPACE + '_' + this.game._SAVE_LIST_NAMESPACE;
@@ -364,8 +393,22 @@ export class PersistenceMode extends UIMode{
     Message.send("Loading " + uid + "...");
     if(!this.localStorageAvailable()){
       Message.send("Error Loading!");
+      return;
     }
     this.game.fromJSON(window.localStorage.getItem(uid));
+  }
+
+  deleteSave(uid){
+    Message.send("Deleting " + uid + "...");
+    if(!this.localStorageAvailable()){
+      Message.send("Error Deleting!");
+      return;
+    }
+    let saveList = this.loadSaveList();
+    let saveListPath = this.game._PERSISTANCE_NAMESPACE + '_' + this.game._SAVE_LIST_NAMESPACE;
+    U.removeByValue(saveList, uid);
+    window.localStorage.removeItem(uid);
+    window.localStorage.setItem(saveListPath, JSON.stringify(saveList));
   }
 
 }
