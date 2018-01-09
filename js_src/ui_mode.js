@@ -68,16 +68,13 @@ export class PlayMode extends UIMode{
 
   enter(){
     this.game.isPlaying = true;
-    if(!this.map){
-      this.map = new Map(20, 12);
-    }
   }
 
   renderMain(display){
     display.drawText(2, 12, "Playing the game");
     display.drawText(2, 13, "[w] to win, [l] to lose, [S] to save");
     display.drawText(2, 15, "" + this.game._randomSeed);
-    this.map.render(display, 0, 0);
+    this.game.map.render(display, 0, 0);
   }
 
   handleInput(eventType, evt){
