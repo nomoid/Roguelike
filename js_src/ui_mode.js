@@ -212,12 +212,12 @@ export class PersistenceMode extends UIMode{
     else{
       this.game.hasSaved = false;
     }
-    this.loading = false;
+    this.currState = PersistenceMode.States.MAIN;
   }
 
   renderMain(display){
     display.drawText(2, 0, 'Persistence Mode');
-    if(!this.loading){
+    if(this.currState == PersistenceMode.States.MAIN){
       if(this.game.isPlaying){
         display.drawText(2, 3, '[b/S] - Back to game');
       }
@@ -239,9 +239,9 @@ export class PersistenceMode extends UIMode{
         saveColor = this.game.settings.disabledTextColor;
       }
       display.drawText(2, 6, U.applyColor('[s] - Save game', saveColor));
-      display.drawText(2, 7, U.applyColor('[d] - Delete all data', deleteColor));
+      display.drawText(2, 7, U.applyColor('[d] - Delete data', deleteColor));
     }
-    else{
+    else if(this.currState == PersistenceMode.States.LOADING){
       display.drawText(2, 3, '[b/l] - Back');
       let saveList = this.loadSaveList();
       //display.drawText(2, 4, '[1] - Load game 1');
@@ -290,7 +290,7 @@ export class PersistenceMode extends UIMode{
 
   handleInput(eventType, evt){
     if(eventType == "keyup"){
-      if(!this.loading){
+      if(this.currState == PersistenceMode.States.MAIN){
         if(evt.key == "n"){
           this.game.setupNewGame();
           Message.send("New Game!");
@@ -299,7 +299,7 @@ export class PersistenceMode extends UIMode{
         }
         if(evt.key == "l"){
           if(this.game.hasSaved){
-            this.loading = true;
+            this.currState = PersistenceMode.States.LOADING;
             return true;
           }
         }
@@ -326,9 +326,9 @@ export class PersistenceMode extends UIMode{
           }
         }
       }
-      else{
+      else if(this.currState == PersistenceMode.States.LOADING){
         if(evt.key == "b" || evt.key == "l"){
-          this.loading = false;
+          this.currState = PersistenceMode.States.MAIN;
           return true;
         }
         let saveList = this.loadSaveList();
@@ -340,7 +340,6 @@ export class PersistenceMode extends UIMode{
             return true;
           }
         }
-
       }
     }
     return false;
@@ -369,4 +368,10 @@ export class PersistenceMode extends UIMode{
     this.game.fromJSON(window.localStorage.getItem(uid));
   }
 
+}
+
+PersistenceMode.States = {
+  MAIN: "main",
+  LOADING: "loading",
+  DELETING: "deleting"
 }
