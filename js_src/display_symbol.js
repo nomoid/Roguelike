@@ -1,11 +1,11 @@
 export class DisplaySymbol{
-  constructor(character, fg, bg){
-    this.character = character;
-    this.fg = fg;
-    this.bg = bg;
+  constructor(chr, fg, bg){
+    this.chr = character || #' ';
+    this.fg = fg || '#fff';
+    this.bg = bg || '#000';
   }
 
   render(display, x, y){
-    display.draw(x, y, this.character, this.fg, this.bg);
+    display.draw(x, y, this.chr, this.fg, this.bg);
   }
 }
