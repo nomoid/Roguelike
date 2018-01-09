@@ -40,9 +40,6 @@ export let Game = {
   _uid: null,
 
   init: function(){
-    if(this._uid){
-      this._uid = Math.floor(Math.random() * 1000000000);
-    }
 
     this.setupDisplays();
 
@@ -78,6 +75,8 @@ export let Game = {
     this._randomSeed = 5 + Math.floor(Math.random() * 100000);
     console.log("using random seed" + this._randomSeed);
     ROT.RNG.setSeed(this._randomSeed);
+    this._uid = Math.floor(Math.random() * 1000000000);
+    
   },
 
   switchMode: function(newModeName){
@@ -155,13 +154,14 @@ export let Game = {
 
   toJSON: function(){
     let json = '';
-    json = JSON.stringify({rseed: this._randomSeed});
+    json = JSON.stringify({rseed: this._randomSeed, uid: this._uid});
     return json;
   },
 
   fromJSON: function(json){
     let state = JSON.parse(json);
     this._randomSeed = state.rseed;
+    this._uid = state.uid;
     ROT.RNG.setSeed(this._randomSeed);
   }
 };

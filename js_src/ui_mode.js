@@ -206,7 +206,7 @@ export class PersistenceMode extends UIMode{
 
   enter(){
     console.log("Entering Persistence mode");
-    if (this.loadGameList().length > 0){
+    if (this.loadSaveList().length > 0){
       this.game.hasSaved = true;
     }
     else{
@@ -243,11 +243,19 @@ export class PersistenceMode extends UIMode{
     }
     else{
       display.drawText(2, 3, '[b/l] - Back');
-      display.drawText(2, 4, '[1] - Load game 1');
+      let saveList = this.loadSaveList();
+      //display.drawText(2, 4, '[1] - Load game 1');
+      let saveListLength = saveList.length;
+      if(saveListLength > 9){
+        saveListLength = 9;
+      }
+      for(let i = 0; i < saveListLength; i++){
+        display.drawText(2, 4+i, '['+(i+1)+'] - Load game '+saveList[i]);
+      }
     }
   }
 
-  loadGameList(){
+  loadSaveList(){
     try{
       if(!this.localStorageAvailable()){
         return Array();
@@ -323,14 +331,16 @@ export class PersistenceMode extends UIMode{
           this.loading = false;
           return true;
         }
-        let loadList = this.loadGameList();
-        if(evt.key == "1"){
-          if (loadList.length > 0){
-            this.load(loadList[0]);
+        let saveList = this.loadSaveList();
+        let selectedSave = parseInt(evt.key);
+        if(!isNaN(selectedSave)){
+          if(saveList.length>=selectedSave && selectedSave != 0){
+            this.load(saveList[selectedSave-1])
             this.game.switchMode('play');
             return true;
           }
         }
+
       }
     }
     return false;
@@ -341,9 +351,14 @@ export class PersistenceMode extends UIMode{
     if(!this.localStorageAvailable()){
       Message.send("Error Saving!");
     }
-    window.localStorage.setItem("u1", this.game.toJSON());
+    window.localStorage.setItem(this.game._uid, this.game.toJSON());
     let saveListPath = this.game._PERSISTANCE_NAMESPACE + '_' + this.game._SAVE_LIST_NAMESPACE;
-    window.localStorage.setItem(saveListPath, JSON.stringify(['u1']));
+    //window.localStorage.setItem(saveListPath, JSON.stringify(['u1']));
+    let saveList = this.loadSaveList();
+    if(!saveList.includes(this.game._uid)){
+      saveList.push(this.game._uid);
+    }
+    window.localStorage.setItem(saveListPath, JSON.stringify(saveList));
   }
 
   load(uid){
@@ -351,7 +366,7 @@ export class PersistenceMode extends UIMode{
     if(!this.localStorageAvailable()){
       Message.send("Error Loading!");
     }
-    this.game.fromJSON(window.localStorage.getItem("u1"));
+    this.game.fromJSON(window.localStorage.getItem(uid));
   }
 
 }
