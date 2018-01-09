@@ -84,7 +84,7 @@ export let Game = {
     }
     console.log("using random seed" + this._randomSeed);
     ROT.RNG.setSeed(this._randomSeed);
-    this.map = new Map(20, 12);
+    this.map = new Map(50, 40);
   },
 
   switchMode: function(newModeName){

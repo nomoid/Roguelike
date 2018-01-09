@@ -112,8 +112,16 @@ export class PlayMode extends UIMode{
   }
 
   moveCamera(dx, dy){
-    this.camerax += dx;
-    this.cameray += dy;
+    let newX = this.camerax + dx;
+    let newY = this.cameray + dy;
+    if(newX < 0 || newX > this.game.map.xdim - 1){
+      return;
+    }
+    if(newY < 0 || newY > this.game.map.ydim - 1){
+      return;
+    }
+    this.camerax = newX;
+    this.cameray = newY;
   }
 }
 
