@@ -30,6 +30,7 @@ export function removeByValue(array, element){
   if(index !== -1){
     array.splice(index, 1);
   }
+}
 
 export function init2DArray(xdim, ydim, initialValue){
   let a = Array();
