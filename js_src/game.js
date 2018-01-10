@@ -86,10 +86,7 @@ export let Game = {
     ROT.RNG.setSeed(this._randomSeed);
     this._uid = Math.floor(Math.random() * 1000000000);
     this.map = MapMaker(50, 40);
-    this.map = MapMaker(50, 40);
-    this.map = MapMaker(50, 40);
-    this.map = MapMaker(50, 40);
-    this.map = MapMaker(50, 40);
+    this.map.setupMap();
   },
 
   switchMode: function(newModeName){
