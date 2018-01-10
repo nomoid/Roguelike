@@ -51,6 +51,38 @@ You need to make your way down the tower safely, combating the monsters you come
   * can fall one floor down
     * take fall damage, but you've progressed. Maybe no way to get back up.
       * maybe youve missed good loot or level grinding, but this could be a viable option for progression if player is risky
+* In depth skill system
+  * Skills allow character to perform new action and get better at their existing abilities
+  * Skills are unlocked by getting sufficient **Skill XP** in that particular skill
+  * **Skill XP** is gained in various ways
+    * Training the skill/doing things related to the skill
+      * Training earns **Skill XP** faster
+      * e.g. Level 0 gives 1x earnings, Level 1 gives 2x earnings, Level 2 gives 3x earnings, etc.
+      * This encourages people to spend **Skill points** to unlock more unique skills instead
+    * Spending **Skill points** on unlocking the skill
+      * **Skill points** are gained by killing enemies or leveling up
+      * **Skill points** can only be spent to unlock full levels
+    * Reading a **Skill tome** (generally gives enough to unlock level 1 of the skill)
+      * **Skill tomes** can sometimes bypass unlocking restrictions
+      * **Skill tomes** are very rare, and there may be skills that can be unlocked only by **Skill tomes**?
+  * When you max out a skill, you can skill gain **Skill XP** for that skill. This **Skill XP** is converted 0.1x to your **Skill points**?
+    * Perhaps the more **Skill XP** you have, the fewer **Skill points** each is worth
+  * Example skill
+    * Archery has 5 levels (Archery 1 to Archery 5)
+      * Archery 1 allows the user to use bows
+      * Each additional level of Archery allows the user to use better bows, and improves Archery success rate and bow damage
+    * Archery requires the Athletics skill (you must have that skill to unlock the Archery skill, but not to get Archery XP) AND 15 dexterity (AND vs OR?)
+    * Archery 1 is earned by reaching 100 Archery XP
+      * Archery 2 is earned by reaching 400 Archery XP, etc.
+      * Archery 5 is earned by reaching 25600 Archery XP
+    * You get Archery XP by doing things related to Archery
+      * You get 1 Archery XP for throwing an object and damaging an enemy
+      * You get 2 Archery XP for using a sling and damaging an enemy
+      * You get 3 Archery XP for using a bow and damaging an enemy
+      * You get 5 Archery XP for killing an enemy with a thrown object or a sling
+      * You get 10 Archery XP for killing an enemy with a bow
+      * On hit XP is doubled for critical hits
+    * Archery allows for the unlocking of the skills Sharpshooter (Increases ranged critical hit chance, allows you to use Scopes) and Steady Aim (Increases ranged hit chance, decreases the ranged shooting penalty after getting hit)
 
 ### Wishes
 * Different towers to warp between
