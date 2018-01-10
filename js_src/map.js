@@ -89,11 +89,15 @@ export class Map{
 
 let TILE_GRID_GENERATOR = {
   'basic_caves': function(xdim, ydim, rngState){
-    let tg = init2DArray(xdim, ydim, TILES.NULLTILE);
-    let gen = new ROT.Map.Cellular(xdim, ydim, {connected: true});
 
     let origRngState = ROT.RNG.getState();
     ROT.RNG.setState(rngState);
+
+    console.dir(rngState);
+
+    let tg = init2DArray(xdim, ydim, TILES.NULLTILE);
+    let gen = new ROT.Map.Cellular(xdim, ydim, {connected: true});
+
 
     gen.randomize(0.625);
     for(let i = 0; i < 3; i++){

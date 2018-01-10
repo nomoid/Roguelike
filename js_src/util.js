@@ -50,7 +50,7 @@ let randCharSource = '1234567890abcdefghijklmnopqrstuvwxyz'.split('');
 export function uniqueId(tag){
   let id = '';
   for (let i=0; i<4; i++){
-    id += randCharSource.random();
+    //id += randCharSource.random();
   }
   id = `${tag ? tag+'-' : ''}${DATASTORE.ID_SEQ}-${id}`;
   DATASTORE.ID_SEQ++;

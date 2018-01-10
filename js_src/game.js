@@ -9,6 +9,7 @@ export let Game = {
   _PERSISTENCE_NAMESPACE: 'pickledpopcorn',
   _SAVE_LIST_NAMESPACE: 'savelist',
   _DISPLAY_SPACING: 1.1,
+  _MAX_FLOORS: 10,
   _display: {
     main: {
       w: 80,
@@ -190,7 +191,7 @@ export let Game = {
     ROT.RNG.setSeed(this._randomSeed);
   },
 
-  getMapId(){
+  getMapId: function(){
     while(!this.mapIds[this.currMap]){
       let m = MapMaker({xdim: 50, ydim: 40});
       let id = m.getId();
@@ -198,6 +199,18 @@ export let Game = {
       this.mapIds.push(id);
     }
     return this.mapIds[this.currMap];
+  },
+
+  previousFloor: function(){
+    if(this.currMap > 0){
+      this.currMap--;
+    }
+  },
+
+  nextFloor: function(){
+    if(this.currMap < this._MAX_FLOORS - 1){
+      this.currMap++;
+    }
   }
 
 };

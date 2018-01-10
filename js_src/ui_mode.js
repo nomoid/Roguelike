@@ -123,6 +123,14 @@ export class PlayMode extends UIMode{
         this.game.switchMode('persistence');
         return true;
       }
+      else if(evt.key == "<"){
+        this.game.previousFloor();
+        return true;
+      }
+      else if(evt.key == ">"){
+        this.game.nextFloor();
+        return true;
+      }
       else{
         let i = parseInt(evt.key);
         if(!isNaN(i) && i != 0){
