@@ -1,7 +1,8 @@
 import * as U from './util.js';
 import {Message} from './message.js';
-import {Map} from './map.js';
-import {DisplaySymbol} from './display_symbol.js'
+import {Map, MapMaker} from './map.js';
+import {DisplaySymbol} from './display_symbol.js';
+import {DATASTORE, clearDatastore} from './datastore.js';
 
 class UIMode{
   constructor(game){
@@ -67,20 +68,44 @@ export class StartupMode extends UIMode{
 export class PlayMode extends UIMode{
   constructor(game){
     super(game);
-    this.camerax = 5;
-    this.cameray = 8;
+
     this.cameraSymbol = new DisplaySymbol("@", "#eb4");
+
+    this.reset();
   }
 
   enter(){
+    if(! this.attr.mapId){
+      let m = MapMaker({xdim: 50, ydim: 40});
+      this.attr.mapId = m.getId();
+      m.setupMap();
+    }
+    else{
+      DATASTORE.MAPS[this.attr.mapId].setupMap();
+    }
     this.game.isPlaying = true;
+  }
+
+  reset(){
+    this.attr = {
+      mapId: '',
+      camerax: 5,
+      cameray: 8
+    };
+  }
+
+  toJSON(){
+    return JSON.stringify(this.attr);
+  }
+  restoreFromState(data){
+    this.attr = JSON.parse(data);
   }
 
   renderMain(display){
     display.drawText(2, 12, "Playing the game");
     display.drawText(2, 13, "[w] to win, [l] to lose, [S] to save");
     display.drawText(2, 15, "" + this.game._randomSeed);
-    this.game.map.render(display, this.camerax, this.cameray);
+    DATASTORE.MAPS[this.attr.mapId].render(display, this.attr.camerax, this.attr.cameray);
     this.cameraSymbol.render(display, Math.trunc(display.getOptions().width/2), Math.trunc(display.getOptions().height/2));
   }
 
@@ -114,16 +139,16 @@ export class PlayMode extends UIMode{
   }
 
   moveCamera(dx, dy){
-    let newX = this.camerax + dx;
-    let newY = this.cameray + dy;
-    if(newX < 0 || newX > this.game.map.xdim - 1){
+    let newX = this.attr.camerax + dx;
+    let newY = this.attr.cameray + dy;
+    if(newX < 0 || newX > DATASTORE.MAPS[this.attr.mapId].getXDim() - 1){
       return;
     }
-    if(newY < 0 || newY > this.game.map.ydim - 1){
+    if(newY < 0 || newY > DATASTORE.MAPS[this.attr.mapId].getYDim() - 1){
       return;
     }
-    this.camerax = newX;
-    this.cameray = newY;
+    this.attr.camerax = newX;
+    this.attr.cameray = newY;
   }
 }
 
@@ -302,7 +327,7 @@ export class PersistenceMode extends UIMode{
       if(!this.localStorageAvailable()){
         return Array();
       }
-      let saveListPath = this.game._PERSISTANCE_NAMESPACE + '_' + this.game._SAVE_LIST_NAMESPACE;
+      let saveListPath = this.game._PERSISTENCE_NAMESPACE + '_' + this.game._SAVE_LIST_NAMESPACE;
       let saveListString = window.localStorage.getItem(saveListPath);
       if(!saveListString){
         return Array();
@@ -408,8 +433,10 @@ export class PersistenceMode extends UIMode{
       Message.send("Error Saving!");
       return;
     }
-    window.localStorage.setItem(this.game._uid, this.game.toJSON());
-    let saveListPath = this.game._PERSISTANCE_NAMESPACE + '_' + this.game._SAVE_LIST_NAMESPACE;
+    window.localStorage.setItem(this.game._uid, JSON.stringify(DATASTORE));
+    console.log('post-save datastore');
+    console.dir(DATASTORE);
+    let saveListPath = this.game._PERSISTENCE_NAMESPACE + '_' + this.game._SAVE_LIST_NAMESPACE;
     //window.localStorage.setItem(saveListPath, JSON.stringify(['u1']));
     let saveList = this.loadSaveList();
     if(!saveList.includes(this.game._uid)){
@@ -424,7 +451,26 @@ export class PersistenceMode extends UIMode{
       Message.send("Error Loading!");
       return;
     }
-    this.game.fromJSON(window.localStorage.getItem(uid));
+
+    let data = JSON.parse(window.localStorage.getItem(uid));
+    clearDatastore();
+
+    DATASTORE.ID_SEQ = data.ID_SEQ;
+    this.game.fromJSON(data.GAME);
+
+    for(let mapid in data.MAPS){
+      let mapData = JSON.parse(data.MAPS[mapid]);
+
+      DATASTORE.MAPS[mapid] = MapMaker(mapData.xdim, mapData.ydim);
+      DATASTORE.MAPS[mapid].attr = mapData;
+      DATASTORE.MAPS[mapid].setupMap();
+    }
+
+    DATASTORE.GAME = this.game;
+
+    console.log('post-load datastore:');
+    console.dir(DATASTORE);
+
   }
 
   deleteSave(uid){
@@ -434,7 +480,7 @@ export class PersistenceMode extends UIMode{
       return;
     }
     let saveList = this.loadSaveList();
-    let saveListPath = this.game._PERSISTANCE_NAMESPACE + '_' + this.game._SAVE_LIST_NAMESPACE;
+    let saveListPath = this.game._PERSISTENCE_NAMESPACE + '_' + this.game._SAVE_LIST_NAMESPACE;
     U.removeByValue(saveList, uid);
     window.localStorage.removeItem(uid);
     window.localStorage.setItem(saveListPath, JSON.stringify(saveList));

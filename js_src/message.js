@@ -5,7 +5,6 @@ export let Message = {
   _historyLength: 50,
   init: function(targetDisplay){
     this._targetDisplay = targetDisplay;
-    console.dir(this);
   },
   render: function(){
     if(!this._targetDisplay){
