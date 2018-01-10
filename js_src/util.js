@@ -42,3 +42,12 @@ export function init2DArray(xdim, ydim, initialValue){
   }
   return a;
 }
+
+let randCharSource = '1234567890abcdefghijklmnopqrstuvwxyz'.split('');
+export function uniqueId(){
+  let id = '';
+  for (let i=0; i<8; i++){
+    id += randCharSource.random();
+  }
+  return id;
+}

@@ -2,7 +2,7 @@ import ROT from 'rot-js';
 import * as U from './util.js';
 import {StartupMode, PlayMode, WinMode, LoseMode, MessagesMode, PersistenceMode} from './ui_mode.js'
 import {Message} from './message.js';
-import {Map} from './map.js';
+import {MapMaker} from './map.js';
 
 export let Game = {
   _PERSISTENCE_NAMESPACE: 'pickledpopcorn',
@@ -82,7 +82,7 @@ export let Game = {
     console.log("using random seed" + this._randomSeed);
     ROT.RNG.setSeed(this._randomSeed);
     this._uid = Math.floor(Math.random() * 1000000000);
-    this.map = new Map(50, 40);
+    this.map = MapMaker(50, 40);
   },
 
   switchMode: function(newModeName){

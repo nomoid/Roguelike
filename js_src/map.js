@@ -1,5 +1,5 @@
 import {TILES} from './tile.js';
-import {init2DArray} from './util.js';
+import {init2DArray, uniqueId} from './util.js';
 import ROT from 'rot-js';
 
 export class Map{
@@ -7,6 +7,9 @@ export class Map{
     this.xdim = xdim || 1;
     this.ydim = ydim || 1;
     this.tileGrid = TILE_GRID_GENERATOR['basic caves'](this.xdim, this.ydim);
+    this.id = uniqueId();
+
+    console.dir(this);
   }
 
   render(display, camera_x, camera_y){
@@ -59,4 +62,8 @@ let TILE_GRID_GENERATOR = {
     1);
     return tg;
   }
+}
+
+export function MapMaker(mapWidth, mapHeight){
+  return new Map(mapWidth, mapHeight);
 }
