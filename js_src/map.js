@@ -7,8 +7,9 @@ export class Map{
   constructor(xdim, ydim){
     this.xdim = xdim || 1;
     this.ydim = ydim || 1;
-    this.tileGrid = TILE_GRID_GENERATOR['basic caves'](this.xdim, this.ydim);
-    this.id = uniqueId();
+    let mapType = 'basic_caves';
+    this.tileGrid = TILE_GRID_GENERATOR[mapType](this.xdim, this.ydim);
+    this.id = uniqueId('map-'+mapType);
 
     console.dir(this);
   }
@@ -48,7 +49,7 @@ export class Map{
 }
 
 let TILE_GRID_GENERATOR = {
-  'basic caves': function(xdim, ydim){
+  'basic_caves': function(xdim, ydim){
     let tg = init2DArray(xdim, ydim, TILES.NULLTILE);
     let gen = new ROT.Map.Cellular(xdim, ydim, {connected: true});
     gen.randomize(0.625);
