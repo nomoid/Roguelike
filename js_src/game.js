@@ -41,6 +41,9 @@ export let Game = {
   //Game Save ID, load and save at this location always
   _uid: null,
 
+  mapIds: Array(),
+  currMap: 0,
+
   init: function(){
 
     this.setupDisplays();
@@ -76,21 +79,6 @@ export let Game = {
     this.modes.lose = new LoseMode(this);
     this.modes.messages = new MessagesMode(this);
     this.modes.persistence = new PersistenceMode(this);
-  },
-
-  setupNewGame: function(state){
-    if(state){
-      this._randomSeed = state.rseed;
-      this.modes.play.restoreFromState(state.playModeState);
-      this._uid = state.uid;
-    }
-    else{
-      this._randomSeed = 5 + Math.floor(Math.random() * 100000);
-      this.modes.play.reset();
-      this._uid = Math.floor(Math.random() * 1000000000);
-    }
-    console.log("using random seed" + this._randomSeed);
-    ROT.RNG.setSeed(this._randomSeed);
   },
 
   switchMode: function(newModeName){
@@ -171,7 +159,9 @@ export let Game = {
     json = JSON.stringify({
       rseed: this._randomSeed,
       uid: this._uid,
-      playModeState: this.modes.play
+      playModeState: this.modes.play,
+      mapIds: this.mapIds,
+      currMap: this.currMap
     });
     return json;
   },
@@ -179,5 +169,35 @@ export let Game = {
   fromJSON: function(json){
     let attr = JSON.parse(json);
     this.setupNewGame(attr);
+  },
+
+  setupNewGame: function(state){
+    if(state){
+      this._randomSeed = state.rseed;
+      this.modes.play.restoreFromState(state.playModeState);
+      this._uid = state.uid;
+      this.mapIds = state.mapIds;
+      this.currMap = state.currMap;
+    }
+    else{
+      this._randomSeed = 5 + Math.floor(Math.random() * 100000);
+      this.modes.play.reset();
+      this._uid = Math.floor(Math.random() * 1000000000);
+      this.mapIds = Array();
+      this.currMap = 0;
+    }
+    console.log("using random seed" + this._randomSeed);
+    ROT.RNG.setSeed(this._randomSeed);
+  },
+
+  getMapId(){
+    while(!this.mapIds[this.currMap]){
+      let m = MapMaker({xdim: 50, ydim: 40});
+      let id = m.getId();
+      m.setupMap();
+      this.mapIds.push(id);
+    }
+    return this.mapIds[this.currMap];
   }
+
 };

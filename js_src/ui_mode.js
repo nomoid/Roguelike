@@ -75,20 +75,16 @@ export class PlayMode extends UIMode{
   }
 
   enter(){
-    if(! this.attr.mapId){
-      let m = MapMaker({xdim: 50, ydim: 40});
-      this.attr.mapId = m.getId();
-      m.setupMap();
-    }
-    else{
-      DATASTORE.MAPS[this.attr.mapId].setupMap();
-    }
+    this.switchMap();
     this.game.isPlaying = true;
+  }
+
+  switchMap(){
+    DATASTORE.MAPS[this.game.getMapId()].setupMap();
   }
 
   reset(){
     this.attr = {
-      mapId: '',
       camerax: 5,
       cameray: 8
     };
@@ -105,7 +101,7 @@ export class PlayMode extends UIMode{
     display.drawText(2, 12, "Playing the game");
     display.drawText(2, 13, "[w] to win, [l] to lose, [S] to save");
     display.drawText(2, 15, "" + this.game._randomSeed);
-    DATASTORE.MAPS[this.attr.mapId].render(display, this.attr.camerax, this.attr.cameray);
+    DATASTORE.MAPS[this.game.getMapId()].render(display, this.attr.camerax, this.attr.cameray);
     this.cameraSymbol.render(display, Math.trunc(display.getOptions().width/2), Math.trunc(display.getOptions().height/2));
   }
 
@@ -141,10 +137,10 @@ export class PlayMode extends UIMode{
   moveCamera(dx, dy){
     let newX = this.attr.camerax + dx;
     let newY = this.attr.cameray + dy;
-    if(newX < 0 || newX > DATASTORE.MAPS[this.attr.mapId].getXDim() - 1){
+    if(newX < 0 || newX > DATASTORE.MAPS[this.game.getMapId()].getXDim() - 1){
       return;
     }
-    if(newY < 0 || newY > DATASTORE.MAPS[this.attr.mapId].getYDim() - 1){
+    if(newY < 0 || newY > DATASTORE.MAPS[this.game.getMapId()].getYDim() - 1){
       return;
     }
     this.attr.camerax = newX;
