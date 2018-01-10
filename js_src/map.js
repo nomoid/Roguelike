@@ -12,13 +12,13 @@ export class Map{
     this.attr.mapType = mapType || 'basic_caves';
     this.attr.setupRngState = ROT.RNG.getState();
     this.attr.id = uniqueId('map-'+this.attr.mapType);
-
-    console.dir(this);
   }
 
   setupMap(){
-    this.tileGrid =
-    TILE_GRID_GENERATOR[this.attr.mapType](this.attr.xdim, this.attr.ydim, this.attr.setupRngState);
+    if(!this.tileGrid){
+      this.tileGrid =
+      TILE_GRID_GENERATOR[this.attr.mapType](this.attr.xdim, this.attr.ydim, this.attr.setupRngState);
+    }
   }
 
   getId(){

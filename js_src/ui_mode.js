@@ -453,8 +453,6 @@ export class PersistenceMode extends UIMode{
     }
 
     let data = JSON.parse(window.localStorage.getItem(uid));
-    console.log("loaded data");
-    console.dir(data);
     clearDatastore();
 
     DATASTORE.ID_SEQ = data.ID_SEQ;
