@@ -3,6 +3,7 @@ import * as U from './util.js';
 import {StartupMode, PlayMode, WinMode, LoseMode, MessagesMode, PersistenceMode} from './ui_mode.js'
 import {Message} from './message.js';
 import {MapMaker} from './map.js';
+import {DATASTORE} from './datastore.js';
 
 export let Game = {
   _PERSISTENCE_NAMESPACE: 'pickledpopcorn',
@@ -50,6 +51,8 @@ export let Game = {
     this.switchMode('startup');
     console.log("game:");
     console.dir(this);
+    console.log('datastore');
+    console.dir(DATASTORE);
 
   },
 

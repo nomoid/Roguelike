@@ -1,6 +1,7 @@
 import {TILES} from './tile.js';
 import {init2DArray, uniqueId} from './util.js';
 import ROT from 'rot-js';
+import {DATASTORE} from './datastore.js';
 
 export class Map{
   constructor(xdim, ydim){
@@ -10,6 +11,13 @@ export class Map{
     this.id = uniqueId();
 
     console.dir(this);
+  }
+
+  getId(){
+    return this.id;
+  }
+  setId(newId){
+    this.id = newId;
   }
 
   render(display, camera_x, camera_y){
@@ -65,5 +73,7 @@ let TILE_GRID_GENERATOR = {
 }
 
 export function MapMaker(mapWidth, mapHeight){
-  return new Map(mapWidth, mapHeight);
+  let m = new Map(mapWidth, mapHeight);
+  DATASTORE.MAPS[m.getId()] = m;
+  return m;
 }
