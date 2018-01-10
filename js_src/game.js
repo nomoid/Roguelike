@@ -3,7 +3,7 @@ import * as U from './util.js';
 import {StartupMode, PlayMode, WinMode, LoseMode, MessagesMode, PersistenceMode} from './ui_mode.js'
 import {Message} from './message.js';
 import {MapMaker} from './map.js';
-import {DATASTORE} from './datastore.js';
+import {DATASTORE, clearDatastore} from './datastore.js';
 
 export let Game = {
   _PERSISTENCE_NAMESPACE: 'pickledpopcorn',
@@ -49,6 +49,9 @@ export let Game = {
 
     this.setupModes();
     this.switchMode('startup');
+
+    DATASTORE.GAME = this;
+
     console.log("game:");
     console.dir(this);
     console.log('datastore');
@@ -78,15 +81,16 @@ export let Game = {
   setupNewGame: function(state){
     if(state){
       this._randomSeed = state.rseed;
+      this.modes.play.restoreFromState(state.playModeState);
+      this._uid = state.uid;
     }
     else{
       this._randomSeed = 5 + Math.floor(Math.random() * 100000);
+      this.modes.play.reset();
+      this._uid = Math.floor(Math.random() * 1000000000);
     }
     console.log("using random seed" + this._randomSeed);
     ROT.RNG.setSeed(this._randomSeed);
-    this._uid = Math.floor(Math.random() * 1000000000);
-    this.map = MapMaker(50, 40);
-    this.map.setupMap();
   },
 
   switchMode: function(newModeName){
@@ -164,12 +168,16 @@ export let Game = {
 
   toJSON: function(){
     let json = '';
-    json = JSON.stringify({rseed: this._randomSeed, uid: this._uid});
+    json = JSON.stringify({
+      rseed: this._randomSeed,
+      uid: this._uid,
+      playModeState: this.modes.play
+    });
     return json;
   },
 
   fromJSON: function(json){
-    let state = JSON.parse(json);
-    this.setupNewGame(state);
+    let attr = JSON.parse(json);
+    this.setupNewGame(attr);
   }
 };

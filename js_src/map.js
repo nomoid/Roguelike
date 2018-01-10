@@ -4,12 +4,12 @@ import ROT from 'rot-js';
 import {DATASTORE} from './datastore.js';
 
 export class Map{
-  constructor(xdim, ydim){
+  constructor(xdim, ydim, mapType){
 
     this.attr = {};
     this.attr.xdim = xdim || 1;
     this.attr.ydim = ydim || 1;
-    this.attr.mapType = 'basic_caves';
+    this.attr.mapType = mapType || 'basic_caves';
     this.attr.setupRngState = ROT.RNG.getState();
     this.attr.id = uniqueId('map-'+this.attr.mapType);
 
@@ -73,6 +73,10 @@ export class Map{
     }
   }
 
+  toJSON(){
+    return JSON.stringify(this.attr);
+  }
+
   getTile(mapx, mapy){
     if(mapx < 0 || mapx > this.attr.xdim - 1 || mapy < 0 || mapy > this.attr.ydim - 1){
       return TILES.NULLTILE;
@@ -115,8 +119,15 @@ let TILE_GRID_GENERATOR = {
   }
 }
 
-export function MapMaker(mapWidth, mapHeight){
-  let m = new Map(mapWidth, mapHeight);
+export function MapMaker(mapData){
+
+  let m = new Map(mapData.xdim, mapData.ydim,mapData.mapType);
+  if(mapData.id){
+    m.setId(mapData.id);
+  }
+  if(mapData.setupRngState){
+    m.setSetupRngState(mapData.setupRngState);
+  }
   DATASTORE.MAPS[m.getId()] = m;
   return m;
 }
