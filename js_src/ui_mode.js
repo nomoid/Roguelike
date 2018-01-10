@@ -40,7 +40,7 @@ export class StartupMode extends UIMode{
   }
 
   renderMain(display){
-    display.drawText(2, 1, "Welcome to... (user must provide own drumroll)")
+    display.drawText(2, 1, "Welcome to...")
     U.drawTextWithSpaces(display, 2, 2, "  _____ _      _    _          _ _____                                 ");
     U.drawTextWithSpaces(display, 2, 3, " |  __ (_)    | |  | |        | |  __ \\                                ");
     U.drawTextWithSpaces(display, 2, 4, " | |__) |  ___| | _| | ___  __| | |__) |__  _ __   ___ ___  _ __ _ __  ");
@@ -49,14 +49,16 @@ export class StartupMode extends UIMode{
     U.drawTextWithSpaces(display, 2, 7, " |_|   |_|\\___|_|\\_\\_|\\___|\\__,_|_|   \\___/| .__/ \\___\\___/|_|  |_| |_|");
     U.drawTextWithSpaces(display, 2, 8, "                                           | |                         ");
     U.drawTextWithSpaces(display, 2, 9, "                                           |_|                         ");
-    display.drawText(2, 15, "Press any key to continue...")
+    display.drawText(2, 15, "Press space key to continue...")
   }
 
   handleInput(eventType, evt){
     console.dir(evt);
     if(eventType == "keyup"){
-      this.game.switchMode('persistence');
-      return true;
+      if(evt.key == " "){
+        this.game.switchMode('persistence');
+        return true;
+      }
     }
     return false;
   }
