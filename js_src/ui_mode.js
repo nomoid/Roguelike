@@ -5,6 +5,7 @@ import {DisplaySymbol} from './display_symbol.js';
 import {DATASTORE, clearDatastore} from './datastore.js';
 import {Color} from './color.js';
 import {Entity} from './entity.js';
+import {EntityFactory} from './entities.js';
 
 class UIMode{
   constructor(game){
@@ -71,8 +72,8 @@ export class PlayMode extends UIMode{
   constructor(game){
     super(game);
 
-    this.cameraSymbol = new DisplaySymbol({name: 'avatar', chr:"@", fg:Color.AVATAR_FG});
-    let a = new Entity({name:'this_is_avatar', chr:'@',fg:Color.AVATAR_FG})
+    this.cameraSymbol = new DisplaySymbol({name: 'avatar',chr:"@", fg:Color.AVATAR_FG});
+    let a = EntityFactory.create('avatar');
 
     this.reset();
   }
