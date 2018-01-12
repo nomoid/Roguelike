@@ -111,8 +111,8 @@ export class PlayMode extends UIMode{
     display.drawText(2, 12, "Playing the game");
     display.drawText(2, 13, "[w] to win, [l] to lose, [S] to save");
     display.drawText(2, 15, "" + this.game._randomSeed);
-    DATASTORE.MAPS[this.attr.mapId].render(display, this.attr.camerax, this.attr.cameray);
-    this.cameraSymbol.render(display, Math.trunc(display.getOptions().width/2), Math.trunc(display.getOptions().height/2));
+    DATASTORE.MAPS[this.attr.mapId].render(display, this.getAvatar().getX(), this.getAvatar().getY());
+    //this.cameraSymbol.render(display, Math.trunc(display.getOptions().width/2), Math.trunc(display.getOptions().height/2));
   }
 
   handleInput(eventType, evt){

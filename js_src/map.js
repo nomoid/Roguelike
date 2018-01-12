@@ -95,6 +95,8 @@ export class Map{
   }
 
   render(display, camera_x, camera_y){
+    console.log('rendering map');
+    console.dir(this);
     let cx = 0;
     let cy = 0;
     let xstart = camera_x - Math.trunc(display.getOptions().width / 2);
@@ -106,7 +108,7 @@ export class Map{
       for(let yi = ystart; yi < yend; yi++){
         let pos = `${xi},${yi}`;
         if(this.attr.mapPosToEntityId[pos]){
-          DATASTORE.ENTITIES[this.attr.mapPosToEntityId[pos]].render(display,cx,cx);
+          DATASTORE.ENTITIES[this.attr.mapPosToEntityId[pos]].render(display,cx,cy);
         }
         else{
           this.getTile(xi, yi).render(display, cx, cy);
