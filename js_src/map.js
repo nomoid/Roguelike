@@ -83,7 +83,7 @@ export class Map{
     let x = Math.trunc(ROT.RNG.getUniform()*this.attr.xdim);
     let y = Math.trunc(ROT.RNG.getUniform()*this.attr.ydim);
     //check for openness
-    if(isPositionOpen(x, y)){
+    if(!this.isPositionOpen(x, y)){
       return this.getRandomOpenPosition();
     }
     return `${x},${y}`;

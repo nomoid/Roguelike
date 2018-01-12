@@ -80,7 +80,7 @@ export class PlayMode extends UIMode{
 
   enter(){
     if(! this.attr.mapId){
-      let m = MapMaker({xdim: 20, ydim: 30});
+      let m = MapMaker({xdim: 50, ydim: 40});
       this.attr.mapId = m.getId();
       m.setupMap();
       let a = EntityFactory.create('avatar');

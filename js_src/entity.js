@@ -51,8 +51,8 @@ export class Entity extends DisplaySymbol{
   }
 
   moveBy(dx, dy){
-    let newX = this.state.x*1 + dx*1;
-    let newY = this.state.y*1 + dy*1;
+    let newX = this.attr.x*1 + dx*1;
+    let newY = this.attr.y*1 + dy*1;
 
     if(this.getMap().isPositionOpen(newX, newY)){
       this.attr.x = newX;
