@@ -4,6 +4,7 @@ import {Map, MapMaker} from './map.js';
 import {DisplaySymbol} from './display_symbol.js';
 import {DATASTORE, clearDatastore} from './datastore.js';
 import {Entity} from './entity.js';
+import {EntityFactory} from './entities.js';
 
 class UIMode{
   constructor(game){
@@ -71,7 +72,7 @@ export class PlayMode extends UIMode{
     super(game);
 
     this.cameraSymbol = new DisplaySymbol({name: 'avatar',chr:"@", fg:"#eb4"});
-    let a = new Entity({name:'this_is_avatar', chr:'@',fg:"#eb4"})
+    let a = EntityFactory.create('avatar');
 
     this.reset();
   }
