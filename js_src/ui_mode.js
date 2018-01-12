@@ -3,6 +3,7 @@ import {Message} from './message.js';
 import {Map, MapMaker} from './map.js';
 import {DisplaySymbol} from './display_symbol.js';
 import {DATASTORE, clearDatastore} from './datastore.js';
+import {Color} from './color.js';
 
 class UIMode{
   constructor(game){
@@ -69,7 +70,7 @@ export class PlayMode extends UIMode{
   constructor(game){
     super(game);
 
-    this.cameraSymbol = new DisplaySymbol({chr:"@", fg:"#eb4"});
+    this.cameraSymbol = new DisplaySymbol({chr:"@", fg:Color.AVATAR_FG});
 
     this.reset();
   }
@@ -278,21 +279,21 @@ export class PersistenceMode extends UIMode{
       display.drawText(2, 4, '[n] - New game');
       let loadColor = null;
       if(this.game.hasSaved){
-        loadColor = this.game.settings.activeTextColor;
+        loadColor = Color.TEXT_ACTIVE;
       }
       else{
-        loadColor = this.game.settings.disabledTextColor;
+        loadColor = Color.TEXT_DISABLED;
       }
-      let deleteColor = loadColor;
       display.drawText(2, 5, U.applyColor('[l] - Load game', loadColor));
       let saveColor = null;
       if(this.game.isPlaying){
-        saveColor = this.game.settings.activeTextColor;
+        saveColor = Color.TEXT_ACTIVE;
       }
       else{
-        saveColor = this.game.settings.disabledTextColor;
+        saveColor = Color.TEXT_DISABLED;
       }
       display.drawText(2, 6, U.applyColor('[s] - Save game', saveColor));
+      let deleteColor = loadColor;
       display.drawText(2, 7, U.applyColor('[d] - Delete data', deleteColor));
     }
     else if(this.currState == PersistenceMode.States.LOADING){
