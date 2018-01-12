@@ -2,11 +2,11 @@
 
 ### Goals
 
-_____ is a fairly standard, simple roguelike. As such, the player gets
+PickledPopcorn is a fairly standard, simple [Roguelike](https://en.wikipedia.org/wiki/Roguelike) game. As such, the player gets
 * character advancement/progression (on the mechanics side of things, not necessarily the story side)
   * some opponents that are too challenging to fight in the early stages of the game are easy to beat by the later stages of the game
 * inventory management
-* primary mob interactions are combat ('attack it' is never a bad choice from a story standpoint)
+* primary mob interactions are combat ('attack it' is almost never a bad choice from a story standpoint)
   * some tactically interesting combat
 * exploration (of procedurally generated content)
 * a simple framing story to engage the player and justify the avatar actions, but nothing too deep and little in the way of narrative progression
@@ -36,10 +36,21 @@ You need to make your way down the tower safely, combating the monsters you come
 * Dice roll based mechanics
   * You have skills that determine how many dice you roll on certain actions
   * You must roll above a value for something to happen
-    * Major failure
-    * Minor failure
-    * Minor success
-    * Major success
+    * The possible results are:
+      * Major failure
+      * Minor failure
+      * Minor success
+      * Major success
+    * e.g. Shooting a bow
+      * Major failure
+        * Chance you injure yourself
+        * Chance of bow breaking
+      * Minor failure
+        * You miss the target
+      * Minor success
+        * You hit the target
+      * Major success
+        * You get a critical hit
 * Knockback is a component of combat
   * knockback checks for your attacks
     * different weapons have different knockback rolls
@@ -88,3 +99,4 @@ You need to make your way down the tower safely, combating the monsters you come
 * Different towers to warp between
   * four elemental towers
     * beat each one, or, pick which one best suits your character build, or a mixed route down all four
+* RNG seeding system allowing the player to play the same map more than once, or even to replay previous playthroughs?
