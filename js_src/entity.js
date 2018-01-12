@@ -1,6 +1,7 @@
 // a base class that defines all entities in the game
 import {DisplaySymbol} from './display_symbol.js';
 import {uniqueId} from './util.js';
+import {DATASTORE} from './datastore.js';
 
 
 export class Entity extends DisplaySymbol{
@@ -46,7 +47,21 @@ export class Entity extends DisplaySymbol{
     this.attr.mapId = newId;
   }
   getMap(){
-    return DATASTORE.MAPS[this.state.mapId];
+    return DATASTORE.MAPS[this.attr.mapId];
+  }
+
+  moveBy(dx, dy){
+    let newX = this.attr.x*1 + dx*1;
+    let newY = this.attr.y*1 + dy*1;
+
+    if(this.getMap().isPositionOpen(newX, newY)){
+      this.attr.x = newX;
+      this.attr.y = newY;
+      this.getMap().updateEntityPosition(this, this.attr.x, this.attr.y);
+      return true;
+    }
+    return false;
+
   }
 
   toJSON(){

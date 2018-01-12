@@ -5,6 +5,10 @@ class Tile extends DisplaySymbol{
     super(data);
     this.name = data.name;
   }
+
+  isA(name){
+    return this.name == name;
+  }
 }
 
 export let TILES = {

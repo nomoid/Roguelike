@@ -12,6 +12,9 @@ export class Map{
     this.attr.mapType = mapType || 'basic_caves';
     this.attr.setupRngState = ROT.RNG.getState();
     this.attr.id = uniqueId('map-'+this.attr.mapType);
+    this.attr.entityIdToMapPos = {};
+    this.attr.mapPosToEntityId = {};
+
   }
 
   setupMap(){
@@ -56,7 +59,44 @@ export class Map{
     this.attr.setupRngState = newstate;
   }
 
+  updateEntityPosition(ent, newMapX, newMapY){
+    let oldPos = this.attr.entityIdToMapPos[ent.getId()];
+    delete this.attr.mapPosToEntityId[oldPos];
+    this.attr.mapPosToEntityId[`${newMapX},${newMapY}`] = ent.getId();
+    this.attr.entityIdToMapPos[ent.getId()] = `${newMapX},${newMapY}`;
+  }
+
+  addEntityAt(ent, mapx, mapy){
+    let pos = `${mapx},${mapy}`;
+    this.attr.mapPosToEntityId[pos] = ent.getId();
+    this.attr.entityIdToMapPos[ent.getId()] = pos;
+    ent.setMapId(this.getId());
+    ent.setX(mapx);
+    ent.setY(mapy);
+  }
+  addEntityAtRandomPosition(ent){
+    let openPos = this.getRandomOpenPosition();
+    let p = openPos.split(',');
+    this.addEntityAt(ent,p[0],p[1]);
+  }
+  getRandomOpenPosition(){
+    let x = Math.trunc(ROT.RNG.getUniform()*this.attr.xdim);
+    let y = Math.trunc(ROT.RNG.getUniform()*this.attr.ydim);
+    //check for openness
+    if(!this.isPositionOpen(x, y)){
+      return this.getRandomOpenPosition();
+    }
+    return `${x},${y}`;
+  }
+
+  isPositionOpen(mapx, mapy){
+    //this is going to be more complicated in the future
+    return this.tileGrid[mapx][mapy].isA('floor');
+  }
+
   render(display, camera_x, camera_y){
+    console.log('rendering map');
+    console.dir(this);
     let cx = 0;
     let cy = 0;
     let xstart = camera_x - Math.trunc(display.getOptions().width / 2);
@@ -66,7 +106,14 @@ export class Map{
     for(let xi = xstart; xi < xend; xi++){
       cy = 0;
       for(let yi = ystart; yi < yend; yi++){
-        this.getTile(xi, yi).render(display, cx, cy);
+        let pos = `${xi},${yi}`;
+        if(this.attr.mapPosToEntityId[pos]){
+          DATASTORE.ENTITIES[this.attr.mapPosToEntityId[pos]].render(display,cx,cy);
+        }
+        else{
+          this.getTile(xi, yi).render(display, cx, cy);
+        }
+
         cy++;
       }
       cx++;

@@ -71,11 +71,12 @@ export class StartupMode extends UIMode{
 export class PlayMode extends UIMode{
   constructor(game){
     super(game);
-
-    this.cameraSymbol = new DisplaySymbol({name: 'avatar',chr:"@", fg:Color.AVATAR_FG});
-    let a = EntityFactory.create('avatar');
-
+    
     this.reset();
+
+    //this.cameraSymbol = new DisplaySymbol({name: 'avatar',chr:"@", fg:"#eb4"});
+
+
   }
 
   enter(){
@@ -83,18 +84,20 @@ export class PlayMode extends UIMode{
       let m = MapMaker({xdim: 50, ydim: 40});
       this.attr.mapId = m.getId();
       m.setupMap();
+      let a = EntityFactory.create('avatar');
+      this.attr.avatarId = a.getId();
+      m.addEntityAtRandomPosition(a);
     }
     else{
       DATASTORE.MAPS[this.attr.mapId].setupMap();
     }
     this.game.isPlaying = true;
+    this.moveCameraToAvatar();
   }
 
   reset(){
     this.attr = {
       mapId: '',
-      camerax: 5,
-      cameray: 8
     };
   }
 
@@ -109,8 +112,8 @@ export class PlayMode extends UIMode{
     display.drawText(2, 12, "Playing the game");
     display.drawText(2, 13, "[w] to win, [l] to lose, [S] to save");
     display.drawText(2, 15, "" + this.game._randomSeed);
-    DATASTORE.MAPS[this.attr.mapId].render(display, this.attr.camerax, this.attr.cameray);
-    this.cameraSymbol.render(display, Math.trunc(display.getOptions().width/2), Math.trunc(display.getOptions().height/2));
+    DATASTORE.MAPS[this.attr.mapId].render(display, this.getAvatar().getX(), this.getAvatar().getY());
+    //this.cameraSymbol.render(display, Math.trunc(display.getOptions().width/2), Math.trunc(display.getOptions().height/2));
   }
 
   handleInput(eventType, evt){
@@ -134,7 +137,7 @@ export class PlayMode extends UIMode{
       else{
         let i = parseInt(evt.key);
         if(!isNaN(i) && i != 0){
-          this.moveCamera(((i - 1) % 3) - 1, -(Math.trunc((i - 1) / 3) - 1));
+          this.moveAvatar(((i - 1) % 3) - 1, -(Math.trunc((i - 1) / 3) - 1));
           return true;
         }
       }
@@ -142,18 +145,30 @@ export class PlayMode extends UIMode{
     return false;
   }
 
-  moveCamera(dx, dy){
-    let newX = this.attr.camerax + dx;
-    let newY = this.attr.cameray + dy;
-    if(newX < 0 || newX > DATASTORE.MAPS[this.attr.mapId].getXDim() - 1){
-      return;
-    }
-    if(newY < 0 || newY > DATASTORE.MAPS[this.attr.mapId].getYDim() - 1){
-      return;
-    }
-    this.attr.camerax = newX;
-    this.attr.cameray = newY;
+  moveAvatar(dx, dy){
+    // let newX = this.attr.camerax + dx;
+    // let newY = this.attr.cameray + dy;
+    // if(newX < 0 || newX > DATASTORE.MAPS[this.attr.mapId].getXDim() - 1){
+    //   return;
+    // }
+    // if(newY < 0 || newY > DATASTORE.MAPS[this.attr.mapId].getYDim() - 1){
+    //   return;
+    // }
+    // this.attr.camerax = newX;
+    // this.attr.cameray = newY;
+    this.getAvatar().moveBy(dx, dy);
+    this.moveCameraToAvatar();
   }
+
+  moveCameraToAvatar(){
+    this.attr.cameramapx = this.getAvatar().getX();
+    this.attr.camperamapy = this.getAvatar().getY();
+  }
+
+  getAvatar(){
+    return DATASTORE.ENTITIES[this.attr.avatarId];
+  }
+
 }
 
 export class WinMode extends UIMode{
