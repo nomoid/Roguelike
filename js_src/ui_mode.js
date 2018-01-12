@@ -71,33 +71,21 @@ export class StartupMode extends UIMode{
 export class PlayMode extends UIMode{
   constructor(game){
     super(game);
-    
     this.reset();
-
     //this.cameraSymbol = new DisplaySymbol({name: 'avatar',chr:"@", fg:"#eb4"});
-
-
   }
 
   enter(){
-    if(! this.attr.mapId){
-      let m = MapMaker({xdim: 50, ydim: 40});
-      this.attr.mapId = m.getId();
-      m.setupMap();
+    if(!this.attr.avatarId){
       let a = EntityFactory.create('avatar');
       this.attr.avatarId = a.getId();
-      m.addEntityAtRandomPosition(a);
-    }
-    else{
-      DATASTORE.MAPS[this.attr.mapId].setupMap();
     }
     this.game.isPlaying = true;
-    this.moveCameraToAvatar();
+    this.setupAvatar();
   }
 
   reset(){
     this.attr = {
-      mapId: '',
     };
   }
 
@@ -112,7 +100,8 @@ export class PlayMode extends UIMode{
     display.drawText(2, 12, "Playing the game");
     display.drawText(2, 13, "[w] to win, [l] to lose, [S] to save");
     display.drawText(2, 15, "" + this.game._randomSeed);
-    DATASTORE.MAPS[this.attr.mapId].render(display, this.getAvatar().getX(), this.getAvatar().getY());
+    console.log(this.attr.cameramapx);
+    DATASTORE.MAPS[this.game.getMapId()].render(display, this.attr.cameramapx, this.attr.cameramapy);
     //this.cameraSymbol.render(display, Math.trunc(display.getOptions().width/2), Math.trunc(display.getOptions().height/2));
   }
 
@@ -134,6 +123,22 @@ export class PlayMode extends UIMode{
         this.game.switchMode('persistence');
         return true;
       }
+      else if(evt.key == "<"){
+        let oldId = this.game.getMapId();
+        if(this.game.previousFloor()){
+          this.setupAvatar();
+          DATASTORE.MAPS[oldId].removeEntity(DATASTORE.ENTITIES[this.attr.avatarId]);
+          return true;
+        }
+      }
+      else if(evt.key == ">"){
+        let oldId = this.game.getMapId();
+        if(this.game.nextFloor()){
+          this.setupAvatar();
+          DATASTORE.MAPS[oldId].removeEntity(DATASTORE.ENTITIES[this.attr.avatarId]);
+          return true;
+        }
+      }
       else{
         let i = parseInt(evt.key);
         if(!isNaN(i) && i != 0){
@@ -143,6 +148,15 @@ export class PlayMode extends UIMode{
       }
     }
     return false;
+  }
+
+  setupAvatar(){
+    let m = DATASTORE.MAPS[this.game.getMapId()];
+    if(!m.attr.entityIdToMapPos[this.attr.avatarId]){
+      let a = DATASTORE.ENTITIES[this.attr.avatarId];
+      m.addEntityAtRandomPosition(a);
+    }
+    this.moveCameraToAvatar();
   }
 
   moveAvatar(dx, dy){
@@ -162,7 +176,7 @@ export class PlayMode extends UIMode{
 
   moveCameraToAvatar(){
     this.attr.cameramapx = this.getAvatar().getX();
-    this.attr.camperamapy = this.getAvatar().getY();
+    this.attr.cameramapy = this.getAvatar().getY();
   }
 
   getAvatar(){
@@ -479,9 +493,7 @@ export class PersistenceMode extends UIMode{
 
     for(let mapid in data.MAPS){
       let mapData = JSON.parse(data.MAPS[mapid]);
-
-      DATASTORE.MAPS[mapid] = MapMaker(mapData.xdim, mapData.ydim);
-      DATASTORE.MAPS[mapid].attr = mapData;
+      DATASTORE.MAPS[mapid] = MapMaker(mapData);
       DATASTORE.MAPS[mapid].setupMap();
     }
 

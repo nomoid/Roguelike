@@ -9,6 +9,7 @@ export let Game = {
   _PERSISTENCE_NAMESPACE: 'pickledpopcorn',
   _SAVE_LIST_NAMESPACE: 'savelist',
   _DISPLAY_SPACING: 1.1,
+  _MAX_FLOORS: 10,
   _display: {
     main: {
       w: 80,
@@ -36,6 +37,9 @@ export let Game = {
 
   //Game Save ID, load and save at this location always
   _uid: null,
+
+  mapIds: Array(),
+  currMap: 0,
 
   init: function(){
 
@@ -72,21 +76,6 @@ export let Game = {
     this.modes.lose = new LoseMode(this);
     this.modes.messages = new MessagesMode(this);
     this.modes.persistence = new PersistenceMode(this);
-  },
-
-  setupNewGame: function(state){
-    if(state){
-      this._randomSeed = state.rseed;
-      this.modes.play.restoreFromState(state.playModeState);
-      this._uid = state.uid;
-    }
-    else{
-      this._randomSeed = 5 + Math.floor(Math.random() * 100000);
-      this.modes.play.reset();
-      this._uid = Math.floor(Math.random() * 1000000000);
-    }
-    console.log("using random seed" + this._randomSeed);
-    ROT.RNG.setSeed(this._randomSeed);
   },
 
   switchMode: function(newModeName){
@@ -167,7 +156,9 @@ export let Game = {
     json = JSON.stringify({
       rseed: this._randomSeed,
       uid: this._uid,
-      playModeState: this.modes.play
+      playModeState: this.modes.play,
+      mapIds: this.mapIds,
+      currMap: this.currMap
     });
     return json;
   },
@@ -175,5 +166,58 @@ export let Game = {
   fromJSON: function(json){
     let attr = JSON.parse(json);
     this.setupNewGame(attr);
+  },
+
+  setupNewGame: function(state){
+    if(state){
+      this.setupRng(state.rseed);
+      this.modes.play.restoreFromState(state.playModeState);
+      this._uid = state.uid;
+      this.mapIds = state.mapIds;
+      this.currMap = state.currMap;
+    }
+    else{
+      this.setupRng(5 + Math.floor(Math.random() * 100000));
+      this.modes.play.reset();
+      this._uid = Math.floor(Math.random() * 1000000000);
+      this.mapIds = Array();
+      this.currMap = 0;
+    }
+
+  },
+
+  getMapId: function(){
+    while(!this.mapIds[this.currMap]){
+      let m = MapMaker({xdim: 50, ydim: 40, mapSeed: U.mapSeedFromFloor(this._mapRNGData, this.currMap)});
+      let id = m.getId();
+      m.setupMap();
+      this.mapIds.push(id);
+    }
+    return this.mapIds[this.currMap];
+  },
+
+  previousFloor: function(){
+    if(this.currMap > 0){
+      this.currMap--;
+      return true;
+    }
+    return false;
+  },
+
+  nextFloor: function(){
+    if(this.currMap < this._MAX_FLOORS - 1){
+      this.currMap++;
+      return true;
+    }
+    return false;
+  },
+
+  setupRng: function(rseed){
+    this._randomSeed = rseed;
+    console.log("using random seed" + this._randomSeed);
+    ROT.RNG.setSeed(this._randomSeed);
+    let initSeedValue = ROT.RNG.getUniform() * U.getMapSeedModulo();
+    let offsetValue = ROT.RNG.getUniform() * U.getMapSeedModulo();
+    this._mapRNGData = {initSeed: initSeedValue, offset: offsetValue};
   }
 };

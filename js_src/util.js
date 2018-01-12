@@ -50,9 +50,21 @@ let randCharSource = '1234567890abcdefghijklmnopqrstuvwxyz'.split('');
 export function uniqueId(tag){
   let id = '';
   for (let i=0; i<4; i++){
-    id += randCharSource.random();
+    //id += randCharSource.random();
   }
   id = `${tag ? tag+'-' : ''}${DATASTORE.ID_SEQ}-${id}`;
   DATASTORE.ID_SEQ++;
   return id;
+}
+
+let mapSeedModulo = 2147483647; //2**31 - 1, prime number
+
+export function getMapSeedModulo(){
+  return mapSeedModulo;
+}
+
+export function mapSeedFromFloor(mapRNGData, floor){
+  let initSeed = mapRNGData.initSeed;
+  let offset = mapRNGData.offset;
+  return (initSeed + (floor * offset)) % mapSeedModulo;
 }
