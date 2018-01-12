@@ -71,10 +71,11 @@ export class PlayMode extends UIMode{
   constructor(game){
     super(game);
 
-    this.cameraSymbol = new DisplaySymbol({name: 'avatar',chr:"@", fg:"#eb4"});
-    let a = EntityFactory.create('avatar');
-
     this.reset();
+
+    this.cameraSymbol = new DisplaySymbol({name: 'avatar',chr:"@", fg:"#eb4"});
+
+
   }
 
   enter(){
@@ -82,6 +83,9 @@ export class PlayMode extends UIMode{
       let m = MapMaker({xdim: 50, ydim: 40});
       this.attr.mapId = m.getId();
       m.setupMap();
+      let a = EntityFactory.create('avatar');
+      this.attr.avatarId = a.getId();
+      m.addEntityAtRandomPosition(a);
     }
     else{
       DATASTORE.MAPS[this.attr.mapId].setupMap();
