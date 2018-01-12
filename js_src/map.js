@@ -59,11 +59,20 @@ export class Map{
     this.attr.setupRngState = newstate;
   }
 
+  updateEntityPosition(ent, newMapX, newMapY){
+    let oldPos = this.attr.entityIdToMapPos[ent.getId()];
+    delete this.attr.mapPosToEntityId[oldPos];
+    this.attr.mapPosToEntityId[`${newMapX},${newMapY}`] = ent.getId();
+    this.attr.entityIdToMapPos[ent.getId()] = `${newMapX},${newMapY}`;
+  }
+
   addEntityAt(ent, mapx, mapy){
-    let pos = `${mapx}, ${mapy}`;
+    let pos = `${mapx},${mapy}`;
     this.attr.mapPosToEntityId[pos] = ent.getId();
     this.attr.entityIdToMapPos[ent.getId()] = pos;
     ent.setMapId(this.getId());
+    ent.setX(mapx);
+    ent.setY(mapy);
   }
   addEntityAtRandomPosition(ent){
     let openPos = this.getRandomOpenPosition();
@@ -92,7 +101,7 @@ export class Map{
       for(let yi = ystart; yi < yend; yi++){
         let pos = `${xi},${yi}`;
         if(this.attr.mapPosToEntityId[pos]){
-          DATASTORE.ENTITIES[this.attr.mapPosToEntityId[pos]].render(display,cx,cx)
+          DATASTORE.ENTITIES[this.attr.mapPosToEntityId[pos]].render(display,cx,cx);
         }
         else{
           this.getTile(xi, yi).render(display, cx, cy);

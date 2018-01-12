@@ -80,7 +80,7 @@ export class PlayMode extends UIMode{
 
   enter(){
     if(! this.attr.mapId){
-      let m = MapMaker({xdim: 50, ydim: 40});
+      let m = MapMaker({xdim: 20, ydim: 30});
       this.attr.mapId = m.getId();
       m.setupMap();
       let a = EntityFactory.create('avatar');
@@ -137,7 +137,7 @@ export class PlayMode extends UIMode{
       else{
         let i = parseInt(evt.key);
         if(!isNaN(i) && i != 0){
-          this.moveCamera(((i - 1) % 3) - 1, -(Math.trunc((i - 1) / 3) - 1));
+          this.moveAvatar(((i - 1) % 3) - 1, -(Math.trunc((i - 1) / 3) - 1));
           return true;
         }
       }
@@ -145,7 +145,7 @@ export class PlayMode extends UIMode{
     return false;
   }
 
-  moveCamera(dx, dy){
+  moveAvatar(dx, dy){
     let newX = this.attr.camerax + dx;
     let newY = this.attr.cameray + dy;
     if(newX < 0 || newX > DATASTORE.MAPS[this.attr.mapId].getXDim() - 1){
@@ -156,7 +156,13 @@ export class PlayMode extends UIMode{
     }
     this.attr.camerax = newX;
     this.attr.cameray = newY;
+    this.getAvatar().moveBy(dx, dy);
   }
+
+  getAvatar(){
+    return DATASTORE.ENTITIES[this.attr.avatarId];
+  }
+
 }
 
 export class WinMode extends UIMode{
