@@ -1,8 +1,8 @@
 export class DisplaySymbol{
-  constructor(chr, fg, bg){
-    this.chr = chr || ' ';
-    this.fg = fg || '#fff';
-    this.bg = bg || '#000';
+  constructor(data){
+    this.chr = data.chr || ' ';
+    this.fg = data.fg || '#fff';
+    this.bg = data.bg || '#000';
   }
 
   render(display, x, y){

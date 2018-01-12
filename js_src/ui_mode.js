@@ -69,7 +69,7 @@ export class PlayMode extends UIMode{
   constructor(game){
     super(game);
 
-    this.cameraSymbol = new DisplaySymbol("@", "#eb4");
+    this.cameraSymbol = new DisplaySymbol({chr:"@", fg:"#eb4"});
 
     this.reset();
   }
