@@ -56,3 +56,15 @@ export function uniqueId(tag){
   DATASTORE.ID_SEQ++;
   return id;
 }
+
+let mapSeedModulo = 2147483647; //2**31 - 1, prime number
+
+export function getMapSeedModulo(){
+  return mapSeedModulo;
+}
+
+export function mapSeedFromFloor(mapRNGData, floor){
+  let initSeed = mapRNGData.initSeed;
+  let offset = mapRNGData.offset;
+  return (initSeed + (floor * offset)) % mapSeedModulo;
+}

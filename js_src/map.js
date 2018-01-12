@@ -4,20 +4,20 @@ import ROT from 'rot-js';
 import {DATASTORE} from './datastore.js';
 
 export class Map{
-  constructor(xdim, ydim, mapType){
+  constructor(xdim, ydim, mapType, mapSeed){
 
     this.attr = {};
     this.attr.xdim = xdim || 1;
     this.attr.ydim = ydim || 1;
     this.attr.mapType = mapType || 'basic_caves';
-    this.attr.setupRngState = ROT.RNG.getState();
+    this.attr.mapSeed = mapSeed || 0;
     this.attr.id = uniqueId('map-'+this.attr.mapType);
   }
 
   setupMap(){
     if(!this.tileGrid){
       this.tileGrid =
-      TILE_GRID_GENERATOR[this.attr.mapType](this.attr.xdim, this.attr.ydim, this.attr.setupRngState);
+      TILE_GRID_GENERATOR[this.attr.mapType](this.attr.xdim, this.attr.ydim, this.attr.mapSeed);
     }
   }
 
@@ -49,11 +49,11 @@ export class Map{
     this.attr.mapType = newtype;
   }
 
-  getSetupRngState(){
-    return this.attr.setupRngState;
+  getMapSeed(){
+    return this.attr.mapSeed;
   }
-  setSetupRngState(newstate){
-    this.attr.setupRngState = newstate;
+  setMapSeed(mapSeed){
+    this.attr.mapSeed = mapSeed;
   }
 
   render(display, camera_x, camera_y){
@@ -88,12 +88,10 @@ export class Map{
 }
 
 let TILE_GRID_GENERATOR = {
-  'basic_caves': function(xdim, ydim, rngState){
+  'basic_caves': function(xdim, ydim, mapSeed){
 
     let origRngState = ROT.RNG.getState();
-    ROT.RNG.setState(rngState);
-
-    console.dir(rngState);
+    ROT.RNG.setSeed(mapSeed);
 
     let tg = init2DArray(xdim, ydim, TILES.NULLTILE);
     let gen = new ROT.Map.Cellular(xdim, ydim, {connected: true});
@@ -125,12 +123,9 @@ let TILE_GRID_GENERATOR = {
 
 export function MapMaker(mapData){
 
-  let m = new Map(mapData.xdim, mapData.ydim,mapData.mapType);
+  let m = new Map(mapData.xdim, mapData.ydim,mapData.mapType, mapData.mapSeed);
   if(mapData.id){
     m.setId(mapData.id);
-  }
-  if(mapData.setupRngState){
-    m.setSetupRngState(mapData.setupRngState);
   }
   DATASTORE.MAPS[m.getId()] = m;
   return m;

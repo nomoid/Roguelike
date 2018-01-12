@@ -464,9 +464,7 @@ export class PersistenceMode extends UIMode{
 
     for(let mapid in data.MAPS){
       let mapData = JSON.parse(data.MAPS[mapid]);
-
-      DATASTORE.MAPS[mapid] = MapMaker(mapData.xdim, mapData.ydim);
-      DATASTORE.MAPS[mapid].attr = mapData;
+      DATASTORE.MAPS[mapid] = MapMaker(mapData);
       DATASTORE.MAPS[mapid].setupMap();
     }
 

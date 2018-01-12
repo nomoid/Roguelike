@@ -174,26 +174,25 @@ export let Game = {
 
   setupNewGame: function(state){
     if(state){
-      this._randomSeed = state.rseed;
+      this.setupRng(state.rseed);
       this.modes.play.restoreFromState(state.playModeState);
       this._uid = state.uid;
       this.mapIds = state.mapIds;
       this.currMap = state.currMap;
     }
     else{
-      this._randomSeed = 5 + Math.floor(Math.random() * 100000);
+      this.setupRng(5 + Math.floor(Math.random() * 100000));
       this.modes.play.reset();
       this._uid = Math.floor(Math.random() * 1000000000);
       this.mapIds = Array();
       this.currMap = 0;
     }
-    console.log("using random seed" + this._randomSeed);
-    ROT.RNG.setSeed(this._randomSeed);
+
   },
 
   getMapId: function(){
     while(!this.mapIds[this.currMap]){
-      let m = MapMaker({xdim: 50, ydim: 40});
+      let m = MapMaker({xdim: 50, ydim: 40, mapSeed: U.mapSeedFromFloor(this._mapRNGData, this.currMap)});
       let id = m.getId();
       m.setupMap();
       this.mapIds.push(id);
@@ -211,6 +210,14 @@ export let Game = {
     if(this.currMap < this._MAX_FLOORS - 1){
       this.currMap++;
     }
-  }
+  },
 
+  setupRng: function(rseed){
+    this._randomSeed = rseed;
+    console.log("using random seed" + this._randomSeed);
+    ROT.RNG.setSeed(this._randomSeed);
+    let initSeedValue = ROT.RNG.getUniform() * U.getMapSeedModulo();
+    let offsetValue = ROT.RNG.getUniform() * U.getMapSeedModulo();
+    this._mapRNGData = {initSeed: initSeedValue, offset: offsetValue};
+  }
 };
