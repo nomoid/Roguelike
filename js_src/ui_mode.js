@@ -73,7 +73,7 @@ export class PlayMode extends UIMode{
 
     this.reset();
 
-    this.cameraSymbol = new DisplaySymbol({name: 'avatar',chr:"@", fg:"#eb4"});
+    //this.cameraSymbol = new DisplaySymbol({name: 'avatar',chr:"@", fg:"#eb4"});
 
 
   }
@@ -91,13 +91,12 @@ export class PlayMode extends UIMode{
       DATASTORE.MAPS[this.attr.mapId].setupMap();
     }
     this.game.isPlaying = true;
+    this.moveCameraToAvatar();
   }
 
   reset(){
     this.attr = {
       mapId: '',
-      camerax: 5,
-      cameray: 8
     };
   }
 
@@ -146,17 +145,23 @@ export class PlayMode extends UIMode{
   }
 
   moveAvatar(dx, dy){
-    let newX = this.attr.camerax + dx;
-    let newY = this.attr.cameray + dy;
-    if(newX < 0 || newX > DATASTORE.MAPS[this.attr.mapId].getXDim() - 1){
-      return;
-    }
-    if(newY < 0 || newY > DATASTORE.MAPS[this.attr.mapId].getYDim() - 1){
-      return;
-    }
-    this.attr.camerax = newX;
-    this.attr.cameray = newY;
+    // let newX = this.attr.camerax + dx;
+    // let newY = this.attr.cameray + dy;
+    // if(newX < 0 || newX > DATASTORE.MAPS[this.attr.mapId].getXDim() - 1){
+    //   return;
+    // }
+    // if(newY < 0 || newY > DATASTORE.MAPS[this.attr.mapId].getYDim() - 1){
+    //   return;
+    // }
+    // this.attr.camerax = newX;
+    // this.attr.cameray = newY;
     this.getAvatar().moveBy(dx, dy);
+    this.moveCameraToAvatar();
+  }
+
+  moveCameraToAvatar(){
+    this.attr.cameramapx = this.getAvatar().getX();
+    this.attr.camperamapy = this.getAvatar().getY();
   }
 
   getAvatar(){
