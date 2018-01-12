@@ -1,8 +1,10 @@
+import {Color} from './color.js';
+
 export class DisplaySymbol{
-  constructor(chr, fg, bg){
-    this.chr = chr || ' ';
-    this.fg = fg || '#fff';
-    this.bg = bg || '#000';
+  constructor(data){
+    this.chr = data.chr || ' ';
+    this.fg = data.fg || Color.ENTITY_FG;
+    this.bg = data.bg || Color.ENTITY_BG;
   }
 
   render(display, x, y){

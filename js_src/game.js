@@ -33,10 +33,6 @@ export let Game = {
 
   },
   curMode: '',
-  settings: {
-    activeTextColor: "#ccc",
-    disabledTextColor: "#555"
-  },
 
   //Game Save ID, load and save at this location always
   _uid: null,
