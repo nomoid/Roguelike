@@ -51,11 +51,17 @@ export class Entity extends DisplaySymbol{
   }
 
   moveBy(dx, dy){
-    this.attr.x *= 1;
-    this.attr.y *= 1;
-    this.attr.x += dx*1;
-    this.attr.y += dy*1;
-    this.getMap().updateEntityPosition(this, this.attr.x, this.attr.y);
+    let newX = this.state.x*1 + dx*1;
+    let newY = this.state.y*1 + dy*1;
+
+    if(this.getMap().isPositionOpen(newX, newY)){
+      this.attr.x = newX;
+      this.attr.y = newY;
+      this.getMap().updateEntityPosition(this, this.attr.x, this.attr.y);
+      return true;
+    }
+    return false;
+
   }
 
   toJSON(){
