@@ -9,3 +9,15 @@ EntityFactory.learn({
   chr: '@',
   fg: Color.AVATAR_FG
 });
+
+EntityFactory.learn({
+  name: 'chris',
+  chr: 'C',
+  fg: '#5d4'
+})
+
+EntityFactory.learn({
+  name: 'jdog',
+  chr: '$',
+  fg: '#d06'
+})

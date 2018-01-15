@@ -491,6 +491,13 @@ export class PersistenceMode extends UIMode{
     DATASTORE.ID_SEQ = data.ID_SEQ;
     this.game.fromJSON(data.GAME);
 
+    for(let entityid in data.ENTITIES){
+      let attr = JSON.parse(data.ENTITIES[entityid]);
+      let e = EntityFactory.create(attr.name);
+      e.restoreFromState(attr);
+      DATASTORE.ENTITIES[entityid] = e;
+    }
+
     for(let mapid in data.MAPS){
       let mapData = JSON.parse(data.MAPS[mapid]);
       DATASTORE.MAPS[mapid] = MapMaker(mapData);

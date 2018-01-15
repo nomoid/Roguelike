@@ -216,8 +216,8 @@ export let Game = {
     this._randomSeed = rseed;
     console.log("using random seed" + this._randomSeed);
     ROT.RNG.setSeed(this._randomSeed);
-    let initSeedValue = ROT.RNG.getUniform() * U.getMapSeedModulo();
-    let offsetValue = ROT.RNG.getUniform() * U.getMapSeedModulo();
+    let initSeedValue = Math.trunc(ROT.RNG.getUniform() * U.getMapSeedModulo());
+    let offsetValue = Math.trunc(ROT.RNG.getUniform() * U.getMapSeedModulo());
     this._mapRNGData = {initSeed: initSeedValue, offset: offsetValue};
   }
 };

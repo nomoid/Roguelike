@@ -2,25 +2,30 @@ import {TILES} from './tile.js';
 import {init2DArray, uniqueId} from './util.js';
 import ROT from 'rot-js';
 import {DATASTORE} from './datastore.js';
+import {EntityFactory} from './entities.js';
 
 export class Map{
-  constructor(xdim, ydim, mapType, mapSeed){
+  constructor(attr){
 
     this.attr = {};
-    this.attr.xdim = xdim || 1;
-    this.attr.ydim = ydim || 1;
-    this.attr.mapType = mapType || 'basic_caves';
-    this.attr.mapSeed = mapSeed || 0;
-    this.attr.id = uniqueId('map-'+this.attr.mapType);
-    this.attr.entityIdToMapPos = {};
-    this.attr.mapPosToEntityId = {};
-
+    this.attr.xdim = attr.xdim || 1;
+    this.attr.ydim = attr.ydim || 1;
+    this.attr.mapType = attr.mapType || 'basic_caves';
+    this.attr.mapSeed = attr.mapSeed || 0;
+    this.attr.id = attr.id || uniqueId('map-'+this.attr.mapType);
+    this.attr.entityIdToMapPos = attr.entityIdToMapPos || {};
+    this.attr.mapPosToEntityId = attr.mapPosToEntityId || {};
+    this.attr.hasPopulated = attr.hasPopulated || false;
   }
 
   setupMap(){
     if(!this.tileGrid){
       this.tileGrid =
       TILE_GRID_GENERATOR[this.attr.mapType](this.attr.xdim, this.attr.ydim, this.attr.mapSeed);
+    }
+    if(!this.attr.hasPopulated){
+      this.attr.hasPopulated = true;
+      TILE_GRID_POPULATOR[this.attr.mapType](this);
     }
   }
 
@@ -97,12 +102,19 @@ export class Map{
 
   isPositionOpen(mapx, mapy){
     //this is going to be more complicated in the future
-    return this.tileGrid[mapx][mapy].isA('floor');
+    if(!this.tileGrid[mapx][mapy].isA('floor')){
+      return false;
+    }
+    let pos = `${mapx},${mapy}`;
+    if(this.attr.mapPosToEntityId[pos]){
+      return false;
+    }
+    return true;
   }
 
   render(display, camera_x, camera_y){
-    console.log('rendering map');
-    console.dir(this);
+    //console.log('rendering map');
+    //console.dir(this);
     let cx = 0;
     let cy = 0;
     let xstart = camera_x - Math.trunc(display.getOptions().width / 2);
@@ -174,12 +186,31 @@ let TILE_GRID_GENERATOR = {
   }
 }
 
+let TILE_GRID_POPULATOR = {
+  'basic_caves' : function(map){
+    let origRngState = ROT.RNG.getState();
+    ROT.RNG.setSeed(map.attr.mapSeed + 1);
+    console.log(map.attr.mapSeed + 1);
+
+    let chris = EntityFactory.create('chris');
+    map.addEntityAtRandomPosition(chris);
+    for(let i = 0; i < map.attr.xdim * map.attr.ydim / 4; i++){
+      let p = ROT.RNG.getUniform();
+      console.log(p);
+      if(p < 0.25){
+        break;
+      }
+      let jdog = EntityFactory.create('jdog');
+      map.addEntityAtRandomPosition(jdog);
+    }
+
+    ROT.RNG.setState(origRngState);
+  }
+}
+
 export function MapMaker(mapData){
 
-  let m = new Map(mapData.xdim, mapData.ydim,mapData.mapType, mapData.mapSeed);
-  if(mapData.id){
-    m.setId(mapData.id);
-  }
+  let m = new Map(mapData);
   DATASTORE.MAPS[m.getId()] = m;
   return m;
 }
