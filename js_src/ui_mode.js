@@ -6,6 +6,7 @@ import {DATASTORE, clearDatastore} from './datastore.js';
 import {Color} from './color.js';
 import {Entity} from './entity.js';
 import {EntityFactory} from './entities.js';
+import {BINDINGS} from './keybindings.js';
 
 class UIMode{
   constructor(game){
@@ -40,6 +41,7 @@ export class StartupMode extends UIMode{
   }
 
   enter(){
+    Message.clear();
     this.game.isPlaying = false;
   }
 
@@ -98,52 +100,82 @@ export class PlayMode extends UIMode{
 
   renderMain(display){
     display.drawText(2, 12, "Playing the game");
-    display.drawText(2, 13, "[w] to win, [l] to lose, [S] to save");
+    display.drawText(2, 13, `[${BINDINGS.GAME.WIN}] to win,
+                             [${BINDINGS.GAME.LOSE}] to lose,
+                             [${BINDINGS.GAME.ENTER_PERSISTENCE}] to save,
+                             [${BINDINGS.GAME.ENTER_MESSAGES}] to view messages`);
     display.drawText(2, 15, "" + this.game._randomSeed);
-    console.log(this.attr.cameramapx);
+    //console.log(this.attr.cameramapx);
     DATASTORE.MAPS[this.game.getMapId()].render(display, this.attr.cameramapx, this.attr.cameramapy);
     //this.cameraSymbol.render(display, Math.trunc(display.getOptions().width/2), Math.trunc(display.getOptions().height/2));
   }
 
   handleInput(eventType, evt){
     if(eventType == "keyup"){
-      if(evt.key == "w"){
+      if(evt.key == BINDINGS.GAME.WIN){
         this.game.switchMode('win');
         return true;
       }
-      else if(evt.key == "l"){
+      else if(evt.key == BINDINGS.GAME.LOSE){
         this.game.switchMode('lose');
         return true;
       }
-      else if(evt.key == "m"){
+      else if(evt.key == BINDINGS.GAME.ENTER_MESSAGES){
         this.game.switchMode('messages');
         return true;
       }
-      else if(evt.key == "S"){
+      else if(evt.key == BINDINGS.GAME.ENTER_PERSISTENCE){
         this.game.switchMode('persistence');
         return true;
       }
-      else if(evt.key == "<"){
+      else if(evt.key == BINDINGS.GAME.PREV_FLOOR){
         let oldId = this.game.getMapId();
         if(this.game.previousFloor()){
+          Message.send("You have entered the previous floor");
           this.setupAvatar();
           DATASTORE.MAPS[oldId].removeEntity(DATASTORE.ENTITIES[this.attr.avatarId]);
           return true;
         }
       }
-      else if(evt.key == ">"){
+      else if(evt.key == BINDINGS.GAME.NEXT_FLOOR){
         let oldId = this.game.getMapId();
         if(this.game.nextFloor()){
+          Message.send("You have entered the next floor");
           this.setupAvatar();
           DATASTORE.MAPS[oldId].removeEntity(DATASTORE.ENTITIES[this.attr.avatarId]);
           return true;
         }
       }
-      else{
-        let i = parseInt(evt.key);
-        if(!isNaN(i) && i != 0){
-          this.moveAvatar(((i - 1) % 3) - 1, -(Math.trunc((i - 1) / 3) - 1));
+      else if(evt.key == BINDINGS.GAME.MOVE_NORTH){
+        if(this.moveAvatar(0, -1)){
           return true;
+        }
+        else{
+          Message.send("This path is blocked!");
+        }
+      }
+      else if(evt.key == BINDINGS.GAME.MOVE_SOUTH){
+        if(this.moveAvatar(0, 1)){
+          return true;
+        }
+        else{
+          Message.send("This path is blocked!");
+        }
+      }
+      else if(evt.key == BINDINGS.GAME.MOVE_EAST){
+        if(this.moveAvatar(1, 0)){
+          return true;
+        }
+        else{
+          Message.send("This path is blocked!");
+        }
+      }
+      else if(evt.key == BINDINGS.GAME.MOVE_WEST){
+        if(this.moveAvatar(-1, 0)){
+          return true;
+        }
+        else{
+          Message.send("This path is blocked!");
         }
       }
     }
@@ -170,8 +202,9 @@ export class PlayMode extends UIMode{
     // }
     // this.attr.camerax = newX;
     // this.attr.cameray = newY;
-    this.getAvatar().moveBy(dx, dy);
+    let success = this.getAvatar().moveBy(dx, dy);
     this.moveCameraToAvatar();
+    return success;
   }
 
   moveCameraToAvatar(){
@@ -261,19 +294,19 @@ export class MessagesMode extends UIMode{
 
   handleInput(eventType, evt){
     if(eventType == "keyup"){
-      if(evt.key == "Escape" || evt.key == "m"){
+      if(evt.key == BINDINGS.MASTER.EXIT_MENU){
         this.game.switchMode('play');
         return true;
       }
     }
     if(eventType == "keydown"){
-      if(evt.key == "ArrowUp"){
+      if(evt.key == BINDINGS.MASTER.MENU_UP){
         if(this.messageIndex >= this.lines){
           this.messageIndex--;
           return true;
         }
       }
-      if(evt.key == "ArrowDown"){
+      if(evt.key == BINDINGS.MASTER.MENU_DOWN){
         if(this.messageIndex < Message.getMessages().length-1){
           this.messageIndex++;
           return true;
@@ -391,19 +424,19 @@ export class PersistenceMode extends UIMode{
   handleInput(eventType, evt){
     if(eventType == "keyup"){
       if(this.currState == PersistenceMode.States.MAIN){
-        if(evt.key == "n"){
+        if(evt.key == BINDINGS.PERSISTENCE.NEW_GAME){
           this.game.setupNewGame();
           Message.send("New Game!");
           this.game.switchMode('play');
           return true;
         }
-        if(evt.key == "l"){
+        if(evt.key == BINDINGS.PERSISTENCE.ENTER_LOAD){
           if(this.game.hasSaved){
             this.currState = PersistenceMode.States.LOADING;
             return true;
           }
         }
-        if(evt.key == "s"){
+        if(evt.key == BINDINGS.PERSISTENCE.SAVE){
           if(this.game.isPlaying){
             this.save();
             this.game.switchMode('startup');
@@ -411,12 +444,12 @@ export class PersistenceMode extends UIMode{
           }
         }
         if(this.game.isPlaying){
-          if(evt.key == "b" || evt.key == "S"){
+          if(evt.key == BINDINGS.MASTER.EXIT_MENU){
             this.game.switchMode('play');
             return true;
           }
         }
-        if(evt.key == "d"){
+        if(evt.key == BINDINGS.PERSISTENCE.ENTER_DELETE){
           if(this.game.hasSaved){
             this.currState = PersistenceMode.States.DELETING;
             return true;
@@ -424,7 +457,7 @@ export class PersistenceMode extends UIMode{
         }
       }
       else if(this.currState == PersistenceMode.States.LOADING){
-        if(evt.key == "b" || evt.key == "l"){
+        if(evt.key == BINDINGS.MASTER.EXIT_MENU){
           this.currState = PersistenceMode.States.MAIN;
           return true;
         }
@@ -439,7 +472,7 @@ export class PersistenceMode extends UIMode{
         }
       }
       else if(this.currState == PersistenceMode.States.DELETING){
-        if(evt.key == "D"){
+        if(evt.key == BINDINGS.PERSISTENCE.DELETE_ALL){
           if(this.localStorageAvailable()){
             window.localStorage.clear();
             this.game.switchMode('startup');
