@@ -68,3 +68,18 @@ export function mapSeedFromFloor(mapRNGData, floor){
   let offset = mapRNGData.offset;
   return (initSeed + (floor * offset)) % mapSeedModulo;
 }
+
+//Code from https://developer.mozilla.org/en-US/docs/Web/API/Web_Storage_API/Using_the_Web_Storage_API
+//Retrieved 2018-01-08
+export function localStorageAvailable() {
+  try {
+      var x = '__storage_test__';
+      window.localStorage.setItem(x, x);
+      window.localStorage.removeItem(x);
+      return true;
+  }
+  catch(e) {
+      Message.send('Browser cannot save or load!');
+      return false;
+  }
+}

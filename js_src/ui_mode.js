@@ -394,7 +394,7 @@ export class PersistenceMode extends UIMode{
 
   loadSaveList(){
     try{
-      if(!this.localStorageAvailable()){
+      if(!U.localStorageAvailable()){
         return Array();
       }
       let saveListPath = this.game._PERSISTENCE_NAMESPACE + '_' + this.game._SAVE_LIST_NAMESPACE;
@@ -407,21 +407,6 @@ export class PersistenceMode extends UIMode{
     catch(e){
       Message.send('Error loading saves list');
       return Array();
-    }
-  }
-
-  //Code from https://developer.mozilla.org/en-US/docs/Web/API/Web_Storage_API/Using_the_Web_Storage_API
-  //Retrieved 2018-01-08
-  localStorageAvailable() {
-    try {
-        var x = '__storage_test__';
-        window.localStorage.setItem(x, x);
-        window.localStorage.removeItem(x);
-        return true;
-    }
-    catch(e) {
-        Message.send('Browser cannot save or load!');
-        return false;
     }
   }
 
@@ -477,7 +462,7 @@ export class PersistenceMode extends UIMode{
       }
       else if(this.currState == PersistenceMode.States.DELETING){
         if(evt.key == BINDINGS.PERSISTENCE.DELETE_ALL){
-          if(this.localStorageAvailable()){
+          if(U.localStorageAvailable()){
             window.localStorage.clear();
             this.game.switchMode('startup');
             return true;
@@ -498,67 +483,84 @@ export class PersistenceMode extends UIMode{
   }
 
   save(){
-    Message.send("Saving...");
-    if(!this.localStorageAvailable()){
+    try {
+      Message.send("Saving...");
+      if(!U.localStorageAvailable()){
+        Message.send("Error Saving!");
+        return;
+      }
+      window.localStorage.setItem(this.game._uid, JSON.stringify(DATASTORE));
+      console.log('post-save datastore');
+      console.dir(DATASTORE);
+      let saveListPath = this.game._PERSISTENCE_NAMESPACE + '_' + this.game._SAVE_LIST_NAMESPACE;
+      //window.localStorage.setItem(saveListPath, JSON.stringify(['u1']));
+      let saveList = this.loadSaveList();
+      if(!saveList.includes(this.game._uid)){
+        saveList.push(this.game._uid);
+      }
+      window.localStorage.setItem(saveListPath, JSON.stringify(saveList));
+    }
+    catch(e){
       Message.send("Error Saving!");
       return;
     }
-    window.localStorage.setItem(this.game._uid, JSON.stringify(DATASTORE));
-    console.log('post-save datastore');
-    console.dir(DATASTORE);
-    let saveListPath = this.game._PERSISTENCE_NAMESPACE + '_' + this.game._SAVE_LIST_NAMESPACE;
-    //window.localStorage.setItem(saveListPath, JSON.stringify(['u1']));
-    let saveList = this.loadSaveList();
-    if(!saveList.includes(this.game._uid)){
-      saveList.push(this.game._uid);
-    }
-    window.localStorage.setItem(saveListPath, JSON.stringify(saveList));
   }
 
   load(uid){
-    Message.send("Loading " + uid + "...");
-    if(!this.localStorageAvailable()){
+    try {
+      Message.send("Loading " + uid + "...");
+      if(!U.localStorageAvailable()){
+        Message.send("Error Loading!");
+        return;
+      }
+
+      let data = JSON.parse(window.localStorage.getItem(uid));
+      clearDatastore();
+
+      DATASTORE.ID_SEQ = data.ID_SEQ;
+      this.game.fromJSON(data.GAME);
+
+      for(let entityid in data.ENTITIES){
+        let attr = JSON.parse(data.ENTITIES[entityid]);
+        let e = EntityFactory.create(attr.name);
+        e.restoreFromState(attr);
+        DATASTORE.ENTITIES[entityid] = e;
+      }
+
+      for(let mapid in data.MAPS){
+        let mapData = JSON.parse(data.MAPS[mapid]);
+        DATASTORE.MAPS[mapid] = MapMaker(mapData);
+        DATASTORE.MAPS[mapid].setupMap();
+      }
+
+      DATASTORE.GAME = this.game;
+
+      console.log('post-load datastore:');
+      console.dir(DATASTORE);
+    }
+    catch(e){
       Message.send("Error Loading!");
       return;
     }
-
-    let data = JSON.parse(window.localStorage.getItem(uid));
-    clearDatastore();
-
-    DATASTORE.ID_SEQ = data.ID_SEQ;
-    this.game.fromJSON(data.GAME);
-
-    for(let entityid in data.ENTITIES){
-      let attr = JSON.parse(data.ENTITIES[entityid]);
-      let e = EntityFactory.create(attr.name);
-      e.restoreFromState(attr);
-      DATASTORE.ENTITIES[entityid] = e;
-    }
-
-    for(let mapid in data.MAPS){
-      let mapData = JSON.parse(data.MAPS[mapid]);
-      DATASTORE.MAPS[mapid] = MapMaker(mapData);
-      DATASTORE.MAPS[mapid].setupMap();
-    }
-
-    DATASTORE.GAME = this.game;
-
-    console.log('post-load datastore:');
-    console.dir(DATASTORE);
-
   }
 
   deleteSave(uid){
-    Message.send("Deleting " + uid + "...");
-    if(!this.localStorageAvailable()){
+    try {
+      Message.send("Deleting " + uid + "...");
+      if(!U.localStorageAvailable()){
+        Message.send("Error Deleting!");
+        return;
+      }
+      let saveList = this.loadSaveList();
+      let saveListPath = this.game._PERSISTENCE_NAMESPACE + '_' + this.game._SAVE_LIST_NAMESPACE;
+      U.removeByValue(saveList, uid);
+      window.localStorage.removeItem(uid);
+      window.localStorage.setItem(saveListPath, JSON.stringify(saveList));
+    }
+    catch(e){
       Message.send("Error Deleting!");
       return;
     }
-    let saveList = this.loadSaveList();
-    let saveListPath = this.game._PERSISTENCE_NAMESPACE + '_' + this.game._SAVE_LIST_NAMESPACE;
-    U.removeByValue(saveList, uid);
-    window.localStorage.removeItem(uid);
-    window.localStorage.setItem(saveListPath, JSON.stringify(saveList));
   }
 
 
@@ -611,7 +613,11 @@ export class BindingsMode extends UIMode{
     }
     let i = 0;
     for(let binding in BINDINGS[this.mode]){
-      display.drawText(2, 4+i, `${BINDING_DESCRIPTIONS[this.mode][binding]} - [${BINDINGS[this.mode][binding]}]`);
+      let text = `${BINDING_DESCRIPTIONS[this.mode][binding]} - [${BINDINGS[this.mode][binding]}]`;
+      if(binding == this.keyToChange){
+        text = U.applyColor(text, Color.TEXT_CHANGING_KEY);
+      }
+      display.drawText(2, 4+i, text);
       i++;
     }
   }
@@ -633,16 +639,19 @@ export class BindingsMode extends UIMode{
         else if(this.mode == "GAME"){
           if(evt.key == BINDINGS.BINDING.REVERT_ARROW){
             setKeybindingsArrowKeys();
+            this.saveBindings();
             return true;
           }
           else if(evt.key == BINDINGS.BINDING.REVERT_WASD){
             setKeybindingsWASD();
+            this.saveBindings();
             return true;
           }
         }
         else if(this.mode == "INVENTORY"){
           if(evt.key == BINDINGS.BINDING.REVERT_INVENTORY){
             setInventoryBindings();
+            this.saveBindings();
             return true;
           }
         }
@@ -681,6 +690,7 @@ export class BindingsMode extends UIMode{
               Message.send("Bindings swapped.");
               this.keyToChange = null;
               this.changingBinding = false;
+              this.saveBindings();
               return true;
             }
           }
@@ -688,6 +698,7 @@ export class BindingsMode extends UIMode{
           Message.send("Binding set.");
           this.keyToChange = null;
           this.changingBinding = false;
+          this.saveBindings();
           return true;
         }
         else{
@@ -706,6 +717,40 @@ export class BindingsMode extends UIMode{
           return true;
         }
       }
+    }
+  }
+
+  saveBindings(){
+    try {
+      if(!U.localStorageAvailable()){
+        Message.send("Error saving bindings!");
+        return;
+      }
+      let bindingsPath = this.game._PERSISTENCE_NAMESPACE + '_' + this.game._BINDINGS_NAMESPACE;
+      window.localStorage.setItem(bindingsPath, JSON.stringify(BINDINGS));
+    }
+    catch(e) {
+      Message.send("Error saving bindings!");
+      return;
+    }
+  }
+
+  loadBindings(){
+    try {
+      if(!U.localStorageAvailable()){
+        Message.send("Error loading bindings!");
+        return;
+      }
+      let bindingsPath = this.game._PERSISTENCE_NAMESPACE + '_' + this.game._BINDINGS_NAMESPACE;
+      let bindingString = window.localStorage.getItem(bindingsPath);
+      let bindings = JSON.parse(bindingString);
+      for(let binding in bindings){
+        BINDINGS[binding] = bindings[binding];
+      }
+    }
+    catch(e) {
+      Message.send("Error loading bindings!");
+      return;
     }
   }
 

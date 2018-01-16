@@ -8,6 +8,7 @@ import {DATASTORE, clearDatastore} from './datastore.js';
 export let Game = {
   _PERSISTENCE_NAMESPACE: 'pickledpopcorn',
   _SAVE_LIST_NAMESPACE: 'savelist',
+  _BINDINGS_NAMESPACE: 'bindings',
   _DISPLAY_SPACING: 1.1,
   _MAX_FLOORS: 10,
   _display: {
@@ -48,6 +49,7 @@ export let Game = {
     Message.init(this._display.message.o);
 
     this.setupModes();
+    this.modes.bindings.loadBindings();
     this.switchMode('startup');
 
     DATASTORE.GAME = this;
