@@ -55,6 +55,7 @@ export let Game = {
     DATASTORE.GAME = this;
 
     console.log("game:");
+    console.dir(ROT);
     console.dir(this);
     console.log('datastore');
     console.dir(DATASTORE);
@@ -66,7 +67,10 @@ export let Game = {
       this._display[display_key].o = new ROT.Display({
         width: this._display[display_key].w,
         height: this._display[display_key].h,
-        spacing: this._DISPLAY_SPACING
+        spacing: this._DISPLAY_SPACING,
+        //forceSquareRatio: true
+        tileWidth: 64,
+        tileHeight: 32
       });
     }
   },
