@@ -79,7 +79,7 @@ export class PlayMode extends UIMode{
 
   enter(){
     if(!this.attr.avatarId){
-      let a = EntityFactory.create('avatar');
+      let a = EntityFactory.create('avatar', true);
       this.attr.avatarId = a.getId();
     }
     this.game.isPlaying = true;
@@ -530,7 +530,7 @@ export class PersistenceMode extends UIMode{
 
       for(let entityid in data.ENTITIES){
         let attr = JSON.parse(data.ENTITIES[entityid]);
-        let e = EntityFactory.create(attr.name);
+        let e = EntityFactory.create(attr.name, false);
         e.restoreFromState(attr);
         DATASTORE.ENTITIES[entityid] = e;
       }
