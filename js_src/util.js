@@ -1,5 +1,5 @@
 import {DATASTORE} from './datastore.js';
-
+import ROT from 'rot-js';
 
 export function utilAlert(){
   document.write("this is a util function<br/>");
@@ -67,6 +67,10 @@ export function mapSeedFromFloor(mapRNGData, floor){
   let initSeed = mapRNGData.initSeed;
   let offset = mapRNGData.offset;
   return (initSeed + (floor * offset)) % mapSeedModulo;
+}
+
+export function getRandomSeed(){
+  return Math.trunc(ROT.RNG.getUniform() * mapSeedModulo);
 }
 
 //Code from https://developer.mozilla.org/en-US/docs/Web/API/Web_Storage_API/Using_the_Web_Storage_API

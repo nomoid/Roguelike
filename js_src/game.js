@@ -213,9 +213,9 @@ export let Game = {
       this.currMap = state.currMap;
     }
     else{
-      this.setupRng(5 + Math.floor(Math.random() * 100000));
+      this.setupRng(U.getRandomSeed());
       this.modes.play.reset();
-      this._uid = Math.floor(Math.random() * 1000000000);
+      this._uid = Math.floor(U.getRandomSeed());
       this.mapIds = Array();
       this.currMap = 0;
     }
@@ -248,12 +248,13 @@ export let Game = {
     return false;
   },
 
+  //For 17 JDOGS use seed 26555
   setupRng: function(rseed){
     this._randomSeed = rseed;
     console.log("using random seed" + this._randomSeed);
     ROT.RNG.setSeed(this._randomSeed);
-    let initSeedValue = Math.trunc(ROT.RNG.getUniform() * U.getMapSeedModulo());
-    let offsetValue = Math.trunc(ROT.RNG.getUniform() * U.getMapSeedModulo());
+    let initSeedValue = U.getRandomSeed();
+    let offsetValue = U.getRandomSeed();
     this._mapRNGData = {initSeed: initSeedValue, offset: offsetValue};
   }
 };
