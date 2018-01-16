@@ -208,6 +208,9 @@ export class PlayMode extends UIMode{
     // this.attr.cameray = newY;
     let success = this.getAvatar().moveBy(dx, dy);
     this.moveCameraToAvatar();
+    if(success){
+      this.getAvatar().addTime(1);
+    }
     return success;
   }
 
@@ -596,7 +599,7 @@ export class BindingsMode extends UIMode{
     if(!this.changingBinding){
       if(this.mode == 'GAME'){
         display.drawText(2, 2, `[${BINDINGS.BINDING.REVERT_ARROW}] to revert to arrow key defaults, [${BINDINGS.BINDING.REVERT_WASD}] to revert to WASD defaults`);
-      }                       
+      }
       else if(this.mode == 'INVENTORY'){
         display.drawText(2, 2, `[${BINDINGS.BINDING.REVERT_INVENTORY} to revert to default]`)
       }

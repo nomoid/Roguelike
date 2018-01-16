@@ -7,7 +7,8 @@ export let EntityFactory = new Factory(Entity,'ENTITIES');
 EntityFactory.learn({
   name: 'avatar',
   chr: '@',
-  fg: Color.AVATAR_FG
+  fg: Color.AVATAR_FG,
+  mixinNames: ['TimeTracker']
 });
 
 EntityFactory.learn({
