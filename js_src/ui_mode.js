@@ -113,8 +113,9 @@ export class PlayMode extends UIMode{
   renderAvatar(display){
     display.drawText(2, 2, "AVATAR, THIS IS");
     display.drawText(2, 3, `Time: ${this.getAvatar().getTime()}`);
-    display.drawText(2, 4, `Location: ${this.getAvatar().getX()}, ${this.getAvatar().getY()}`);
-    display.drawText(2, 5, `Floor: ${this.game.currMap}`);
+    display.drawText(2, 4, `HP: ${this.getAvatar().getHp()}/${this.getAvatar().getMaxHp()}`);
+    display.drawText(2, 5, `Location: ${this.getAvatar().getX()}, ${this.getAvatar().getY()}`);
+    display.drawText(2, 6, `Floor: ${this.game.currMap}`);
   }
 
   handleInput(eventType, evt){

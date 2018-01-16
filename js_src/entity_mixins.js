@@ -96,6 +96,54 @@ export let PlayerMessage = {
   LISTENERS: {
     walkBlocked: function(evtData){
       Message.send("Can't walk there! "+evtData.reason);
+    },
+    lostHealth: function(evtData){
+      Message.send(`Lost ${evtData.hpLost} hp! Only ${evtData.hpLeft} left...`);
     }
   }
 };
+
+export let HitPoints = {
+  META: {
+    mixinName: 'HitPoints',
+    mixinGroupName: 'HitPoints',
+    stateNamespace: '_HitPoints',
+    stateModel: {
+      hp: 1,
+      maxHp: 1
+    },
+    initialize: function(template){
+      this.attr._HitPoints.maxHp = template.maxHp;
+      this.attr._HitPoints.hp = template.hp || template.maxHp;
+    }
+  },
+  METHODS: {
+    loseHp: function(amt){
+      let curHp = this.attr._HitPoints.hp;
+      this.attr._HitPoints.hp -= amt;
+      this.attr._HitPoints.hp = Math.max(0, this.attr._HitPoints.hp);
+      this.raiseMixinEvent('lostHealth', {hpLost: curHp-this.attr._HitPoints.hp, hpLeft: this.attr._HitPoints.hp});
+    },
+    gainHp: function(amt){
+      this.attr._HitPoints.hp += amt;
+      this.attr._HitPoints.hp = Math.min(this.attr._HitPoints.maxHp, this.attr._HitPoints.hp);
+    },
+    getHp: function(){
+      return this.attr._HitPoints.hp;
+    },
+    setHp: function(amt){
+      this.attr._HitPoints.hp = amt;
+    },
+    getMaxHp: function(){
+      return this.attr._HitPoints.maxHp;
+    },
+    setMaxHp: function(amt){
+      this.attr._HitPoints.maxHp = amt;
+    }
+  },
+  LISTENERS: {
+    evtLabel: function(evtData){
+
+    }
+  }
+}
