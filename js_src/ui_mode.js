@@ -30,7 +30,7 @@ class UIMode{
     display.drawText(2, 2, "rendering "+this.constructor.name);
   }
   renderAvatar(display){
-    display.drawText(2, 2, "this is avatar");
+    display.drawText(2, 1, "this is avatar");
   }
 
 }
@@ -108,6 +108,13 @@ export class PlayMode extends UIMode{
     //console.log(this.attr.cameramapx);
     DATASTORE.MAPS[this.game.getMapId()].render(display, this.attr.cameramapx, this.attr.cameramapy);
     //this.cameraSymbol.render(display, Math.trunc(display.getOptions().width/2), Math.trunc(display.getOptions().height/2));
+  }
+
+  renderAvatar(display){
+    display.drawText(2, 2, "AVATAR, THIS IS");
+    display.drawText(2, 3, `Time: ${this.getAvatar().getTime()}`);
+    display.drawText(2, 4, `Location: ${this.getAvatar().getX()}, ${this.getAvatar().getY()}`);
+    display.drawText(2, 5, `Floor: ${this.game.currMap}`);
   }
 
   handleInput(eventType, evt){
