@@ -1,6 +1,7 @@
 import 'babel-polyfill';
 import ROT from 'rot-js';
 import {Game} from './game.js';
+import * as U from './util.js';
 
 window.onload = function(){
   console.log("starting WSRL - window loaded")
@@ -9,6 +10,8 @@ window.onload = function(){
     alert("The rot.js library isn't supported by your browser.");
     return;
   }
+
+  U.setupNoState();
 
   Game.init();
 
