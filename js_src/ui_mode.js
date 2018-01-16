@@ -6,7 +6,7 @@ import {DATASTORE, clearDatastore} from './datastore.js';
 import {Color} from './color.js';
 import {Entity} from './entity.js';
 import {EntityFactory} from './entities.js';
-import {BINDINGS} from './keybindings.js';
+import {BINDINGS, BINDING_DESCRIPTIONS, setKeybindingsArrowKeys, setKeybindingsWASD, setInventoryBindings} from './keybindings.js';
 
 class UIMode{
   constructor(game){
@@ -121,11 +121,15 @@ export class PlayMode extends UIMode{
         return true;
       }
       else if(evt.key == BINDINGS.GAME.ENTER_MESSAGES){
-        this.game.switchMode('messages');
+        this.game.pushMode('messages');
         return true;
       }
       else if(evt.key == BINDINGS.GAME.ENTER_PERSISTENCE){
-        this.game.switchMode('persistence');
+        this.game.pushMode('persistence');
+        return true;
+      }
+      else if(evt.key == BINDINGS.GAME.ENTER_BINDINGS){
+        this.game.pushMode('bindings');
         return true;
       }
       else if(evt.key == BINDINGS.GAME.PREV_FLOOR){
@@ -295,7 +299,7 @@ export class MessagesMode extends UIMode{
   handleInput(eventType, evt){
     if(eventType == "keyup"){
       if(evt.key == BINDINGS.MASTER.EXIT_MENU){
-        this.game.switchMode('play');
+        this.game.popMode();
         return true;
       }
     }
@@ -445,7 +449,7 @@ export class PersistenceMode extends UIMode{
         }
         if(this.game.isPlaying){
           if(evt.key == BINDINGS.MASTER.EXIT_MENU){
-            this.game.switchMode('play');
+            this.game.popMode();
             return true;
           }
         }
@@ -557,10 +561,155 @@ export class PersistenceMode extends UIMode{
     window.localStorage.setItem(saveListPath, JSON.stringify(saveList));
   }
 
+
 }
 
 PersistenceMode.States = {
   MAIN: "main",
   LOADING: "loading",
   DELETING: "deleting"
+}
+
+export class BindingsMode extends UIMode{
+  constructor(game){
+    super(game);
+  }
+
+  enter(){
+    console.log("Entering Bindings Mode");
+    this.changingBinding = false;
+    this.keyToChange = null;
+    let prevMode = this.game.prevMode();
+    // if(prevMode == this.game.modes.inventory){
+    //   this.mode = "INVENTORY";
+    // }
+    // else{
+    this.mode = "GAME";
+    //}
+  }
+
+  renderMain(display){
+    display.drawText(2, 0, 'Key Bindings');
+    display.drawText(2, 1, `[${BINDINGS.MASTER.SELECT}]+[Old Key]+[New Key] Rebind key`);
+    if(!this.changingBinding){
+      if(this.mode == 'GAME'){
+        display.drawText(2, 2, `[${BINDINGS.BINDING.REVERT_ARROW}] to revert to arrow key defaults, [${BINDINGS.BINDING.REVERT_WASD}] to revert to WASD defaults`);
+      }                       
+      else if(this.mode == 'INVENTORY'){
+        display.drawText(2, 2, `[${BINDINGS.BINDING.REVERT_INVENTORY} to revert to default]`)
+      }
+    }
+    else {
+      let text = 'Currently changing binding';
+      if(this.keyToChange){
+        text = text + ' for ' + BINDING_DESCRIPTIONS[this.mode][this.keyToChange];
+      }
+      else{
+        text = text + ' (press a key to change the binding for that key)';
+      }
+      display.drawText(2, 2, text);
+    }
+    let i = 0;
+    for(let binding in BINDINGS[this.mode]){
+      display.drawText(2, 4+i, `${BINDING_DESCRIPTIONS[this.mode][binding]} - [${BINDINGS[this.mode][binding]}]`);
+      i++;
+    }
+  }
+
+  handleInput(eventType, evt){
+    if(eventType == "keyup"){
+      if(evt.key == "Shift"){
+        return false;
+      }
+      if(!this.changingBinding){
+        if(evt.key == BINDINGS.MASTER.EXIT_MENU){
+          this.game.popMode();
+          return true;
+        }
+        else if(evt.key == BINDINGS.MASTER.SELECT){
+          this.changingBinding = true;
+          return true;
+        }
+        else if(this.mode == "GAME"){
+          if(evt.key == BINDINGS.BINDING.REVERT_ARROW){
+            setKeybindingsArrowKeys();
+            return true;
+          }
+          else if(evt.key == BINDINGS.BINDING.REVERT_WASD){
+            setKeybindingsWASD();
+            return true;
+          }
+        }
+        else if(this.mode == "INVENTORY"){
+          if(evt.key == BINDINGS.BINDING.REVERT_INVENTORY){
+            setInventoryBindings();
+            return true;
+          }
+        }
+      }
+      else{
+        if(this.keyToChange){
+          if(this.mode != "GAME"){
+            for(let binding in BINDINGS.MASTER){
+              if(evt.key == BINDINGS.MASTER[binding]){
+                Message.send("Cannot bind to this key!");
+                this.keyToChange = null;
+                this.changingBinding = false;
+                return true;
+              }
+            }
+            let numKey = parseInt(evt.key);
+            if(!isNaN(numKey)){
+              Message.send("Cannot bind to this key!");
+              this.keyToChange = null;
+              this.changingBinding = false;
+              return true;
+            }
+          }
+          else{
+            if(evt.key == BINDINGS.MASTER.SELECT || evt.key == BINDINGS.MASTER.EXIT_MENU){
+              Message.send("Cannot bind to this key!");
+              this.keyToChange = null;
+              this.changingBinding = false;
+              return true;
+            }
+          }
+          for(let binding in BINDINGS[this.mode]){
+            if(evt.key == BINDINGS[this.mode][binding]){
+              BINDINGS[this.mode][binding] = BINDINGS[this.mode][this.keyToChange];
+              BINDINGS[this.mode][this.keyToChange] = evt.key;
+              Message.send("Bindings swapped.");
+              this.keyToChange = null;
+              this.changingBinding = false;
+              return true;
+            }
+          }
+          BINDINGS[this.mode][this.keyToChange] = evt.key;
+          Message.send("Binding set.");
+          this.keyToChange = null;
+          this.changingBinding = false;
+          return true;
+        }
+        else{
+          if(evt.key == BINDINGS.MASTER.SELECT){
+            this.changingBinding = false;
+            return true;
+          }
+          for(let binding in BINDINGS[this.mode]){
+            if(evt.key == BINDINGS[this.mode][binding]){
+              this.keyToChange = binding;
+              return true;
+            }
+          }
+          Message.send("Please enter a pre-bound key.");
+          this.changingBinding = false;
+          return true;
+        }
+      }
+    }
+  }
+
+
+
+
 }

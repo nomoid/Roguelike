@@ -1,6 +1,6 @@
 import ROT from 'rot-js';
 import * as U from './util.js';
-import {StartupMode, PlayMode, WinMode, LoseMode, MessagesMode, PersistenceMode} from './ui_mode.js'
+import {StartupMode, PlayMode, WinMode, LoseMode, MessagesMode, PersistenceMode, BindingsMode} from './ui_mode.js'
 import {Message} from './message.js';
 import {MapMaker} from './map.js';
 import {DATASTORE, clearDatastore} from './datastore.js';
@@ -33,7 +33,7 @@ export let Game = {
   modes: {
 
   },
-  curMode: '',
+  modeStack: Array(),
 
   //Game Save ID, load and save at this location always
   _uid: null,
@@ -76,16 +76,50 @@ export let Game = {
     this.modes.lose = new LoseMode(this);
     this.modes.messages = new MessagesMode(this);
     this.modes.persistence = new PersistenceMode(this);
+    this.modes.bindings = new BindingsMode(this);
   },
 
   switchMode: function(newModeName){
-    if (this.curMode) {
-      this.curMode.exit();
+    if (this.modeStack.length > 0) {
+      this.curMode().exit();
     }
-    this.curMode = this.modes[newModeName];
-    if (this.curMode){
-      this.curMode.enter();
+    this.modeStack = Array();
+    this.modeStack.push(this.modes[newModeName]);
+    this.curMode().enter();
+  },
+
+  pushMode: function(newModeName){
+    if (this.modeStack.length > 0) {
+      this.curMode().exit();
     }
+    this.modeStack.push(this.modes[newModeName]);
+    this.curMode().enter();
+  },
+
+  curMode: function(){
+    if(this.modeStack.length > 0){
+      return this.modeStack[this.modeStack.length - 1];
+    }
+    else{
+      return null;
+    }
+  },
+
+  prevMode : function(){
+    if(this.modeStack.length > 1){
+      return this.modeStack[this.modeStack.length - 2];
+    }
+    else{
+      return null;
+    }
+  },
+
+  popMode: function(){
+    if (this.modeStack.length > 0) {
+      this.curMode().exit();
+      this.modeStack.pop();
+    }
+    this.curMode().enter();
   },
 
   getDisplay: function(displayId){
@@ -104,22 +138,22 @@ export let Game = {
   renderDisplayAvatar: function(){
     let d = this._display.avatar.o;
     d.clear();
-    if(this.curMode===null || this.curMode==''){
+    if(this.curMode() === null){
       return;
     }
     else{
-      this.curMode.renderAvatar(d);
+      this.curMode().renderAvatar(d);
     }
   },
 
   renderDisplayMain: function(){
     let d = this._display.main.o;
     d.clear();
-    if(this.curMode===null || this.curMode==''){
+    if(this.curMode() === null){
       return;
     }
     else{
-      this.curMode.renderMain(d);
+      this.curMode().renderMain(d);
     }
   },
 
@@ -143,8 +177,8 @@ export let Game = {
   },
 
   eventHandler: function (eventType, evt){
-    if (this.curMode !== null && this.curMode != ''){
-      if(this.curMode.handleInput(eventType, evt)){
+    if (this.curMode() !== null){
+      if(this.curMode().handleInput(eventType, evt)){
         this.render();
         //Message.ageMessages();
       }

@@ -3,5 +3,6 @@ export let Color = {
   ENTITY_BG: '#000',
   AVATAR_FG: '#eb4',
   TEXT_ACTIVE: '#ccc',
-  TEXT_DISABLED: '#555'
+  TEXT_DISABLED: '#555',
+  TEXT_CHANGING_KEY: '#cc4'
 }
