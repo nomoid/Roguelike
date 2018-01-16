@@ -162,7 +162,7 @@ export class PlayMode extends UIMode{
           return true;
         }
         else{
-          Message.send("This path is blocked!");
+          //Message.send("This path is blocked!");
         }
       }
       else if(evt.key == BINDINGS.GAME.MOVE_SOUTH){
@@ -170,7 +170,7 @@ export class PlayMode extends UIMode{
           return true;
         }
         else{
-          Message.send("This path is blocked!");
+          //Message.send("This path is blocked!");
         }
       }
       else if(evt.key == BINDINGS.GAME.MOVE_EAST){
@@ -178,7 +178,7 @@ export class PlayMode extends UIMode{
           return true;
         }
         else{
-          Message.send("This path is blocked!");
+          //Message.send("This path is blocked!");
         }
       }
       else if(evt.key == BINDINGS.GAME.MOVE_WEST){
@@ -186,7 +186,7 @@ export class PlayMode extends UIMode{
           return true;
         }
         else{
-          Message.send("This path is blocked!");
+          //Message.send("This path is blocked!");
         }
       }
     }

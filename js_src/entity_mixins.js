@@ -1,5 +1,7 @@
 //defines mixins that can be added to an entity
 
+import {Message} from './message.js'
+
 let _exampleMixin = {
   META: {
     mixinName: 'ExampleMixin',
@@ -16,6 +18,11 @@ let _exampleMixin = {
     method1: function(p){
       // can access other objects in this namespace
       this.attr._ExampleMixin.foo = p;
+    }
+  },
+  LISTENERS: {
+    evtLabel: function(evtData){
+
     }
   }
 };
@@ -72,7 +79,23 @@ export let WalkerCorporeal = {
 
         return true;
       }
+      this.raiseMixinEvent('walkBlocked',{reason: 'Path is blocked'});
       return false;
+    }
+  }
+};
+
+export let PlayerMessage = {
+  META: {
+    mixinName: 'PlayerMessage',
+    mixinGroupName: 'Messager',
+    initialize: function(){
+      // do any initialization
+    }
+  },
+  LISTENERS: {
+    walkBlocked: function(evtData){
+      Message.send("Can't walk there! "+evtData.reason);
     }
   }
 };
