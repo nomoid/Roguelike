@@ -190,9 +190,8 @@ let TILE_GRID_POPULATOR = {
   'basic_caves' : function(map){
     let origRngState = ROT.RNG.getState();
     ROT.RNG.setSeed(map.attr.mapSeed + 1);
-    console.log(map.attr.mapSeed + 1);
 
-    let chris = EntityFactory.create('chris');
+    let chris = EntityFactory.create('chris', true);
     map.addEntityAtRandomPosition(chris);
     for(let i = 0; i < map.attr.xdim * map.attr.ydim / 4; i++){
       let p = ROT.RNG.getUniform();
@@ -200,7 +199,7 @@ let TILE_GRID_POPULATOR = {
       if(p < 0.25){
         break;
       }
-      let jdog = EntityFactory.create('jdog');
+      let jdog = EntityFactory.create('jdog', true);
       map.addEntityAtRandomPosition(jdog);
     }
 

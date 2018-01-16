@@ -14,9 +14,11 @@ export class Factory{
     template.name] = template;
   }
 
-  create(templateName){
+  create(templateName, datastore){
     let product = new this.productClass(this.knownTemplates[templateName]);
-    DATASTORE[this.datastoreNamespace][product.getId()] = product;
+    if(datastore){
+      DATASTORE[this.datastoreNamespace][product.getId()] = product;
+    }
     return product;
   }
 }

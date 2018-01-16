@@ -79,7 +79,7 @@ export class PlayMode extends UIMode{
 
   enter(){
     if(!this.attr.avatarId){
-      let a = EntityFactory.create('avatar');
+      let a = EntityFactory.create('avatar', true);
       this.attr.avatarId = a.getId();
     }
     this.game.isPlaying = true;
@@ -522,7 +522,7 @@ export class PersistenceMode extends UIMode{
 
       for(let entityid in data.ENTITIES){
         let attr = JSON.parse(data.ENTITIES[entityid]);
-        let e = EntityFactory.create(attr.name);
+        let e = EntityFactory.create(attr.name, false);
         e.restoreFromState(attr);
         DATASTORE.ENTITIES[entityid] = e;
       }
@@ -596,7 +596,7 @@ export class BindingsMode extends UIMode{
     if(!this.changingBinding){
       if(this.mode == 'GAME'){
         display.drawText(2, 2, `[${BINDINGS.BINDING.REVERT_ARROW}] to revert to arrow key defaults, [${BINDINGS.BINDING.REVERT_WASD}] to revert to WASD defaults`);
-      }                       
+      }
       else if(this.mode == 'INVENTORY'){
         display.drawText(2, 2, `[${BINDINGS.BINDING.REVERT_INVENTORY} to revert to default]`)
       }
