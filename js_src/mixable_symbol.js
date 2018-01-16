@@ -9,6 +9,7 @@ export class MixableSymbol extends DisplaySymbol{
     }
     this.mixins = [];
     this.mixinTracker = {};
+
     if(template.mixinNames){
       for(let i = 0; i < template.mixinNames.length; i++){
         let name = template.mixinNames[i];
@@ -28,10 +29,20 @@ export class MixableSymbol extends DisplaySymbol{
         }
         this.attr[m.META.stateNamespace] = model;
       }
+
       if(m.METHODS){
         for(let method in m.METHODS){
           this[method] = m.METHODS[method];
         }
+      }
+    }
+  }
+
+  raiseMixinEvent(evtLabel, evtData){
+    for (let i=0; i < this.mixins.length; i++){
+      let m = this.mixins[i];
+      if(m.LISTENERS && m.LISTENERS[evtLabel]){
+        m.LISTENERS[evtLabel].call(this,evtData);
       }
     }
   }

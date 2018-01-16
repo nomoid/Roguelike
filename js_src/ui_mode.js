@@ -215,9 +215,6 @@ export class PlayMode extends UIMode{
     // this.attr.cameray = newY;
     let success = this.getAvatar().tryWalk(dx, dy);
     this.moveCameraToAvatar();
-    if(success){
-      this.getAvatar().addTime(1);
-    }
     return success;
   }
 

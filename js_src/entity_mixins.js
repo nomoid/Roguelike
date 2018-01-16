@@ -42,6 +42,11 @@ export let TimeTracker = {
     addTime: function(t){
       this.attr._TimeTracker.timeTaken += t;
     }
+  },
+  LISTENERS: {
+    turnTaken: function(evtData){
+      this.addTime(evtData.timeUsed);
+    }
   }
 };
 
@@ -62,6 +67,9 @@ export let WalkerCorporeal = {
         this.attr.x = newX;
         this.attr.y = newY;
         this.getMap().updateEntityPosition(this, this.attr.x, this.attr.y);
+
+        this.raiseMixinEvent('turnTaken', {timeUsed: 1});
+
         return true;
       }
       return false;
