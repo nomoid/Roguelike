@@ -339,9 +339,9 @@ export class PersistenceMode extends UIMode{
     display.drawText(2, 0, 'Persistence Mode');
     if(this.currState == PersistenceMode.States.MAIN){
       if(this.game.isPlaying){
-        display.drawText(2, 3, '[b/S] - Back to game');
+        display.drawText(2, 3, `[${BINDINGS.MENU.EXIT_MENU}] - Back to game`);
       }
-      display.drawText(2, 4, '[n] - New game');
+      display.drawText(2, 4, `[${BINDINGS.PERSISTENCE.NEW_GAME}] - New game`);
       let loadColor = null;
       if(this.game.hasSaved){
         loadColor = Color.TEXT_ACTIVE;
@@ -349,7 +349,7 @@ export class PersistenceMode extends UIMode{
       else{
         loadColor = Color.TEXT_DISABLED;
       }
-      display.drawText(2, 5, U.applyColor('[l] - Load game', loadColor));
+      display.drawText(2, 5, U.applyColor(`[${BINDINGS.MENU.ENTER_LOAD}] - Load game`, loadColor));
       let saveColor = null;
       if(this.game.isPlaying){
         saveColor = Color.TEXT_ACTIVE;
@@ -357,12 +357,12 @@ export class PersistenceMode extends UIMode{
       else{
         saveColor = Color.TEXT_DISABLED;
       }
-      display.drawText(2, 6, U.applyColor('[s] - Save game', saveColor));
+      display.drawText(2, 6, U.applyColor(`[${BINDINGS.MENU.SAVE}] - Save game`, saveColor));
       let deleteColor = loadColor;
-      display.drawText(2, 7, U.applyColor('[d] - Delete data', deleteColor));
+      display.drawText(2, 7, U.applyColor(`[${BINDINGS.MENU.ENTER_DELETE}] - Delete data`, deleteColor));
     }
     else if(this.currState == PersistenceMode.States.LOADING){
-      display.drawText(2, 3, '[b/l] - Back');
+      display.drawText(2, 3, `[${BINDINGS.MENU.EXIT_MENU}] - Back`);
       let saveList = this.loadSaveList();
       //display.drawText(2, 4, '[1] - Load game 1');
       let saveListLength = saveList.length;
@@ -374,7 +374,7 @@ export class PersistenceMode extends UIMode{
       }
     }
     else if(this.currState == PersistenceMode.States.DELETING){
-      display.drawText(2, 3, '[b/d] - Back');
+      display.drawText(2, 3, `[${BINDINGS.MENU.EXIT_MENU}] - Back`);
       let saveList = this.loadSaveList();
       //display.drawText(2, 4, '[1] - Load game 1');
       let saveListLength = saveList.length;
@@ -384,7 +384,7 @@ export class PersistenceMode extends UIMode{
       for(let i = 0; i < saveListLength; i++){
         display.drawText(2, 4+i, '['+(i+1)+'] - Delete game '+saveList[i]);
       }
-      display.drawText(2, 14, '[D] - Delete all saves');
+      display.drawText(2, 14, `[${BINDINGS.PERSISTENCE.DELETE_ALL}] - Delete all saves`);
     }
   }
 
