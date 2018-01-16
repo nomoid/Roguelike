@@ -44,3 +44,27 @@ export let TimeTracker = {
     }
   }
 };
+
+export let WalkerCorporeal = {
+  META: {
+    mixinName: 'WalkerCorporeal',
+    mixinGroupName: 'Walker',
+    initialize: function(){
+      // do any initialization
+    }
+  },
+  METHODS: {
+    tryWalk: function(dx, dy){
+      let newX = this.attr.x*1 + dx*1;
+      let newY = this.attr.y*1 + dy*1;
+
+      if(this.getMap().isPositionOpen(newX, newY)){
+        this.attr.x = newX;
+        this.attr.y = newY;
+        this.getMap().updateEntityPosition(this, this.attr.x, this.attr.y);
+        return true;
+      }
+      return false;
+    }
+  }
+};

@@ -18,16 +18,21 @@ export class MixableSymbol extends DisplaySymbol{
     }
     for(let i = 0; i < this.mixins.length; i++){
       let m = this.mixins[i];
-      let model = {};
-      for(let sbase in m.META.stateModel){
-        //TODO implement deep copy of model
-        model[sbase] = m.META.stateModel[sbase];
+      if(m.META.stateNamespace){
+        let model = {};
+        if(m.META.stateModel){
+          for(let sbase in m.META.stateModel){
+            //TODO implement deep copy of model
+            model[sbase] = m.META.stateModel[sbase];
+          }
+        }
+        this.attr[m.META.stateNamespace] = model;
       }
-      this.attr[m.META.stateNamespace] = model;
-      for(let method in m.METHODS){
-        this[method] = m.METHODS[method];
+      if(m.METHODS){
+        for(let method in m.METHODS){
+          this[method] = m.METHODS[method];
+        }
       }
-      console.dir(this);
     }
   }
 }

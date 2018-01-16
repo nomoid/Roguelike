@@ -8,7 +8,7 @@ EntityFactory.learn({
   name: 'avatar',
   chr: '@',
   fg: Color.AVATAR_FG,
-  mixinNames: ['TimeTracker']
+  mixinNames: ['TimeTracker', 'WalkerCorporeal']
 });
 
 EntityFactory.learn({

@@ -52,19 +52,10 @@ export class Entity extends MixableSymbol{
     return DATASTORE.MAPS[this.attr.mapId];
   }
 
-  moveBy(dx, dy){
-    let newX = this.attr.x*1 + dx*1;
-    let newY = this.attr.y*1 + dy*1;
-
-    if(this.getMap().isPositionOpen(newX, newY)){
-      this.attr.x = newX;
-      this.attr.y = newY;
-      this.getMap().updateEntityPosition(this, this.attr.x, this.attr.y);
-      return true;
-    }
-    return false;
-
-  }
+  // moveBy(dx, dy){
+  //   //changed to mixin approach
+  //
+  // }
 
   toJSON(){
     return JSON.stringify(this.attr);
