@@ -51,6 +51,7 @@ export let TimeTracker = {
     }
   },
   LISTENERS: {
+    // timeUsed(int): the amount of time to be added to the time tracker
     turnTaken: function(evtData){
       this.addTime(evtData.timeUsed);
     }
@@ -67,10 +68,26 @@ export let WalkerCorporeal = {
   },
   METHODS: {
     tryWalk: function(dx, dy){
+      //get target location
       let newX = this.attr.x*1 + dx*1;
       let newY = this.attr.y*1 + dy*1;
 
-      if(this.getMap().isPositionOpen(newX, newY)){
+      //get info for location (tile/entity)
+      let targetPositionInfo = this.getMap().getTargetPositionInfo(newX, newY);
+      //if entity, bump it
+      if(targetPositionInfo.entity){
+        this.raiseMixinEvent('bumpEntity', {
+          actor:this,
+          target:targetPositionInfo.entity
+        });
+        return false;
+      }
+      //if tile, check for impassable
+      else if(!targetPositionInfo.tile.isPassable()){
+        this.raiseMixinEvent('walkBlocked',{reason: 'Path is blocked'});
+        return false;
+      }
+      else{
         this.attr.x = newX;
         this.attr.y = newY;
         this.getMap().updateEntityPosition(this, this.attr.x, this.attr.y);
@@ -79,8 +96,6 @@ export let WalkerCorporeal = {
 
         return true;
       }
-      this.raiseMixinEvent('walkBlocked',{reason: 'Path is blocked'});
-      return false;
     }
   }
 };
@@ -94,11 +109,17 @@ export let PlayerMessage = {
     }
   },
   LISTENERS: {
+    // reason(str): the reason why the path is blocked
     walkBlocked: function(evtData){
       Message.send("Can't walk there! "+evtData.reason);
     },
+    // hpLost(int): the amount of health lost
+    // hpLeft(int): the amount of hp remaining for the caller
     lostHealth: function(evtData){
       Message.send(`Lost ${evtData.hpLost} hp! Only ${evtData.hpLeft} left...`);
+    },
+    attacks: function(evtData){
+      Message.send(`You attacked a ${evtData.target.getName()}!`);
     }
   }
 };
@@ -142,8 +163,45 @@ export let HitPoints = {
     }
   },
   LISTENERS: {
-    evtLabel: function(evtData){
-
+    // src(entity): the source of the damage
+    // damageAmount(int): the amount of damage taken
+    damaged: function(evtData){
+      this.loseHp(evtData.damageAmount);
     }
   }
-}
+};
+
+export let MeleeAttacker = {
+  META: {
+    mixinName: 'MeleeAttacker',
+    mixinGroupName: 'CombatGroup',
+    stateNamespace: '_MeleeAttacker',
+    stateModel: {
+      meleeDamage: 1
+    },
+    initialize: function(template){
+      this.attr._MeleeAttacker.meleeDamage = template.meleeDamage || 1;
+    }
+  },
+  METHODS: {
+    getMeleeDamage: function(){
+      return this.attr._MeleeAttacker.meleeDamage;
+    },
+    setMeleeDamage: function(newVal){
+      this.attr._MeleeAttacker.meleeDamage = newVal;
+    }
+  },
+  LISTENERS: {
+    // target(entity): the target of the melee hit
+    bumpEntity: function(evtData){
+      evtData.target.raiseMixinEvent('damaged', {
+        src: this,
+        damageAmount: this.getMeleeDamage()
+      });
+      this.raiseMixinEvent('attacks', {
+        actor: this,
+        target: evtData.target
+      });
+    }
+  }
+};

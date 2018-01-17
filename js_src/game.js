@@ -251,6 +251,7 @@ export let Game = {
   },
 
   //For 17 JDOGS use seed 26555
+  //For 28 JDOGS use seed 501628887 (2nd floor)
   setupRng: function(rseed){
     console.log(rseed);
     this._randomSeed = rseed;
