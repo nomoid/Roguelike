@@ -1,7 +1,9 @@
 //defines mixins that can be added to an entity
 
+import ROT from 'rot-js';
 import {Message} from './message.js';
 import {TIME_ENGINE, SCHEDULER} from './timing.js';
+import {DATASTORE} from './datastore.js';
 
 let _exampleMixin = {
   META: {
@@ -77,11 +79,16 @@ export let WalkerCorporeal = {
         this.getMap().updateEntityPosition(this, this.attr.x, this.attr.y);
 
         this.raiseMixinEvent('turnTaken', {timeUsed: 1});
-
+        this.raiseMixinEvent('actionDone');
         return true;
       }
       this.raiseMixinEvent('walkBlocked',{reason: 'Path is blocked'});
       return false;
+    }
+  },
+  LISTENERS: {
+    walkAttempt: function(evtData){
+      this.tryWalk(evtData.dx, evtData.dy);
     }
   }
 };
@@ -189,6 +196,7 @@ export let ActorPlayer = {
       }
       this.isActing(true);
       TIME_ENGINE.lock();
+      DATASTORE.GAME.render();
       this.isActing(false);
       console.log("player is acting");
     }
@@ -201,6 +209,61 @@ export let ActorPlayer = {
         TIME_ENGINE.unlock();
       }, 1);
       console.log("end player acting");
+    }
+  }
+};
+
+export let ActorRandomWalker = {
+  META: {
+    mixinName: 'ActorRandomWalker',
+    mixinGroupName: 'ActorGroup',
+    stateNamespace: '_ActorRandomWalker',
+    stateModel: {
+      baseActionDuration: 1000,
+      actingState: false,
+      currentActionDuration: 1000
+    },
+    initialize: function(){
+      SCHEDULER.add(this, true, 2);
+    }
+  },
+  METHODS: {
+    getBaseActionDuration: function(){
+      return this.attr._ActorRandomWalker.baseActionDuration;
+    },
+    setBaseActionDuration: function(n){
+      this.attr._ActorRandomWalker.baseActionDuration = n;
+    },
+    getCurrentActionDuration: function(){
+      return this.attr._ActorRandomWalker.currentActionDuration;
+    },
+    setCurrentActionDuration: function(n){
+      this.attr._ActorRandomWalker.currentActionDuration = n;
+    },
+
+    isActing: function(state){
+      if(state !== undefined){
+        this.attr._ActorRandomWalker.actingState = state;
+      }
+      return this.attr._ActorRandomWalker.actingState;
+    },
+    act: function(){
+      if(this.isActing()){
+        return;
+      }
+      console.log("walker is acting");
+      this.isActing(true);
+      TIME_ENGINE.lock();
+      //Rand number from -1 to 1
+      console.log("walker has locked");
+      let dx = Math.trunc(ROT.RNG.getUniform() * 3) - 1;
+      let dy = Math.trunc(ROT.RNG.getUniform() * 3) - 1;
+      this.raiseMixinEvent('walkAttempt', {'dx': dx, 'dy': dy});
+      SCHEDULER.setDuration(this.getBaseActionDuration());
+      this.setBaseActionDuration(this.getBaseActionDuration()); //get random int
+      TIME_ENGINE.unlock();
+      this.isActing(false);
+      console.log("walker is done acting");
     }
   }
 };
