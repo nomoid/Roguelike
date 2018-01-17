@@ -104,9 +104,9 @@ export class PlayMode extends UIMode{
                              [${BINDINGS.GAME.LOSE}] to lose,
                              [${BINDINGS.GAME.ENTER_PERSISTENCE}] to save,
                              [${BINDINGS.GAME.ENTER_MESSAGES}] to view messages`);
-    display.drawText(2, 15, "" + this.game._randomSeed);
+    display.drawText(2, 17, "" + this.game._randomSeed);
     //console.log(this.attr.cameramapx);
-    DATASTORE.MAPS[this.game.getMapId()].render(display, this.attr.cameramapx, this.attr.cameramapy);
+    DATASTORE.MAPS[this.game.getMapId()].render(display, this.attr.cameramapx, this.attr.cameramapy, this.getAvatar().generateVisibilityChecker());
     //this.cameraSymbol.render(display, Math.trunc(display.getOptions().width/2), Math.trunc(display.getOptions().height/2));
   }
 

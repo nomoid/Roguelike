@@ -9,7 +9,8 @@ EntityFactory.learn({
   chr: '@',
   fg: Color.AVATAR_FG,
   maxHp: 10,
-  mixinNames: ['TimeTracker', 'WalkerCorporeal', 'PlayerMessage', 'HitPoints']
+  radius: 16,
+  mixinNames: ['TimeTracker', 'WalkerCorporeal', 'PlayerMessage', 'HitPoints', 'FOVHandler']
 });
 
 EntityFactory.learn({

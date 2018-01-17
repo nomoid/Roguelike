@@ -88,7 +88,7 @@ export class Map{
   addEntityAtRandomPosition(ent){
     let openPos = this.getRandomOpenPosition();
     let p = openPos.split(',');
-    this.addEntityAt(ent,p[0],p[1]);
+    this.addEntityAt(ent,p[0]*1,p[1]*1);
   }
   getRandomOpenPosition(){
     let x = Math.trunc(ROT.RNG.getUniform()*this.attr.xdim);
@@ -112,7 +112,14 @@ export class Map{
     return true;
   }
 
-  render(display, camera_x, camera_y){
+  doesLightPass(mapx, mapy){
+    if(!this.getTile(mapx, mapy).isA('floor')){
+      return false;
+    }
+    return true;
+  }
+
+  render(display, camera_x, camera_y, visibility_checker){
     //console.log('rendering map');
     //console.dir(this);
     let cx = 0;
@@ -124,6 +131,14 @@ export class Map{
     for(let xi = xstart; xi < xend; xi++){
       cy = 0;
       for(let yi = ystart; yi < yend; yi++){
+        if(!visibility_checker.check(xi,yi)){
+          let memTile = visibility_checker.memoryTile(xi, yi);
+          if(memTile){
+            memTile.renderGray(display, cx, cy);
+          }
+          cy++;
+          continue;
+        }
         let pos = `${xi},${yi}`;
         if(this.attr.mapPosToEntityId[pos]){
           DATASTORE.ENTITIES[this.attr.mapPosToEntityId[pos]].render(display,cx,cy);
@@ -150,6 +165,8 @@ export class Map{
       return this.tileGrid[mapx][mapy];
     }
   }
+
+
 }
 
 let TILE_GRID_GENERATOR = {
@@ -162,7 +179,7 @@ let TILE_GRID_GENERATOR = {
     let gen = new ROT.Map.Cellular(xdim, ydim, {connected: true});
 
 
-    gen.randomize(0.625);
+    gen.randomize(0.625);//0.625
     for(let i = 0; i < 3; i++){
       gen.create();
     }

@@ -10,4 +10,8 @@ export class DisplaySymbol{
   render(display, x, y){
     display.draw(x, y, this.chr, this.fg, this.bg);
   }
+
+  renderGray(display, x, y){
+    display.draw(x, y, this.chr, Color.MEMORY_FG, Color.ENTITY_BG);
+  }
 }

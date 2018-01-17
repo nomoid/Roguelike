@@ -1,6 +1,9 @@
 //defines mixins that can be added to an entity
 
-import {Message} from './message.js'
+import ROT from 'rot-js';
+import {Message} from './message.js';
+import {Map} from './map.js';
+import {DATASTORE} from './datastore.js';
 
 let _exampleMixin = {
   META: {
@@ -67,8 +70,8 @@ export let WalkerCorporeal = {
   },
   METHODS: {
     tryWalk: function(dx, dy){
-      let newX = this.attr.x*1 + dx*1;
-      let newY = this.attr.y*1 + dy*1;
+      let newX = this.attr.x + dx;
+      let newY = this.attr.y + dy;
 
       if(this.getMap().isPositionOpen(newX, newY)){
         this.attr.x = newX;
@@ -146,4 +149,46 @@ export let HitPoints = {
 
     }
   }
-}
+};
+
+export let FOVHandler = {
+  META: {
+    mixinName: 'FOVHandler',
+    mixinGroupName: 'Lighting',
+    stateNamespace: '_FOVHandler',
+    stateModel: {
+      radius: 1,
+      memory: {} //pos --> Tile
+    },
+    initialize: function(template){
+      this.attr._FOVHandler.radius = template.radius;
+    }
+  },
+  METHODS: {
+    generateVisibilityChecker: function(){
+      let ent = this;
+      let checker = {
+        visibleTiles: {},
+        check: function(x, y){
+          return this.visibleTiles[`${x},${y}`];
+        },
+        memoryTile: function(x, y){
+          return ent.attr._FOVHandler.memory[`${x},${y}`];
+        }
+      };
+
+      let m = this.getMapId();
+      let callback = function(x, y){
+        return DATASTORE.MAPS[m].doesLightPass(x, y);
+      }
+      let fov = new ROT.FOV.RecursiveShadowcasting(callback, {topology: 8});
+
+      fov.compute(this.getX(), this.getY(), this.attr._FOVHandler.radius, function(x, y, r, visibility){
+        checker.visibleTiles[`${x},${y}`] = true;
+        ent.attr._FOVHandler.memory[`${x},${y}`] = DATASTORE.MAPS[m].getTile(x, y);
+      });
+
+      return checker;
+    }
+  }
+};
