@@ -52,6 +52,11 @@ export class Entity extends MixableSymbol{
     return DATASTORE.MAPS[this.attr.mapId];
   }
 
+  destroy(){
+    this.getMap().removeEntity(this);
+    delete DATASTORE[this.getId()];
+  }
+
   // moveBy(dx, dy){
   //   //changed to mixin approach
   //

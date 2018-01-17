@@ -80,7 +80,7 @@ export let WalkerCorporeal = {
           actor:this,
           target:targetPositionInfo.entity
         });
-        return false;
+        return true;
       }
       //if tile, check for impassable
       else if(!targetPositionInfo.tile.isPassable()){
@@ -119,7 +119,16 @@ export let PlayerMessage = {
       Message.send(`Lost ${evtData.hpLost} hp! Only ${evtData.hpLeft} left...`);
     },
     attacks: function(evtData){
-      Message.send(`You attacked a ${evtData.target.getName()}!`);
+      Message.send(`You attack the ${evtData.target.getName()}!`);
+    },
+    damages: function(evtData){
+      Message.send(`You deal ${evtData.damageAmount} damage to the ${evtData.target.getName()}!`);
+    },
+    kills: function(evtData){
+      Message.send(`You kill the ${evtData.target.getName()}!`)
+    },
+    killed: function(evtData){
+      Message.send(`You were killed by ${evtData.src.getName()}...`);
     }
   }
 };
@@ -166,7 +175,21 @@ export let HitPoints = {
     // src(entity): the source of the damage
     // damageAmount(int): the amount of damage taken
     damaged: function(evtData){
-      this.loseHp(evtData.damageAmount);
+      let amt = evtData.damageAmount;
+      this.loseHp(amt);
+      evtData.src.raiseMixinEvent('damages', {
+        target: this,
+        damageAmount: amt
+      });
+      if(this.getHp() == 0){
+        this.raiseMixinEvent('killed',{
+          src: evtData.src
+        });
+        evtData.src.raiseMixinEvent('kills', {
+          target: this
+        });
+        this.destroy();
+      }
     }
   }
 };
@@ -194,13 +217,13 @@ export let MeleeAttacker = {
   LISTENERS: {
     // target(entity): the target of the melee hit
     bumpEntity: function(evtData){
-      evtData.target.raiseMixinEvent('damaged', {
-        src: this,
-        damageAmount: this.getMeleeDamage()
-      });
       this.raiseMixinEvent('attacks', {
         actor: this,
         target: evtData.target
+      });
+      evtData.target.raiseMixinEvent('damaged', {
+        src: this,
+        damageAmount: this.getMeleeDamage()
       });
     }
   }
