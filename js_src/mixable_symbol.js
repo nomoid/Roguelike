@@ -27,8 +27,9 @@ export class MixableSymbol extends DisplaySymbol{
         let model = {};
         if(m.META.stateModel){
           for(let sbase in m.META.stateModel){
-            //TODO implement deep copy of model
-            model[sbase] = m.META.stateModel[sbase];
+            let obj = m.META.stateModel[sbase];
+            let newObj = JSON.parse(JSON.stringify(obj));
+            model[sbase] = newObj;
           }
         }
         this.attr[m.META.stateNamespace] = model;
