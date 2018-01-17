@@ -196,6 +196,14 @@ export class PlayMode extends UIMode{
           //Message.send("This path is blocked!");
         }
       }
+      else if(evt.key == BINDINGS.GAME.MOVE_IN_PLACE){
+        if(this.moveAvatar(0, 0)){
+          return true;
+        }
+        else{
+          //Message.send("This path is blocked!");
+        }
+      }
     }
     return false;
   }

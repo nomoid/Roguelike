@@ -84,8 +84,8 @@ export let WalkerCorporeal = {
             actor:this,
             target:targetPositionInfo.entity
           });
-          this.raiseMixinEvent('actionDone');
         }
+        this.raiseMixinEvent('actionDone');
         return true;
       }
       //if tile, check for impassable
@@ -365,7 +365,7 @@ export let FOVHandler = {
     stateNamespace: '_FOVHandler',
     stateModel: {
       radius: 1,
-      memory: {} //pos --> Tile
+      memory: {} //mapId --> (pos --> Tile)
     },
     initialize: function(template){
       this.attr._FOVHandler.radius = template.radius;
@@ -380,7 +380,7 @@ export let FOVHandler = {
           return this.visibleTiles[`${x},${y}`];
         },
         memoryTile: function(x, y){
-          return ent.attr._FOVHandler.memory[`${x},${y}`];
+          return ent.attr._FOVHandler.memory[ent.getMapId()][`${x},${y}`];
         }
       };
 
@@ -392,7 +392,10 @@ export let FOVHandler = {
 
       fov.compute(this.getX(), this.getY(), this.attr._FOVHandler.radius, function(x, y, r, visibility){
         checker.visibleTiles[`${x},${y}`] = true;
-        ent.attr._FOVHandler.memory[`${x},${y}`] = DATASTORE.MAPS[m].getTile(x, y);
+        if(!ent.attr._FOVHandler.memory[ent.getMapId()]){
+          ent.attr._FOVHandler.memory[ent.getMapId()] = {};
+        }
+        ent.attr._FOVHandler.memory[ent.getMapId()][`${x},${y}`] = DATASTORE.MAPS[m].getTile(x, y);
       });
 
       return checker;
