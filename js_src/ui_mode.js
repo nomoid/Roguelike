@@ -7,6 +7,7 @@ import {Color} from './color.js';
 import {Entity} from './entity.js';
 import {EntityFactory} from './entities.js';
 import {BINDINGS, BINDING_DESCRIPTIONS, setKeybindingsArrowKeys, setKeybindingsWASD, setInventoryBindings} from './keybindings.js';
+import {TIME_ENGINE} from './timing.js';
 
 class UIMode{
   constructor(game){
@@ -84,6 +85,11 @@ export class PlayMode extends UIMode{
     }
     this.game.isPlaying = true;
     this.setupAvatar();
+    TIME_ENGINE.unlock();
+  }
+
+  exit(){
+    TIME_ENGINE.lock();
   }
 
   reset(){

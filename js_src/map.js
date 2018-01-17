@@ -102,7 +102,7 @@ export class Map{
 
   isPositionOpen(mapx, mapy){
     //this is going to be more complicated in the future
-    if(!this.tileGrid[mapx][mapy].isA('floor')){
+    if(!this.getTile(mapx, mapy).isPassable()){
       return false;
     }
     let pos = `${mapx},${mapy}`;
@@ -110,6 +110,16 @@ export class Map{
       return false;
     }
     return true;
+  }
+  getTargetPositionInfo(mapx, mapy){
+    let entityId = this.attr.mapPosToEntityId[`${mapx},${mapy}`];
+    let info = {
+      tile: this.getTile(mapx, mapy),
+    };
+    if(entityId){
+      info.entity = DATASTORE.ENTITIES[entityId];
+    }
+    return info;
   }
 
   doesLightPass(mapx, mapy){

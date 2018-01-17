@@ -3,6 +3,7 @@
 import ROT from 'rot-js';
 import {Message} from './message.js';
 import {Map} from './map.js';
+import {TIME_ENGINE, SCHEDULER} from './timing.js';
 import {DATASTORE} from './datastore.js';
 
 let _exampleMixin = {
@@ -54,6 +55,7 @@ export let TimeTracker = {
     }
   },
   LISTENERS: {
+    // timeUsed(int): the amount of time to be added to the time tracker
     turnTaken: function(evtData){
       this.addTime(evtData.timeUsed);
     }
@@ -73,17 +75,38 @@ export let WalkerCorporeal = {
       let newX = this.attr.x + dx;
       let newY = this.attr.y + dy;
 
-      if(this.getMap().isPositionOpen(newX, newY)){
+      //get info for location (tile/entity)
+      let targetPositionInfo = this.getMap().getTargetPositionInfo(newX, newY);
+      //if entity, bump it
+      if(targetPositionInfo.entity){
+        if(targetPositionInfo.entity != this){
+          this.raiseMixinEvent('bumpEntity', {
+            actor:this,
+            target:targetPositionInfo.entity
+          });
+          this.raiseMixinEvent('actionDone');
+        }
+        return true;
+      }
+      //if tile, check for impassable
+      else if(!targetPositionInfo.tile.isPassable()){
+        this.raiseMixinEvent('walkBlocked',{reason: 'Path is blocked'});
+        return false;
+      }
+      else{
         this.attr.x = newX;
         this.attr.y = newY;
         this.getMap().updateEntityPosition(this, this.attr.x, this.attr.y);
 
         this.raiseMixinEvent('turnTaken', {timeUsed: 1});
-
+        this.raiseMixinEvent('actionDone');
         return true;
       }
-      this.raiseMixinEvent('walkBlocked',{reason: 'Path is blocked'});
-      return false;
+    }
+  },
+  LISTENERS: {
+    walkAttempt: function(evtData){
+      this.tryWalk(evtData.dx, evtData.dy);
     }
   }
 };
@@ -97,11 +120,26 @@ export let PlayerMessage = {
     }
   },
   LISTENERS: {
+    // reason(str): the reason why the path is blocked
     walkBlocked: function(evtData){
       Message.send("Can't walk there! "+evtData.reason);
     },
+    // hpLost(int): the amount of health lost
+    // hpLeft(int): the amount of hp remaining for the caller
     lostHealth: function(evtData){
       Message.send(`Lost ${evtData.hpLost} hp! Only ${evtData.hpLeft} left...`);
+    },
+    attacks: function(evtData){
+      Message.send(`You attack the ${evtData.target.getName()}!`);
+    },
+    damages: function(evtData){
+      Message.send(`You deal ${evtData.damageAmount} damage to the ${evtData.target.getName()}!`);
+    },
+    kills: function(evtData){
+      Message.send(`You kill the ${evtData.target.getName()}!`)
+    },
+    killed: function(evtData){
+      Message.send(`You were killed by ${evtData.src.getName()}...`);
     }
   }
 };
@@ -145,8 +183,177 @@ export let HitPoints = {
     }
   },
   LISTENERS: {
-    evtLabel: function(evtData){
+    // src(entity): the source of the damage
+    // damageAmount(int): the amount of damage taken
+    damaged: function(evtData){
+      let amt = evtData.damageAmount;
+      this.loseHp(amt);
+      evtData.src.raiseMixinEvent('damages', {
+        target: this,
+        damageAmount: amt
+      });
+      if(this.getHp() == 0){
+        this.raiseMixinEvent('killed',{
+          src: evtData.src
+        });
+        evtData.src.raiseMixinEvent('kills', {
+          target: this
+        });
+        this.destroy();
+      }
+    }
+  }
+};
 
+export let MeleeAttacker = {
+  META: {
+    mixinName: 'MeleeAttacker',
+    mixinGroupName: 'CombatGroup',
+    stateNamespace: '_MeleeAttacker',
+    stateModel: {
+      meleeDamage: 1
+    },
+    initialize: function(template){
+      this.attr._MeleeAttacker.meleeDamage = template.meleeDamage || 1;
+    }
+  },
+  METHODS: {
+    getMeleeDamage: function(){
+      return this.attr._MeleeAttacker.meleeDamage;
+    },
+    setMeleeDamage: function(newVal){
+      this.attr._MeleeAttacker.meleeDamage = newVal;
+    }
+  },
+  LISTENERS: {
+    // target(entity): the target of the melee hit
+    bumpEntity: function(evtData){
+      this.raiseMixinEvent('attacks', {
+        actor: this,
+        target: evtData.target
+      });
+      evtData.target.raiseMixinEvent('damaged', {
+        src: this,
+        damageAmount: this.getMeleeDamage()
+      });
+    }
+  }
+};
+
+export let ActorPlayer = {
+  META: {
+    mixinName: 'ActorPlayer',
+    mixinGroupName: 'ActorGroup',
+    stateNamespace: '_ActorPlayer',
+    stateModel: {
+      baseActionDuration: 1000,
+      actingState: false,
+      currentActionDuration: 1000
+    },
+    initialize: function(){
+      SCHEDULER.add(this, true, 1);
+    }
+  },
+  METHODS: {
+    getBaseActionDuration: function(){
+      return this.attr._ActorPlayer.baseActionDuration;
+    },
+    setBaseActionDuration: function(n){
+      this.attr._ActorPlayer.baseActionDuration = n;
+    },
+    getCurrentActionDuration: function(){
+      return this.attr._ActorPlayer.currentActionDuration;
+    },
+    setCurrentActionDuration: function(n){
+      this.attr._ActorPlayer.currentActionDuration = n;
+    },
+
+    isActing: function(state){
+      if(state !== undefined){
+        this.attr._ActorPlayer.actingState = state;
+      }
+      return this.attr._ActorPlayer.actingState;
+    },
+    act: function(){
+      if(this.isActing()){
+        return;
+      }
+      this.isActing(true);
+      TIME_ENGINE.lock();
+      DATASTORE.GAME.render();
+      this.isActing(false);
+      console.log("player is acting");
+    }
+  },
+  LISTENERS: {
+    actionDone: function(evtData){
+      SCHEDULER.setDuration(this.getBaseActionDuration());
+      this.setBaseActionDuration(this.getBaseActionDuration()); //get random int
+      setTimeout(function(){
+        TIME_ENGINE.unlock();
+      }, 1);
+      console.log("end player acting");
+    }
+  }
+};
+
+export let ActorRandomWalker = {
+  META: {
+    mixinName: 'ActorRandomWalker',
+    mixinGroupName: 'ActorGroup',
+    stateNamespace: '_ActorRandomWalker',
+    stateModel: {
+      baseActionDuration: 1000,
+      actingState: false,
+      currentActionDuration: 1000
+    },
+    initialize: function(){
+      SCHEDULER.add(this, true, 2);
+    }
+  },
+  METHODS: {
+    getBaseActionDuration: function(){
+      return this.attr._ActorRandomWalker.baseActionDuration;
+    },
+    setBaseActionDuration: function(n){
+      this.attr._ActorRandomWalker.baseActionDuration = n;
+    },
+    getCurrentActionDuration: function(){
+      return this.attr._ActorRandomWalker.currentActionDuration;
+    },
+    setCurrentActionDuration: function(n){
+      this.attr._ActorRandomWalker.currentActionDuration = n;
+    },
+
+    isActing: function(state){
+      if(state !== undefined){
+        this.attr._ActorRandomWalker.actingState = state;
+      }
+      return this.attr._ActorRandomWalker.actingState;
+    },
+    act: function(){
+      if(this.isActing()){
+        return;
+      }
+      console.log("walker is acting");
+      this.isActing(true);
+      TIME_ENGINE.lock();
+      //Rand number from -1 to 1
+      console.log("walker has locked");
+      let dx = Math.trunc(ROT.RNG.getUniform() * 3) - 1;
+      let dy = Math.trunc(ROT.RNG.getUniform() * 3) - 1;
+      this.raiseMixinEvent('walkAttempt', {'dx': dx, 'dy': dy});
+      SCHEDULER.setDuration(this.getBaseActionDuration());
+      this.setBaseActionDuration(this.getBaseActionDuration()); //get random int
+      TIME_ENGINE.unlock();
+      this.isActing(false);
+      console.log("walker is done acting");
+    }
+  },
+  LISTENERS: {
+    killed: function(evtData){
+      Message.send(this.getName() + " died");
+      SCHEDULER.remove(this);
     }
   }
 };

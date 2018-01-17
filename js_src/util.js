@@ -58,6 +58,7 @@ export function uniqueId(tag){
   }
   id = `${tag ? tag+'-' : ''}${DATASTORE.ID_SEQ}-${id}`;
   DATASTORE.ID_SEQ++;
+  RNG_STATE.NONE = ROT.RNG.getState();
   ROT.RNG.setState(origRngState);
   return id;
 }
@@ -94,6 +95,7 @@ export function getNoStateUniform(){
     ROT.RNG.setState(RNG_STATE.NONE);
   }
   let uniform = ROT.RNG.getUniform();
+  RNG_STATE.NONE = ROT.RNG.getState();
   ROT.RNG.setState(origRngState);
   return uniform;
 }
