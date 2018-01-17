@@ -132,6 +132,10 @@ export class Map{
       cy = 0;
       for(let yi = ystart; yi < yend; yi++){
         if(!visibility_checker.check(xi,yi)){
+          let memTile = visibility_checker.memoryTile(xi, yi);
+          if(memTile){
+            memTile.renderGray(display, cx, cy);
+          }
           cy++;
           continue;
         }
@@ -175,7 +179,7 @@ let TILE_GRID_GENERATOR = {
     let gen = new ROT.Map.Cellular(xdim, ydim, {connected: true});
 
 
-    gen.randomize(0.625);
+    gen.randomize(0.625);//0.625
     for(let i = 0; i < 3; i++){
       gen.create();
     }

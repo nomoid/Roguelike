@@ -157,7 +157,8 @@ export let FOVHandler = {
     mixinGroupName: 'Lighting',
     stateNamespace: '_FOVHandler',
     stateModel: {
-      radius: 1
+      radius: 1,
+      memory: {} //pos --> Tile
     },
     initialize: function(template){
       this.attr._FOVHandler.radius = template.radius;
@@ -165,10 +166,14 @@ export let FOVHandler = {
   },
   METHODS: {
     generateVisibilityChecker: function(){
+      let ent = this;
       let checker = {
         visibleTiles: {},
         check: function(x, y){
-          return this.visibleTiles[`${x},${y}`]
+          return this.visibleTiles[`${x},${y}`];
+        },
+        memoryTile: function(x, y){
+          return ent.attr._FOVHandler.memory[`${x},${y}`];
         }
       };
 
@@ -180,14 +185,10 @@ export let FOVHandler = {
 
       fov.compute(this.getX(), this.getY(), this.attr._FOVHandler.radius, function(x, y, r, visibility){
         checker.visibleTiles[`${x},${y}`] = true;
+        ent.attr._FOVHandler.memory[`${x},${y}`] = DATASTORE.MAPS[m].getTile(x, y);
       });
 
       return checker;
-    }
-  },
-  LISTENERS: {
-    evtLabel: function(evtData){
-
     }
   }
 };
