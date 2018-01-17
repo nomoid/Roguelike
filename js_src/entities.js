@@ -9,7 +9,7 @@ EntityFactory.learn({
   chr: '@',
   fg: Color.AVATAR_FG,
   maxHp: 10,
-  mixinNames: ['TimeTracker', 'WalkerCorporeal', 'PlayerMessage', 'HitPoints', 'ActorPlayer']
+  mixinNames: ['TimeTracker', 'WalkerCorporeal', 'PlayerMessage', 'HitPoints', 'ActorPlayer', 'MeleeAttacker']
 });
 
 EntityFactory.learn({
@@ -23,5 +23,5 @@ EntityFactory.learn({
   chr: '$',
   fg: '#d06',
   maxHp: 4,
-  mixinNames: ['HitPoints', 'ActorRandomWalker', 'WalkerCorporeal']
+  mixinNames: ['HitPoints', 'ActorRandomWalker', 'WalkerCorporeal', 'MeleeAttacker']
 });

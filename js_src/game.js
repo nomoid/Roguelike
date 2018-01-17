@@ -253,9 +253,10 @@ export let Game = {
   },
 
   //For 17 JDOGS use seed 26555
+  //For 28 JDOGS use seed 501628887 (2nd floor)
   setupRng: function(rseed){
     console.log(rseed);
-    this._randomSeed = rseed;
+    this._randomSeed = 501628887;
     console.log("using random seed" + this._randomSeed);
     ROT.RNG.setSeed(this._randomSeed);
     let initSeedValue = U.getRandomSeed();
