@@ -1,6 +1,7 @@
 //defines mixins that can be added to an entity
 
-import {Message} from './message.js'
+import {Message} from './message.js';
+import {TIME_ENGINE, SCHEDULER} from './timing.js';
 
 let _exampleMixin = {
   META: {
@@ -146,4 +147,60 @@ export let HitPoints = {
 
     }
   }
-}
+};
+
+export let ActorPlayer = {
+  META: {
+    mixinName: 'ActorPlayer',
+    mixinGroupName: 'ActorGroup',
+    stateNamespace: '_ActorPlayer',
+    stateModel: {
+      baseActionDuration: 1000,
+      actingState: false,
+      currentActionDuration: 1000
+    },
+    initialize: function(){
+      SCHEDULER.add(this, true, 1);
+    }
+  },
+  METHODS: {
+    getBaseActionDuration: function(){
+      return this.attr._ActorPlayer.baseActionDuration;
+    },
+    setBaseActionDuration: function(n){
+      this.attr._ActorPlayer.baseActionDuration = n;
+    },
+    getCurrentActionDuration: function(){
+      return this.attr._ActorPlayer.currentActionDuration;
+    },
+    setCurrentActionDuration: function(n){
+      this.attr._ActorPlayer.currentActionDuration = n;
+    },
+
+    isActing: function(state){
+      if(state !== undefined){
+        this.attr._ActorPlayer.actingState = state;
+      }
+      return this.attr._ActorPlayer.actingState;
+    },
+    act: function(){
+      if(this.isActing()){
+        return;
+      }
+      this.isActing(true);
+      TIME_ENGINE.lock();
+      this.isActing(false);
+      console.log("player is acting");
+    }
+  },
+  LISTENERS: {
+    actionDone: function(evtData){
+      SCHEDULER.setDuration(this.getBaseActionDuration());
+      this.setBaseActionDuration(this.getBaseActionDuration()); //get random int
+      setTimeout(function(){
+        TIME_ENGINE.unlock();
+      }, 1);
+      console.log("end player acting");
+    }
+  }
+};

@@ -4,6 +4,7 @@ import {StartupMode, PlayMode, WinMode, LoseMode, MessagesMode, PersistenceMode,
 import {Message} from './message.js';
 import {MapMaker} from './map.js';
 import {DATASTORE, clearDatastore} from './datastore.js';
+import {initTiming} from './timing.js';
 
 export let Game = {
   _PERSISTENCE_NAMESPACE: 'pickledpopcorn',
@@ -220,8 +221,9 @@ export let Game = {
       this._uid = Math.floor(U.getRandomNoStateSeed());
       this.mapIds = Array();
       this.currMap = 0;
-    }
 
+    }
+    initTiming();
   },
 
   getMapId: function(){
