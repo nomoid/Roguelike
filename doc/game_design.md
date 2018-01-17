@@ -94,6 +94,12 @@ You need to make your way down the tower safely, combating the monsters you come
       * You get 10 Archery XP for killing an enemy with a bow
       * On hit XP is doubled for critical hits
     * Archery allows for the unlocking of the skills Sharpshooter (Increases ranged critical hit chance, allows you to use Scopes) and Steady Aim (Increases ranged hit chance, decreases the ranged shooting penalty after getting hit)
+* Lighting
+  * Player FOV radius changes based on the ambient light on a floor
+  * Torches held can increase FOV radius
+    * Torches on the floor can create a "beacon" of viewable spaces
+  * Potion/Spell of clairvoyance can increase radius or make entire floor actively visible
+  * Some scroll can reveal entire map to memory before exploring, but you know nothing about entities or loot
 
 ### Wishes
 * Different towers to warp between
