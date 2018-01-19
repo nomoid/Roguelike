@@ -260,7 +260,7 @@ export let Game = {
   //For 28 JDOGS use seed 501628887 (2nd floor)
   setupRng: function(rseed){
     console.log(rseed);
-    this._randomSeed = rseed;
+    this._randomSeed = 328343077;
     console.log("using random seed" + this._randomSeed);
     ROT.RNG.setSeed(this._randomSeed);
     let initSeedValue = U.getRandomSeed();
@@ -269,6 +269,9 @@ export let Game = {
   },
 
   raiseEvent: function(evtLabel, evtData, src){
+    if(evtLabel == "renderMain"){
+      this.renderDisplayMain();
+    }
     if(evtLabel == "killed"){
       if(src == this.modes.play.getAvatar()){
         this.switchMode('lose');

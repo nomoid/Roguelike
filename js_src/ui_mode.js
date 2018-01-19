@@ -561,20 +561,15 @@ export class PersistenceMode extends UIMode{
         DATASTORE.MAPS[mapid].setupMap();
       }
 
-
-      this.loadScheduler(DATASTORE.TIMING);
+      loadScheduler(data.TIMING);
 
       console.log('post-load datastore:');
       console.dir(DATASTORE);
     }
     catch(e){
       Message.send("Error Loading!");
-      return;
+      throw e;
     }
-  }
-
-  loadScheduler(){
-    makeScheduler(idEventQueue, repeatIds, currentId, duration);
   }
 
   deleteSave(uid){

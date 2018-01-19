@@ -1,7 +1,9 @@
 import ROT from 'rot-js';
+import {DATASTORE} from './datastore.js';
 
 export let SCHEDULER;
 export let TIME_ENGINE;
+let timedUnlocker = false;
 
 export function initTiming(){
   SCHEDULER = new ROT.Scheduler.Action();
@@ -10,6 +12,7 @@ export function initTiming(){
 
 //Uses some private variables from ROT scheduler/eventqueue
 export function loadScheduler(schedulerData){
+  console.dir(schedulerData);
   SCHEDULER = new ROT.Scheduler.Action();
   SCHEDULER._current = DATASTORE.ENTITIES[schedulerData.currentId];
   SCHEDULER._duration = schedulerData.duration;
@@ -24,12 +27,17 @@ export function loadScheduler(schedulerData){
     SCHEDULER._queue._events.push(ent);
   }
   TIME_ENGINE = new ROT.Engine(SCHEDULER);
+  TIME_ENGINE._lock = schedulerData.lock;
+  if(schedulerData.timedUnlocker){
+    TIME_ENGINE.unlock();
+  }
 }
 
 export function saveScheduler(){
   let data = {
-    currentId: SCHEDULER._current,
+    currentId: SCHEDULER._current.getId(),
     duration: SCHEDULER._duration,
+    lock: TIME_ENGINE._lock
   };
   let repeatData = [];
   for(let i = 0; i < SCHEDULER._repeat.length; i++){
@@ -46,5 +54,10 @@ export function saveScheduler(){
   };
   data.repeat = repeatData;
   data.idEventQueue = idEventQueueData;
+  data.timedUnlocker = timedUnlocker;
   return data;
+}
+
+export function setTimedUnlocker(s){
+  timedUnlocker = s;
 }

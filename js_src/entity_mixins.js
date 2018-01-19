@@ -3,7 +3,7 @@
 import ROT from 'rot-js';
 import {Message} from './message.js';
 import {Map} from './map.js';
-import {TIME_ENGINE, SCHEDULER} from './timing.js';
+import {TIME_ENGINE, SCHEDULER, setTimedUnlocker} from './timing.js';
 import {DATASTORE} from './datastore.js';
 
 let _exampleMixin = {
@@ -72,6 +72,9 @@ export let WalkerCorporeal = {
   },
   METHODS: {
     tryWalk: function(dx, dy){
+      if (typeof this.isActing === 'function' && !this.isActing()){
+        return false;
+      }
       let newX = this.attr.x + dx;
       let newY = this.attr.y + dy;
 
@@ -251,7 +254,7 @@ export let ActorPlayer = {
       currentActionDuration: 1000
     },
     initialize: function(){
-      SCHEDULER.add(this, true, 1);
+      SCHEDULER.add(this, true, 0);
     }
   },
   METHODS: {
@@ -281,14 +284,13 @@ export let ActorPlayer = {
       this.isActing(true);
       TIME_ENGINE.lock();
       DATASTORE.GAME.render();
-      this.isActing(false);
       console.log("player is acting");
     }
   },
   LISTENERS: {
     actionDone: function(evtData){
+      this.isActing(false);
       SCHEDULER.setDuration(this.getBaseActionDuration());
-      this.setBaseActionDuration(this.getBaseActionDuration()); //get random int
       setTimeout(function(){
         TIME_ENGINE.unlock();
       }, 1);
@@ -308,7 +310,7 @@ export let ActorRandomWalker = {
       currentActionDuration: 1000
     },
     initialize: function(){
-      SCHEDULER.add(this, true, 2);
+      SCHEDULER.add(this, true, 0);
     }
   },
   METHODS: {
@@ -335,19 +337,24 @@ export let ActorRandomWalker = {
       if(this.isActing()){
         return;
       }
+      setTimedUnlocker(true);
       console.log("walker is acting");
       this.isActing(true);
-      TIME_ENGINE.lock();
       //Rand number from -1 to 1
       console.log("walker has locked");
       let dx = Math.trunc(ROT.RNG.getUniform() * 3) - 1;
       let dy = Math.trunc(ROT.RNG.getUniform() * 3) - 1;
       this.raiseMixinEvent('walkAttempt', {'dx': dx, 'dy': dy});
       SCHEDULER.setDuration(this.getBaseActionDuration());
-      this.setBaseActionDuration(this.getBaseActionDuration()); //get random int
-      TIME_ENGINE.unlock();
       this.isActing(false);
       console.log("walker is done acting");
+      this.raiseMixinEvent('renderMain');
+      return {then: function(unlocker){
+        setTimeout(function(){
+          setTimedUnlocker(false);
+          unlocker();
+        }, 50);
+      }};
     }
   },
   LISTENERS: {
