@@ -7,7 +7,7 @@ import {Color} from './color.js';
 import {Entity} from './entity.js';
 import {EntityFactory} from './entities.js';
 import {BINDINGS, BINDING_DESCRIPTIONS, setKeybindingsArrowKeys, setKeybindingsWASD, setInventoryBindings} from './keybindings.js';
-import {TIME_ENGINE} from './timing.js';
+import {TIME_ENGINE, loadScheduler, saveScheduler} from './timing.js';
 
 class UIMode{
   constructor(game){
@@ -511,6 +511,10 @@ export class PersistenceMode extends UIMode{
         Message.send("Error Saving!");
         return;
       }
+      //Generate timing save state
+      let schedulerData = saveScheduler();
+      DATASTORE.TIMING = schedulerData;
+
       window.localStorage.setItem(this.game._uid, JSON.stringify(DATASTORE));
       console.log('post-save datastore');
       console.dir(DATASTORE);
@@ -557,6 +561,8 @@ export class PersistenceMode extends UIMode{
 
       DATASTORE.GAME = this.game;
 
+      this.loadScheduler(DATASTORE.TIMING);
+
       console.log('post-load datastore:');
       console.dir(DATASTORE);
     }
@@ -564,6 +570,10 @@ export class PersistenceMode extends UIMode{
       Message.send("Error Loading!");
       return;
     }
+  }
+
+  loadScheduler(){
+    makeScheduler(idEventQueue, repeatIds, currentId, duration);
   }
 
   deleteSave(uid){
