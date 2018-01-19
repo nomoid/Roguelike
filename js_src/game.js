@@ -266,5 +266,14 @@ export let Game = {
     let initSeedValue = U.getRandomSeed();
     let offsetValue = U.getRandomSeed();
     this._mapRNGData = {initSeed: initSeedValue, offset: offsetValue};
+  },
+
+  raiseEvent: function(evtLabel, evtData, src){
+    if(evtLabel == "killed"){
+      if(src == this.modes.play.getAvatar()){
+        this.switchMode('lose');
+      }
+    }
+    return true;
   }
 };

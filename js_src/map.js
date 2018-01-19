@@ -1,4 +1,4 @@
-import {TILES} from './tile.js';
+import {TILES, TILESTORE} from './tile.js';
 import {init2DArray, uniqueId} from './util.js';
 import ROT from 'rot-js';
 import {DATASTORE} from './datastore.js';
@@ -123,7 +123,7 @@ export class Map{
   }
 
   doesLightPass(mapx, mapy){
-    if(!this.getTile(mapx, mapy).isA('floor')){
+    if(!this.getTile(mapx, mapy).isTransparent()){
       return false;
     }
     return true;
@@ -142,7 +142,7 @@ export class Map{
       cy = 0;
       for(let yi = ystart; yi < yend; yi++){
         if(!visibility_checker.check(xi,yi)){
-          let memTile = visibility_checker.memoryTile(xi, yi);
+          let memTile = TILESTORE.getTile(visibility_checker.memoryTile(xi, yi));
           if(memTile){
             memTile.renderGray(display, cx, cy);
           }

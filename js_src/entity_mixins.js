@@ -365,7 +365,7 @@ export let FOVHandler = {
     stateNamespace: '_FOVHandler',
     stateModel: {
       radius: 1,
-      memory: {} //mapId --> (pos --> Tile)
+      memory: {} //mapId --> (pos --> chr)
     },
     initialize: function(template){
       this.attr._FOVHandler.radius = template.radius;
@@ -383,7 +383,6 @@ export let FOVHandler = {
           return ent.attr._FOVHandler.memory[ent.getMapId()][`${x},${y}`];
         }
       };
-
       let m = this.getMapId();
       let callback = function(x, y){
         return DATASTORE.MAPS[m].doesLightPass(x, y);
@@ -395,9 +394,10 @@ export let FOVHandler = {
         if(!ent.attr._FOVHandler.memory[ent.getMapId()]){
           ent.attr._FOVHandler.memory[ent.getMapId()] = {};
         }
-        ent.attr._FOVHandler.memory[ent.getMapId()][`${x},${y}`] = DATASTORE.MAPS[m].getTile(x, y);
+        ent.attr._FOVHandler.memory[ent.getMapId()][`${x},${y}`] = DATASTORE.MAPS[m].getTile(x, y).chr;
       });
 
+      console.dir(this);
       return checker;
     }
   }
