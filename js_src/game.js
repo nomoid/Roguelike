@@ -252,12 +252,13 @@ export let Game = {
     if(this.currMap < this._MAX_FLOORS - 1){
       this.currMap++;
       return true;
+
     }
     return false;
   },
 
-  //For 17 JDOGS use seed 26555
-  //For 28 JDOGS use seed 501628887 (2nd floor)
+  //For 17 JDOGS use seed 26555 on 50x40
+  //For 28 JDOGS use seed 501628887 (2nd floor) on 50x40
   setupRng: function(rseed){
     console.log(rseed);
     this._randomSeed = rseed;
@@ -277,7 +278,7 @@ export let Game = {
       if(src.getName() == 'jdog'){
         console.log('killed a dog');
         console.log(DATASTORE.MAPS[this.getMapId()].getMobAmounts('jdog'));
-        if(DATASTORE.MAPS[this.getMapId()].getMobAmounts('jdog')==1){
+        if(DATASTORE.MAPS[this.getMapId()].getMobAmounts('jdog')<=1){
           if(this.currMap < this._MAX_FLOORS -1){
             Message.send("Cleared the floor of jdogs!");
           }

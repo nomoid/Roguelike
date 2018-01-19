@@ -127,15 +127,15 @@ export class PlayMode extends UIMode{
 
   handleInput(eventType, evt){
     if(eventType == "keyup"){
-      if(evt.key == BINDINGS.GAME.WIN){
-        this.game.switchMode('win');
-        return true;
-      }
+      // if(evt.key == BINDINGS.GAME.WIN){//real win condition now!
+      //   this.game.switchMode('win');
+      //   return true;
+      // }
       // else if(evt.key == BINDINGS.GAME.LOSE){//Better lose condition now!
       //   this.game.switchMode('lose');
       //   return true;
       // }
-      else if(evt.key == BINDINGS.GAME.ENTER_MESSAGES){
+      if(evt.key == BINDINGS.GAME.ENTER_MESSAGES){
         this.game.pushMode('messages');
         return true;
       }
