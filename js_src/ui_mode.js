@@ -542,6 +542,8 @@ export class PersistenceMode extends UIMode{
       DATASTORE.ID_SEQ = data.ID_SEQ;
       this.game.fromJSON(data.GAME);
 
+      DATASTORE.GAME = this.game;
+
       for(let entityid in data.ENTITIES){
         let attr = JSON.parse(data.ENTITIES[entityid]);
         let e = EntityFactory.create(attr.name, false);
@@ -555,7 +557,6 @@ export class PersistenceMode extends UIMode{
         DATASTORE.MAPS[mapid].setupMap();
       }
 
-      DATASTORE.GAME = this.game;
 
       console.log('post-load datastore:');
       console.dir(DATASTORE);

@@ -232,7 +232,7 @@ export let Game = {
 
   getMapId: function(){
     while(!this.mapIds[this.currMap]){
-      let m = MapMaker({xdim: 50, ydim: 40, mapSeed: U.mapSeedFromFloor(this._mapRNGData, this.currMap)});
+      let m = MapMaker({xdim: 20, ydim: 20, mapSeed: U.mapSeedFromFloor(this._mapRNGData, this.currMap)});
       let id = m.getId();
       m.setupMap();
       this.mapIds.push(id);
@@ -272,6 +272,7 @@ export let Game = {
     if(evtLabel == "killed"){
       if(src == this.modes.play.getAvatar()){
         this.switchMode('lose');
+        this.renderDisplayMain();
       }
     }
     return true;
