@@ -15,6 +15,7 @@ export class Map{
     this.attr.id = attr.id || uniqueId('map-'+this.attr.mapType);
     this.attr.entityIdToMapPos = attr.entityIdToMapPos || {};
     this.attr.mapPosToEntityId = attr.mapPosToEntityId || {};
+    this.attr.mobAmounts = {};
     this.attr.hasPopulated = attr.hasPopulated || false;
   }
 
@@ -64,10 +65,21 @@ export class Map{
     this.attr.mapSeed = mapSeed;
   }
 
+  getMobAmounts(name){
+    if(name){
+      return this.attr.mobAmounts[name];
+    }
+  }
+
   removeEntity(ent){
     let oldPos = this.attr.entityIdToMapPos[ent.getId()];
     delete this.attr.mapPosToEntityId[oldPos];
     delete this.attr.entityIdToMapPos[ent.getId()];
+    console.log("removing..."+ent.getName());
+    if(this.attr.mobAmounts[ent.getName()]){
+      this.attr.mobAmounts[ent.getName()]--;
+      console.log("shoulda been remove");
+    }
   }
 
   updateEntityPosition(ent, newMapX, newMapY){
@@ -217,8 +229,9 @@ let TILE_GRID_POPULATOR = {
   'basic_caves' : function(map){
     let origRngState = ROT.RNG.getState();
     ROT.RNG.setSeed(map.attr.mapSeed + 1);
-
     let chris = EntityFactory.create('chris', true);
+    map.attr.mobAmounts['chris'] = 1;
+    map.attr.mobAmounts['jdog'] = 0;
     map.addEntityAtRandomPosition(chris);
     for(let i = 0; i < map.attr.xdim * map.attr.ydim / 4; i++){
       let p = ROT.RNG.getUniform();
@@ -228,6 +241,7 @@ let TILE_GRID_POPULATOR = {
       }
       let jdog = EntityFactory.create('jdog', true);
       map.addEntityAtRandomPosition(jdog);
+      map.attr.mobAmounts['jdog']++;
     }
 
     ROT.RNG.setState(origRngState);
