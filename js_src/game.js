@@ -232,7 +232,7 @@ export let Game = {
 
   getMapId: function(){
     while(!this.mapIds[this.currMap]){
-      let m = MapMaker({xdim: 50, ydim: 40, mapSeed: U.mapSeedFromFloor(this._mapRNGData, this.currMap)});
+      let m = MapMaker({xdim: 60, ydim: 60, mapSeed: U.mapSeedFromFloor(this._mapRNGData, this.currMap), mapType: 'better_caves'});
       let id = m.getId();
       m.setupMap();
       this.mapIds.push(id);
