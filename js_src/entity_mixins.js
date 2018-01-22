@@ -299,62 +299,97 @@ export let ActorPlayer = {
   }
 };
 
+export let AIActor = {
+  META: {
+    mixinName: 'AIActor',
+    mixinGroupName: 'ActorGroup',
+    stateNamespace: '_AIActor',
+    stateModel: {
+      baseActionDuration: 1000,
+      actingState: false,
+      currentActionDuration: 1000
+    },
+    initialize: function(template){
+      this.setRenderDelay(template.renderDelay || 25);
+    }
+  },
+  METHODS: {
+    getBaseActionDuration: function(){
+      return this.attr._AIActor.baseActionDuration;
+    },
+    setBaseActionDuration: function(n){
+      this.attr._AIActor.baseActionDuration = n;
+    },
+    getCurrentActionDuration: function(){
+      return this.attr._AIActor.currentActionDuration;
+    },
+    setCurrentActionDuration: function(n){
+      this.attr._AIActor.currentActionDuration = n;
+    },
+    getRenderDelay: function(){
+      return this.attr._AIActor.renderDelay;
+    },
+    setRenderDelay: function(n){
+      this.attr._AIActor.renderDelay = n;
+    },
+
+    isActing: function(state){
+      if(state !== undefined){
+        this.attr._AIActor.actingState = state;
+      }
+      return this.attr._AIActor.actingState;
+    },
+  },
+  LISTENERS: {
+    actorStart: function(actorData){
+        if(this.isActing()){
+          actorData.success = false;
+        }
+        setTimedUnlocker(true);
+        this.isActing(true);
+        actorData.success = true;
+    },
+    actorEnd: function(actorData){
+      let actor = this;
+      SCHEDULER.setDuration(this.getBaseActionDuration());
+      this.isActing(false);
+      this.raiseMixinEvent('renderMain');
+      actorData.returnValue = {then: function(unlocker){
+        setTimeout(function(){
+          setTimedUnlocker(false);
+          unlocker();
+        }, actor.getRenderDelay());
+      }};
+    }
+  }
+}
+
 export let ActorRandomWalker = {
   META: {
     mixinName: 'ActorRandomWalker',
     mixinGroupName: 'ActorGroup',
     stateNamespace: '_ActorRandomWalker',
     stateModel: {
-      baseActionDuration: 1000,
-      actingState: false,
-      currentActionDuration: 1000
     },
     initialize: function(){
       SCHEDULER.add(this, true, 0);
     }
   },
   METHODS: {
-    getBaseActionDuration: function(){
-      return this.attr._ActorRandomWalker.baseActionDuration;
-    },
-    setBaseActionDuration: function(n){
-      this.attr._ActorRandomWalker.baseActionDuration = n;
-    },
-    getCurrentActionDuration: function(){
-      return this.attr._ActorRandomWalker.currentActionDuration;
-    },
-    setCurrentActionDuration: function(n){
-      this.attr._ActorRandomWalker.currentActionDuration = n;
-    },
-
-    isActing: function(state){
-      if(state !== undefined){
-        this.attr._ActorRandomWalker.actingState = state;
-      }
-      return this.attr._ActorRandomWalker.actingState;
-    },
     act: function(){
-      if(this.isActing()){
-        return;
+      let actorData = {};
+      this.raiseMixinEvent('actorStart', actorData);
+      if(!actorData.success){
+        return false;
       }
-      setTimedUnlocker(true);
       console.log("walker is acting");
-      this.isActing(true);
       //Rand number from -1 to 1
-      console.log("walker has locked");
       let dx = Math.trunc(ROT.RNG.getUniform() * 3) - 1;
       let dy = Math.trunc(ROT.RNG.getUniform() * 3) - 1;
       this.raiseMixinEvent('walkAttempt', {'dx': dx, 'dy': dy});
-      SCHEDULER.setDuration(this.getBaseActionDuration());
-      this.isActing(false);
       console.log("walker is done acting");
-      this.raiseMixinEvent('renderMain');
-      return {then: function(unlocker){
-        setTimeout(function(){
-          setTimedUnlocker(false);
-          unlocker();
-        }, 50);
-      }};
+      this.raiseMixinEvent('actorEnd', actorData);
+      return actorData.returnValue;
     }
   },
   LISTENERS: {
@@ -404,7 +439,6 @@ export let FOVHandler = {
         ent.attr._FOVHandler.memory[ent.getMapId()][`${x},${y}`] = DATASTORE.MAPS[m].getTile(x, y).chr;
       });
 
-      console.dir(this);
       return checker;
     }
   }
