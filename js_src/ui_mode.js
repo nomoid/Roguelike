@@ -7,7 +7,7 @@ import {Color} from './color.js';
 import {Entity} from './entity.js';
 import {EntityFactory} from './entities.js';
 import {BINDINGS, BINDING_DESCRIPTIONS, setKeybindingsArrowKeys, setKeybindingsWASD, setInventoryBindings} from './keybindings.js';
-import {TIME_ENGINE} from './timing.js';
+import {TIME_ENGINE, loadScheduler, saveScheduler} from './timing.js';
 
 class UIMode{
   constructor(game){
@@ -105,12 +105,14 @@ export class PlayMode extends UIMode{
   }
 
   renderMain(display){
+    /*
     display.drawText(2, 12, "Playing the game");
     display.drawText(2, 13, `[${BINDINGS.GAME.WIN}] to win,
                              [${BINDINGS.GAME.LOSE}] to lose,
                              [${BINDINGS.GAME.ENTER_PERSISTENCE}] to save,
                              [${BINDINGS.GAME.ENTER_MESSAGES}] to view messages`);
     display.drawText(2, 17, "" + this.game._randomSeed);
+    */
     //console.log(this.attr.cameramapx);
     DATASTORE.MAPS[this.game.getMapId()].render(display, this.attr.cameramapx, this.attr.cameramapy, this.getAvatar().generateVisibilityChecker());
     //this.cameraSymbol.render(display, Math.trunc(display.getOptions().width/2), Math.trunc(display.getOptions().height/2));
@@ -121,20 +123,21 @@ export class PlayMode extends UIMode{
     display.drawText(2, 3, `Time: ${this.getAvatar().getTime()}`);
     display.drawText(2, 4, `HP: ${this.getAvatar().getHp()}/${this.getAvatar().getMaxHp()}`);
     display.drawText(2, 5, `Location: ${this.getAvatar().getX()}, ${this.getAvatar().getY()}`);
-    display.drawText(2, 6, `Floor: ${this.game.currMap}`);
+    display.drawText(2, 6, `Floor: ${this.game.currMap+1}`);
+    display.drawText(2, 7, `${DATASTORE.MAPS[this.game.getMapId()].getMobAmounts('jdog')} jdogs left`);
   }
 
   handleInput(eventType, evt){
     if(eventType == "keyup"){
-      if(evt.key == BINDINGS.GAME.WIN){
-        this.game.switchMode('win');
-        return true;
-      }
-      else if(evt.key == BINDINGS.GAME.LOSE){
-        this.game.switchMode('lose');
-        return true;
-      }
-      else if(evt.key == BINDINGS.GAME.ENTER_MESSAGES){
+      // if(evt.key == BINDINGS.GAME.WIN){//real win condition now!
+      //   this.game.switchMode('win');
+      //   return true;
+      // }
+      // else if(evt.key == BINDINGS.GAME.LOSE){//Better lose condition now!
+      //   this.game.switchMode('lose');
+      //   return true;
+      // }
+      if(evt.key == BINDINGS.GAME.ENTER_MESSAGES){
         this.game.pushMode('messages');
         return true;
       }
@@ -157,11 +160,16 @@ export class PlayMode extends UIMode{
       }
       else if(evt.key == BINDINGS.GAME.NEXT_FLOOR){
         let oldId = this.game.getMapId();
-        if(this.game.nextFloor()){
-          Message.send("You have entered the next floor");
-          this.setupAvatar();
-          DATASTORE.MAPS[oldId].removeEntity(DATASTORE.ENTITIES[this.attr.avatarId]);
-          return true;
+        if(DATASTORE.MAPS[oldId].getMobAmounts('jdog')==0){
+          if(this.game.nextFloor()){
+            Message.send("You have entered the next floor");
+            this.setupAvatar();
+            DATASTORE.MAPS[oldId].removeEntity(DATASTORE.ENTITIES[this.attr.avatarId]);
+            return true;
+          }
+        }
+        else{
+          Message.send(`Still ${DATASTORE.MAPS[oldId].getMobAmounts('jdog')} jdogs on floor. Kill them before continuing.`);
         }
       }
       else if(evt.key == BINDINGS.GAME.MOVE_NORTH){
@@ -511,6 +519,10 @@ export class PersistenceMode extends UIMode{
         Message.send("Error Saving!");
         return;
       }
+      //Generate timing save state
+      let schedulerData = saveScheduler();
+      DATASTORE.TIMING = schedulerData;
+
       window.localStorage.setItem(this.game._uid, JSON.stringify(DATASTORE));
       console.log('post-save datastore');
       console.dir(DATASTORE);
@@ -542,6 +554,8 @@ export class PersistenceMode extends UIMode{
       DATASTORE.ID_SEQ = data.ID_SEQ;
       this.game.fromJSON(data.GAME);
 
+      DATASTORE.GAME = this.game;
+
       for(let entityid in data.ENTITIES){
         let attr = JSON.parse(data.ENTITIES[entityid]);
         let e = EntityFactory.create(attr.name, false);
@@ -555,14 +569,14 @@ export class PersistenceMode extends UIMode{
         DATASTORE.MAPS[mapid].setupMap();
       }
 
-      DATASTORE.GAME = this.game;
+      loadScheduler(data.TIMING);
 
       console.log('post-load datastore:');
       console.dir(DATASTORE);
     }
     catch(e){
       Message.send("Error Loading!");
-      return;
+      throw e;
     }
   }
 

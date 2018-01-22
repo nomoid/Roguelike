@@ -19,6 +19,9 @@ export class Factory{
     if(datastore){
       DATASTORE[this.datastoreNamespace][product.getId()] = product;
     }
+    if(typeof product.setEnvironment === 'function'){
+      product.setEnvironment(DATASTORE.GAME);
+    }
     return product;
   }
 }

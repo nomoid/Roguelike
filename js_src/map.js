@@ -1,4 +1,4 @@
-import {TILES} from './tile.js';
+import {TILES, TILESTORE} from './tile.js';
 import {init2DArray, uniqueId} from './util.js';
 import ROT from 'rot-js';
 import {DATASTORE} from './datastore.js';
@@ -19,6 +19,7 @@ export class Map{
     this.attr.id = attr.id || uniqueId('map-'+this.attr.mapType);
     this.attr.entityIdToMapPos = attr.entityIdToMapPos || {};
     this.attr.mapPosToEntityId = attr.mapPosToEntityId || {};
+    this.attr.mobAmounts = attr.mobAmounts || {};
     this.attr.hasPopulated = attr.hasPopulated || false;
   }
 
@@ -77,12 +78,21 @@ export class Map{
   }
   getExitPos(){
     return this.attr.exitPos;
+  getMobAmounts(name){
+    if(name){
+      return this.attr.mobAmounts[name];
+    }
   }
 
   removeEntity(ent){
     let oldPos = this.attr.entityIdToMapPos[ent.getId()];
     delete this.attr.mapPosToEntityId[oldPos];
     delete this.attr.entityIdToMapPos[ent.getId()];
+    console.log("removing..."+ent.getName());
+    if(this.attr.mobAmounts[ent.getName()]){
+      this.attr.mobAmounts[ent.getName()]--;
+      console.log("shoulda been remove");
+    }
   }
 
   updateEntityPosition(ent, newMapX, newMapY){
@@ -99,6 +109,9 @@ export class Map{
     ent.setMapId(this.getId());
     ent.setX(mapx);
     ent.setY(mapy);
+    if(this.attr.mobAmounts[ent.getName()]>=0){
+      this.attr.mobAmounts[ent.getName()]++;
+    }
   }
   addEntityAtRandomPosition(ent){
     let openPos = this.getRandomOpenPosition();
@@ -138,7 +151,7 @@ export class Map{
   }
 
   doesLightPass(mapx, mapy){
-    if(!this.getTile(mapx, mapy).isA('floor')){
+    if(!this.getTile(mapx, mapy).isTransparent()){
       return false;
     }
     return true;
@@ -157,7 +170,7 @@ export class Map{
       cy = 0;
       for(let yi = ystart; yi < yend; yi++){
         if(!visibility_checker.check(xi,yi)){
-          let memTile = visibility_checker.memoryTile(xi, yi);
+          let memTile = TILESTORE.getTile(visibility_checker.memoryTile(xi, yi));
           if(memTile){
             memTile.renderGray(display, cx, cy);
           }
@@ -194,6 +207,65 @@ export class Map{
 
 }
 
+<<<<<<< HEAD
+=======
+let TILE_GRID_GENERATOR = {
+  'basic_caves': function(xdim, ydim, mapSeed){
+
+    let origRngState = ROT.RNG.getState();
+    ROT.RNG.setSeed(mapSeed);
+
+    let tg = init2DArray(xdim, ydim, TILES.NULLTILE);
+    let gen = new ROT.Map.Cellular(xdim, ydim, {connected: true});
+
+
+    gen.randomize(0.625);//0.625
+    for(let i = 0; i < 3; i++){
+      gen.create();
+    }
+    gen.connect(
+      function(x, y, isFloor){
+        let floorCondition = isFloor && x != 0 && y != 0 && x != xdim - 1 && y != ydim - 1;
+        let tile = null;
+        if(floorCondition){
+          tile = TILES.FLOOR;
+        }
+        else{
+          tile = TILES.WALL;
+        }
+        tg[x][y] = tile;
+      },
+    1);
+
+    ROT.RNG.setState(origRngState);
+
+    return tg;
+  }
+}
+
+let TILE_GRID_POPULATOR = {
+  'basic_caves' : function(map){
+    map.attr.mobAmounts['chris'] = 0;
+    map.attr.mobAmounts['jdog'] = 0;
+    let origRngState = ROT.RNG.getState();
+    ROT.RNG.setSeed(map.attr.mapSeed + 1);
+    let chris = EntityFactory.create('chris', true);
+    map.addEntityAtRandomPosition(chris);
+    for(let i = 0; i < map.attr.xdim * map.attr.ydim / 4; i++){
+      let p = ROT.RNG.getUniform();
+      console.log(p);
+      if(p < 0.25){
+        break;
+      }
+      let jdog = EntityFactory.create('jdog', true);
+      map.addEntityAtRandomPosition(jdog);
+    }
+
+    ROT.RNG.setState(origRngState);
+  }
+}
+
+>>>>>>> master
 export function MapMaker(mapData){
 
   let m = new Map(mapData);

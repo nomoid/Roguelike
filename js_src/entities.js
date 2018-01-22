@@ -21,8 +21,11 @@ EntityFactory.learn({
 
 EntityFactory.learn({
   name: 'jdog',
-  chr: '$',
+  chr: 'd',
   fg: '#d06',
   maxHp: 4,
-  mixinNames: ['HitPoints', 'ActorRandomWalker', 'WalkerCorporeal', 'MeleeAttacker']
+  priorities: {
+    'ActorRandomWalker': 1
+  },
+  mixinNames: ['HitPoints', 'AIActor', 'ActorRandomWalker', 'WalkerCorporeal', 'MeleeAttacker']
 });

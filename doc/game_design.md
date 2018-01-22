@@ -94,6 +94,22 @@ You need to make your way down the tower safely, combating the monsters you come
       * You get 10 Archery XP for killing an enemy with a bow
       * On hit XP is doubled for critical hits
     * Archery allows for the unlocking of the skills Sharpshooter (Increases ranged critical hit chance, allows you to use Scopes) and Steady Aim (Increases ranged hit chance, decreases the ranged shooting penalty after getting hit)
+* Combat
+  * Combat is identical for the player and for enemies
+  * Each entity has a certain number of hit points
+    * When an entity runs out of hitpoints, it dies
+  * An attack is performed by rolling dice
+    * The dice roll determines whether the attack is a major failure, minor failure, minor success, or major success
+      * Each type of weapon has a set dice for determining success/failure
+        * Note this is not the amount of damage dealt!
+        * See weapon_list.md for list of weapons and their dice
+      * Each level in a skill increases the number of dice being rolled
+    * If the attack succeeds, the opponent performs both a dodge roll and a block roll
+    * If the dodge succeeds, the attack misses, but the next dodge roll is penalized; this penalty stacks up (to prevent perma-dodging)
+    * If the dodge fails, the  opponent performs a block roll
+      * The block roll can block some or all of the damage
+    * The heavier the armor, the less likely dodge succeeds, but the more damage is blocked, so it's a trade off
+
 * Lighting
   * Player FOV radius changes based on the ambient light on a floor
   * Torches held can increase FOV radius
