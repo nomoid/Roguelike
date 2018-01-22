@@ -14,6 +14,8 @@ export class Map{
     this.attr.ydim = attr.ydim || 1;
     this.attr.mapType = attr.mapType || 'basic_caves';
     this.attr.mapSeed = attr.mapSeed || 0;
+    this.attr.entrancePos = attr.entrancePos || `${attr.xdim/2},${attr.ydim/2}`;
+    this.attr.exitPos = '';
     this.attr.id = attr.id || uniqueId('map-'+this.attr.mapType);
     this.attr.entityIdToMapPos = attr.entityIdToMapPos || {};
     this.attr.mapPosToEntityId = attr.mapPosToEntityId || {};
@@ -22,8 +24,12 @@ export class Map{
 
   setupMap(){
     if(!this.tileGrid){
-      this.tileGrid =
-      TILE_GRID_GENERATOR[this.attr.mapType](this.attr.xdim, this.attr.ydim, this.attr.mapSeed);
+      let generated = TILE_GRID_GENERATOR[this.attr.mapType]({xdim: this.attr.xdim, ydim: this.attr.ydim, mapSeed: this.attr.mapSeed, entrancePos: this.attr.entrancePos});
+      this.tileGrid = generated.map;
+
+      if(generated.exitPos){
+        this.attr.exitPos = generated.exitPos;
+      }
     }
     if(!this.attr.hasPopulated){
       this.attr.hasPopulated = true;
@@ -64,6 +70,13 @@ export class Map{
   }
   setMapSeed(mapSeed){
     this.attr.mapSeed = mapSeed;
+  }
+
+  getEntrancePos(){
+    return this.attr.entrancePos;
+  }
+  getExitPos(){
+    return this.attr.exitPos;
   }
 
   removeEntity(ent){

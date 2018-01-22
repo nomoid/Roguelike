@@ -24,7 +24,7 @@ export let TILE_GRID_POPULATOR = {
     ROT.RNG.setState(origRngState);
   },
 
-  'better_caves' : function(map){
+  'basic_floor' : function(map){
     let origRngState = ROT.RNG.getState();
     ROT.RNG.setSeed(map.attr.mapSeed + 1);
 

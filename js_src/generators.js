@@ -5,7 +5,10 @@ import {DATASTORE} from './datastore.js';
 import {EntityFactory} from './entities.js';
 
 export let TILE_GRID_GENERATOR = {
-  'basic_caves': function(xdim, ydim, mapSeed){
+  'basic_caves': function(data){
+    let xdim = data.xdim;
+    let ydim = data.ydim;
+    let mapSeed = data.mapSeed;
 
     let origRngState = ROT.RNG.getState();
     ROT.RNG.setSeed(mapSeed);
@@ -34,16 +37,22 @@ export let TILE_GRID_GENERATOR = {
 
     ROT.RNG.setState(origRngState);
 
-    return tg;
+    return {map :tg};
   },
 
-  'better_caves': function(xdim, ydim, mapSeed){
+  'basic_floor': function(data){
+
+    let xdim = data.xdim;
+    let ydim = data.ydim;
+    let mapSeed = data.mapSeed;
+    let entrancePos = data.entrancePos;
+
 
     let origRngState = ROT.RNG.getState();
     ROT.RNG.setSeed(mapSeed);
 
     let tg = init2DArray(xdim, ydim, TILES.NULLTILE);
-    let gen = new ROT.Map.Cellular(xdim, ydim, {connected: true/*, born: [3, 4], survive: [2, 3]*/});
+    let gen = new ROT.Map.Cellular(xdim, ydim, {connected: true});
 
 
     gen.randomize(0.99);//0.625
@@ -66,6 +75,6 @@ export let TILE_GRID_GENERATOR = {
 
     ROT.RNG.setState(origRngState);
 
-    return tg;
+    return {map: tg};
   }
 }
