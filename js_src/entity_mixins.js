@@ -34,7 +34,7 @@ let _exampleMixin = {
 export let TimeTracker = {
   META: {
     mixinName: 'TimeTracker',
-    mixinGroupName: 'Tracker',
+    mixinGroupName: 'TrackerGroup',
     stateNamespace: '_TimeTracker',
     stateModel: {
       timeTaken: 0
@@ -65,7 +65,7 @@ export let TimeTracker = {
 export let WalkerCorporeal = {
   META: {
     mixinName: 'WalkerCorporeal',
-    mixinGroupName: 'Walker',
+    mixinGroupName: 'WalkerGroup',
     initialize: function(){
       // do any initialization
     }
@@ -117,7 +117,7 @@ export let WalkerCorporeal = {
 export let PlayerMessage = {
   META: {
     mixinName: 'PlayerMessage',
-    mixinGroupName: 'Messager',
+    mixinGroupName: 'MessagerGroup',
     initialize: function(){
       // do any initialization
     }
@@ -150,7 +150,7 @@ export let PlayerMessage = {
 export let HitPoints = {
   META: {
     mixinName: 'HitPoints',
-    mixinGroupName: 'HitPoints',
+    mixinGroupName: 'CombatGroup',
     stateNamespace: '_HitPoints',
     stateModel: {
       hp: 1,
@@ -424,7 +424,7 @@ export let ActorRandomWalker = {
 export let FOVHandler = {
   META: {
     mixinName: 'FOVHandler',
-    mixinGroupName: 'Lighting',
+    mixinGroupName: 'LightingGroup',
     stateNamespace: '_FOVHandler',
     stateModel: {
       radius: 1,
@@ -464,6 +464,10 @@ export let FOVHandler = {
     }
   }
 };
+
+export let ItemDropper = {
+
+}
 
 export let ItemPile = {
   META: {
