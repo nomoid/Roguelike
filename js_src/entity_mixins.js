@@ -192,7 +192,7 @@ export let PlayerMessage = {
       Message.send(`Can't pick up item. ${evtData.reason}`);
     }
   }
-};
+}; 
 
 export let HitPoints = {
   META: {
