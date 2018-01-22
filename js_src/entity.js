@@ -2,7 +2,7 @@
 import {MixableSymbol} from './mixable_symbol.js';
 import {uniqueId} from './util.js';
 import {DATASTORE} from './datastore.js';
-
+import {SCHEDULER} from './timing.js';
 
 export class Entity extends MixableSymbol{
 
@@ -53,6 +53,7 @@ export class Entity extends MixableSymbol{
   }
 
   destroy(){
+    SCHEDULER.remove(this);
     this.getMap().removeEntity(this);
     delete DATASTORE.ENTITIES[this.getId()];
   }

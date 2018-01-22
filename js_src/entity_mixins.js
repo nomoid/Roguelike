@@ -203,6 +203,8 @@ export let HitPoints = {
           target: this
         });
         this.destroy();
+        console.dir(this);
+        console.dir(DATASTORE);
       }
     }
   }
@@ -311,6 +313,8 @@ export let AIActor = {
     },
     initialize: function(template){
       this.setRenderDelay(template.renderDelay || 25);
+      this.setPriorities(template.priorities);
+      SCHEDULER.add(this, true, 0);
     }
   },
   METHODS: {
@@ -332,6 +336,12 @@ export let AIActor = {
     setRenderDelay: function(n){
       this.attr._AIActor.renderDelay = n;
     },
+    getPriorities: function(){
+      return this.attr._AIActor.priorities;
+    },
+    setPriorities: function(n){
+      this.attr._AIActor.priorities = n;
+    },
 
     isActing: function(state){
       if(state !== undefined){
@@ -339,22 +349,40 @@ export let AIActor = {
       }
       return this.attr._AIActor.actingState;
     },
-  },
-  LISTENERS: {
-    actorStart: function(actorData){
-        if(this.isActing()){
-          actorData.success = false;
+    act: function(){
+      if(this.isActing()){
+        return false;
+      }
+      setTimedUnlocker(true);
+      this.isActing(true);
+      let priorities = this.getPriorities();
+      if(!priorities){
+        let actorData = {terminate: false};
+        this.raiseMixinEvent('actorPerform', actorData);
+      }
+      else{
+        //Sort array of priorities
+        let priorityArray = Array();
+        for(let name in priorities){
+          priorityArray.push([name, priorityArray[name]]);
         }
-        setTimedUnlocker(true);
-        this.isActing(true);
-        actorData.success = true;
-    },
-    actorEnd: function(actorData){
+        priorityArray.sort(function(a, b){
+          return a[1] - b[1];
+        });
+        for(let i = 0; i < priorityArray.length; i++){
+          let currName = priorityArray[i][0];
+          let actorData = {target: currName, terminate: false};
+          this.raiseMixinEvent('actorPerform', actorData);
+          if(actorData.terminate){
+            break;
+          }
+        }
+      }
       let actor = this;
       SCHEDULER.setDuration(this.getBaseActionDuration());
       this.isActing(false);
       this.raiseMixinEvent('renderMain');
-      actorData.returnValue = {then: function(unlocker){
+      return {then: function(unlocker){
         setTimeout(function(){
           setTimedUnlocker(false);
           unlocker();
@@ -372,15 +400,15 @@ export let ActorRandomWalker = {
     stateModel: {
     },
     initialize: function(){
-      SCHEDULER.add(this, true, 0);
     }
   },
   METHODS: {
-    act: function(){
-      let actorData = {};
-      this.raiseMixinEvent('actorStart', actorData);
-      if(!actorData.success){
-        return false;
+
+  },
+  LISTENERS: {
+    actorPerform: function(actorData){
+      if(actorData.target && actorData.target !== 'ActorRandomWalker'){
+        return;
       }
       console.log("walker is acting");
       //Rand number from -1 to 1
@@ -388,14 +416,7 @@ export let ActorRandomWalker = {
       let dy = Math.trunc(ROT.RNG.getUniform() * 3) - 1;
       this.raiseMixinEvent('walkAttempt', {'dx': dx, 'dy': dy});
       console.log("walker is done acting");
-      this.raiseMixinEvent('actorEnd', actorData);
-      return actorData.returnValue;
-    }
-  },
-  LISTENERS: {
-    killed: function(evtData){
-      Message.send(this.getName() + " died");
-      SCHEDULER.remove(this);
+      actorData.terminate = true;
     }
   }
 };
