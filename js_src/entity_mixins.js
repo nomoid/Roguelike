@@ -464,3 +464,38 @@ export let FOVHandler = {
     }
   }
 };
+
+export let ItemPile = {
+  META: {
+    mixinName: 'ItemPile',
+    mixinGroupName: 'ItemGroup',
+    stateNamespace: '_ItemPile',
+    stateModel: {
+      items: []
+    },
+    initialize: function(){
+      // do any initialization
+    }
+  },
+  METHODS: {
+    addItem: function(item){
+      this.attr._ItemPile.items.push(item);
+    },
+    removeItem: function(itemIndex){
+      let item = this.attr._ItemPile.items[itemIndex];
+      if(itemIndex < this.attr._ItemPile.items.length){
+        this.attr._ItemPile.items.splice(itemIndex, 1);
+      }
+      return item;
+    },
+    getItems: function(){
+      return this.attr._ItemPile.items;
+    },
+    clearItems: function(){
+      this.attr._ItemPile.items = [];
+    }
+  },
+  LISTENERS: {
+
+  }
+}

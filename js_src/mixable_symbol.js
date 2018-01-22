@@ -1,5 +1,6 @@
 import {DisplaySymbol} from "./display_symbol.js";
 import * as E from './entity_mixins.js';
+import {deepCopy} from './util.js';
 
 export class MixableSymbol extends DisplaySymbol{
   constructor(template){
@@ -28,7 +29,7 @@ export class MixableSymbol extends DisplaySymbol{
         if(m.META.stateModel){
           for(let sbase in m.META.stateModel){
             let obj = m.META.stateModel[sbase];
-            let newObj = JSON.parse(JSON.stringify(obj));
+            let newObj = deepCopy(obj);
             model[sbase] = newObj;
           }
         }

@@ -15,6 +15,8 @@ export class Map{
     this.attr.id = attr.id || uniqueId('map-'+this.attr.mapType);
     this.attr.entityIdToMapPos = attr.entityIdToMapPos || {};
     this.attr.mapPosToEntityId = attr.mapPosToEntityId || {};
+    this.attr.itemEntityIdToMapPos = attr.itemEntityIdToMapPos || {};
+    this.attr.mapPosToItemEntityId = attr.mapPosToItemEntityId || {};
     this.attr.mobAmounts = attr.mobAmounts || {};
     this.attr.hasPopulated = attr.hasPopulated || false;
   }
@@ -70,6 +72,81 @@ export class Map{
       return this.attr.mobAmounts[name];
     }
   }
+
+  removeItemEntity(ent){
+    let oldPos = this.attr.itemEntityIdToMapPos[ent.getId()];
+    delete this.attr.mapPosToItemEntityId[oldPos];
+    delete this.attr.itemEntityIdToMapPos[ent.getId()];
+    console.log("removing..."+ent.getName());
+  }
+
+  updateItemEntityPosition(ent, newMapX, newMapY){
+    let oldPos = this.attr.itemEntityIdToMapPos[ent.getId()];
+    delete this.attr.mapPosToItemEntityId[oldPos];
+    this.attr.mapPosToItemEntityId[`${newMapX},${newMapY}`] = ent.getId();
+    this.attr.itemEntityIdToMapPos[ent.getId()] = `${newMapX},${newMapY}`;
+  }
+
+  addItemEntityAt(ent, mapx, mapy){
+    let pos = `${mapx},${mapy}`;
+    this.attr.mapPosToItemEntityId[pos] = ent.getId();
+    this.attr.itemEntityIdToMapPos[ent.getId()] = pos;
+    ent.setMapId(this.getId());
+    ent.setX(mapx);
+    ent.setY(mapy);
+  }
+
+  addItemAt(itemObj, mapx, mapy){
+    let pos = `${mapx},${mapy}`;
+    let itemEntityId = this.attr.mapPosToItemEntityId[pos];
+    if(itemEntityId){
+      let itemEntity = DATASTORE.ENTITIES[itemEntityId];
+      if(typeof itemEntity.addItem === 'function'){
+        itemEntity.addItem(itemObj);
+        return true;
+      }
+    }
+    return false;
+  }
+
+  //Takes in an index
+  removeItemAt(itemIndex, mapx, mapy){
+    let pos = `${mapx},${mapy}`;
+    let itemEntityId = this.attr.mapPosToItemEntityId[pos];
+    if(itemEntityId){
+      let itemEntity = DATASTORE.ENTITIES[itemEntityId];
+      if(typeof itemEntity.removeItem === 'function'){
+        return itemEntity.removeItem(itemIndex);
+      }
+    }
+    return null;
+  }
+
+  clearItemsAt(mapx, mapy){
+    let pos = `${mapx},${mapy}`;
+    let itemEntityId = this.attr.mapPosToItemEntityId[pos];
+    if(itemEntityId){
+      let itemEntity = DATASTORE.ENTITIES[itemEntityId];
+      if(typeof itemEntity.clearItems === 'function'){
+        itemEntity.clearItems();
+        return true;
+      }
+    }
+    return false;
+  }
+
+  getItemsAt(mapx, mapy){
+    let pos = `${mapx},${mapy}`;
+    let itemEntityId = this.attr.mapPosToItemEntityId[pos];
+    if(itemEntityId){
+      let itemEntity = DATASTORE.ENTITIES[itemEntityId];
+      if(typeof itemEntity.getItems === 'function'){
+        return itemEntity.getItems();
+      }
+    }
+    return null;
+  }
+
 
   removeEntity(ent){
     let oldPos = this.attr.entityIdToMapPos[ent.getId()];
@@ -128,11 +205,15 @@ export class Map{
   }
   getTargetPositionInfo(mapx, mapy){
     let entityId = this.attr.mapPosToEntityId[`${mapx},${mapy}`];
+    let itemEntityId = this.attr.mapPosToItemEntityId[`${mapx},${mapy}`];
     let info = {
       tile: this.getTile(mapx, mapy),
     };
     if(entityId){
       info.entity = DATASTORE.ENTITIES[entityId];
+    }
+    if(itemEntityId){
+      info.item = DATASTORE.ENTITIES[itemEntityId];
     }
     return info;
   }
