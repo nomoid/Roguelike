@@ -34,7 +34,7 @@ let _exampleMixin = {
 export let TimeTracker = {
   META: {
     mixinName: 'TimeTracker',
-    mixinGroupName: 'Tracker',
+    mixinGroupName: 'TrackerGroup',
     stateNamespace: '_TimeTracker',
     stateModel: {
       timeTaken: 0
@@ -65,7 +65,7 @@ export let TimeTracker = {
 export let WalkerCorporeal = {
   META: {
     mixinName: 'WalkerCorporeal',
-    mixinGroupName: 'Walker',
+    mixinGroupName: 'WalkerGroup',
     initialize: function(){
       // do any initialization
     }
@@ -117,7 +117,7 @@ export let WalkerCorporeal = {
 export let PlayerMessage = {
   META: {
     mixinName: 'PlayerMessage',
-    mixinGroupName: 'Messager',
+    mixinGroupName: 'MessagerGroup',
     initialize: function(){
       // do any initialization
     }
@@ -150,7 +150,7 @@ export let PlayerMessage = {
 export let HitPoints = {
   META: {
     mixinName: 'HitPoints',
-    mixinGroupName: 'HitPoints',
+    mixinGroupName: 'CombatGroup',
     stateNamespace: '_HitPoints',
     stateModel: {
       hp: 1,
@@ -424,7 +424,7 @@ export let ActorRandomWalker = {
 export let FOVHandler = {
   META: {
     mixinName: 'FOVHandler',
-    mixinGroupName: 'Lighting',
+    mixinGroupName: 'LightingGroup',
     stateNamespace: '_FOVHandler',
     stateModel: {
       radius: 1,
@@ -464,3 +464,42 @@ export let FOVHandler = {
     }
   }
 };
+
+export let ItemDropper = {
+
+}
+
+export let ItemPile = {
+  META: {
+    mixinName: 'ItemPile',
+    mixinGroupName: 'ItemGroup',
+    stateNamespace: '_ItemPile',
+    stateModel: {
+      items: []
+    },
+    initialize: function(){
+      // do any initialization
+    }
+  },
+  METHODS: {
+    addItem: function(item){
+      this.attr._ItemPile.items.push(item);
+    },
+    removeItem: function(itemIndex){
+      let item = this.attr._ItemPile.items[itemIndex];
+      if(itemIndex < this.attr._ItemPile.items.length){
+        this.attr._ItemPile.items.splice(itemIndex, 1);
+      }
+      return item;
+    },
+    getItems: function(){
+      return this.attr._ItemPile.items;
+    },
+    clearItems: function(){
+      this.attr._ItemPile.items = [];
+    }
+  },
+  LISTENERS: {
+
+  }
+}
