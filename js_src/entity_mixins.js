@@ -34,7 +34,7 @@ let _exampleMixin = {
 export let TimeTracker = {
   META: {
     mixinName: 'TimeTracker',
-    mixinGroupName: 'Tracker',
+    mixinGroupName: 'TrackerGroup',
     stateNamespace: '_TimeTracker',
     stateModel: {
       timeTaken: 0
@@ -65,7 +65,7 @@ export let TimeTracker = {
 export let WalkerCorporeal = {
   META: {
     mixinName: 'WalkerCorporeal',
-    mixinGroupName: 'Walker',
+    mixinGroupName: 'WalkerGroup',
     initialize: function(){
       // do any initialization
     }
@@ -97,6 +97,12 @@ export let WalkerCorporeal = {
         return false;
       }
       else{
+        if(targetPositionInfo.item){
+          this.raiseMixinEvent('walkedOnItem', {
+            actor:this,
+            item:targetPositionInfo.item
+          });
+        }
         this.attr.x = newX;
         this.attr.y = newY;
         this.getMap().updateEntityPosition(this, this.attr.x, this.attr.y);
@@ -117,7 +123,7 @@ export let WalkerCorporeal = {
 export let PlayerMessage = {
   META: {
     mixinName: 'PlayerMessage',
-    mixinGroupName: 'Messager',
+    mixinGroupName: 'MessagerGroup',
     initialize: function(){
       // do any initialization
     }
@@ -143,6 +149,47 @@ export let PlayerMessage = {
     },
     killed: function(evtData){
       Message.send(`You were killed by ${evtData.src.getName()}...`);
+    },
+    walkedOnItem: function(evtData){
+      let items = evtData.item.getItems();
+      if(items.length == 0){
+        return;
+      }
+      else if(items.length == 1){
+        let item = items[0];
+        if(item.name){
+          Message.send(`You walked on ${item.name}`);
+        }
+        else{
+          Message.send(`You walked on an unidentified item`);
+        }
+      }
+      else{
+        Message.send(`You walked on a pile of ${items.length} items`);
+      }
+    },
+    pickedUpItem: function(evtData){
+      let items = evtData.items;
+      if(items.length == 0){
+        this.raiseMixinEvent('itemPickUpFailed', {
+          reason: 'You picked up nothing!'
+        });
+      }
+      else if(items.length == 1){
+        let item = items[0];
+        if(item.name){
+          Message.send(`You picked up ${item.name}`);
+        }
+        else{
+          Message.send(`You picked up an unidentified item`);
+        }
+      }
+      else{
+        Message.send(`You picked up pile of ${items.length} items`);
+      }
+    },
+    itemPickUpFailed: function(evtData){
+      Message.send(`Can't pick up item. ${evtData.reason}`);
     }
   }
 };
@@ -150,7 +197,7 @@ export let PlayerMessage = {
 export let HitPoints = {
   META: {
     mixinName: 'HitPoints',
-    mixinGroupName: 'HitPoints',
+    mixinGroupName: 'CombatGroup',
     stateNamespace: '_HitPoints',
     stateModel: {
       hp: 1,
@@ -392,6 +439,7 @@ export let AIActor = {
   }
 }
 
+//Requires AIActor mixin
 export let ActorRandomWalker = {
   META: {
     mixinName: 'ActorRandomWalker',
@@ -424,7 +472,7 @@ export let ActorRandomWalker = {
 export let FOVHandler = {
   META: {
     mixinName: 'FOVHandler',
-    mixinGroupName: 'Lighting',
+    mixinGroupName: 'LightingGroup',
     stateNamespace: '_FOVHandler',
     stateModel: {
       radius: 1,
@@ -464,3 +512,159 @@ export let FOVHandler = {
     }
   }
 };
+
+export let ItemDropper = {
+  META: {
+    mixinName: 'ItemDropper',
+    mixinGroupName: 'ItemGroup',
+    stateNamespace: '_ItemDropper',
+    stateModel: {
+    },
+    initialize: function(){
+    }
+  },
+  METHODS: {
+
+  },
+  LISTENERS: {
+    //For testing, drop a dummy item
+    killed: function(evtData){
+      let itemData = {x: this.getX(), y: this.getY()};
+      if(evtData.src.getName() == 'avatar'){
+        itemData.item = {name: "JDog's Ramen", type: "Food", healAmount: 2};
+        this.raiseMixinEvent('addItemToMap', itemData);
+      }
+      else{
+        itemData.item = {name: "JDog's Spicy Ramen", type: "Food", healAmount: 5};
+        this.raiseMixinEvent('addItemToMap', itemData);
+      }
+    }
+  }
+};
+
+//Requires ItemPile mixin
+export let Inventory = {
+  META: {
+    mixinName: 'Inventory',
+    mixinGroupName: 'ItemGroup',
+    stateNamespace: '_Inventory',
+    stateModel: {
+      // Item data stored in ItemPile
+    },
+    initialize: function(){
+      // do any initialization
+    }
+  },
+  METHODS: {
+    pickUpItem: function(){
+      let map = DATASTORE.MAPS[this.getMapId()];
+      let items = map.getItemsAt(this.getX(), this.getY());
+      if(items){
+        //There is at least one item
+        //For now just pick up the first one
+        let item = map.removeItemAt(0, this.getX(), this.getY());
+        if(this.addItem(item)){
+          this.raiseMixinEvent('pickedUpItem', {
+            'items': [item]
+          });
+          this.raiseMixinEvent('actionDone');
+          return true;
+        }
+        else{
+          let itemName = 'an unidentified item';
+          if(item.name){
+            itemName = item.name;
+          }
+          this.raiseMixinEvent('itemPickUpFailed', {
+            reason: `Couldn\'t pick up ${itemName}!`
+          });
+        }
+      }
+      else{
+        this.raiseMixinEvent('itemPickUpFailed', {
+          reason: 'There are no items to pick up!'
+        });
+        return false;
+      }
+    },
+    pickUpAllItems: function(){
+      let map = DATASTORE.MAPS[this.getMapId()];
+      let items = map.getItemsAt(this.getX(), this.getY());
+      if(items){
+        //Loop through and pick up all items one by one
+        //Stop if there's an issue
+        let failed = null;
+        let itemsPickedUp = Array();
+        for(let i = 0; i < items.length; i++){
+          let item = map.removeItemAt(0, this.getX(), this.getY());
+          if(!this.addItem(item)){
+            failed = item;
+          }
+          else{
+            itemsPickedUp.push(item);
+          }
+        }
+        if(itemsPickedUp.length > 0){
+          this.raiseMixinEvent('pickedUpItem', {
+            'items': itemsPickedUp
+          });
+        }
+        if(failed){
+          let itemName = 'an unidentified item';
+          if(failed.name){
+            itemName = failed.name;
+          }
+          this.raiseMixinEvent('itemPickUpFailed', {
+            reason: `Couldn\'t pick up ${itemName}!`
+          });
+        }
+        this.raiseMixinEvent('actionDone');
+        return itemsPickedUp.length;
+      }
+      else{
+        this.raiseMixinEvent('itemPickUpFailed', {
+          reason: 'There are no items to pick up!'
+        });
+        return 0;
+      }
+    }
+  },
+  LISTENERS: {
+  }
+};
+
+export let ItemPile = {
+  META: {
+    mixinName: 'ItemPile',
+    mixinGroupName: 'ItemGroup',
+    stateNamespace: '_ItemPile',
+    stateModel: {
+      items: []
+    },
+    initialize: function(){
+      // do any initialization
+    }
+  },
+  METHODS: {
+    addItem: function(item){
+      this.attr._ItemPile.items.push(item);
+      return true;
+    },
+    removeItem: function(itemIndex){
+      let item = this.attr._ItemPile.items[itemIndex];
+      if(itemIndex < this.attr._ItemPile.items.length){
+        this.attr._ItemPile.items.splice(itemIndex, 1);
+      }
+      return item;
+    },
+    getItems: function(){
+      return this.attr._ItemPile.items;
+    },
+    clearItems: function(){
+      this.attr._ItemPile.items = [];
+    }
+  },
+  LISTENERS: {
+
+  }
+}

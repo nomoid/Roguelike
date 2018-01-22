@@ -114,3 +114,8 @@ export function localStorageAvailable() {
       return false;
   }
 }
+
+//Maybe implement a better version some other time
+export function deepCopy(obj){
+  return JSON.parse(JSON.stringify(obj));
+}

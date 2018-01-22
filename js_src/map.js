@@ -15,6 +15,9 @@ export class Map{
     this.attr.id = attr.id || uniqueId('map-'+this.attr.mapType);
     this.attr.entityIdToMapPos = attr.entityIdToMapPos || {};
     this.attr.mapPosToEntityId = attr.mapPosToEntityId || {};
+    this.attr.itemEntityIdToMapPos = attr.itemEntityIdToMapPos || {};
+    this.attr.mapPosToItemEntityId = attr.mapPosToItemEntityId || {};
+    this.attr.mobAmounts = attr.mobAmounts || {};
     this.attr.hasPopulated = attr.hasPopulated || false;
   }
 
@@ -64,10 +67,110 @@ export class Map{
     this.attr.mapSeed = mapSeed;
   }
 
+  getMobAmounts(name){
+    if(name){
+      return this.attr.mobAmounts[name];
+    }
+  }
+
+  removeItemEntity(ent){
+    let oldPos = this.attr.itemEntityIdToMapPos[ent.getId()];
+    delete this.attr.mapPosToItemEntityId[oldPos];
+    delete this.attr.itemEntityIdToMapPos[ent.getId()];
+    console.log("removing..."+ent.getName());
+  }
+
+  updateItemEntityPosition(ent, newMapX, newMapY){
+    let oldPos = this.attr.itemEntityIdToMapPos[ent.getId()];
+    delete this.attr.mapPosToItemEntityId[oldPos];
+    this.attr.mapPosToItemEntityId[`${newMapX},${newMapY}`] = ent.getId();
+    this.attr.itemEntityIdToMapPos[ent.getId()] = `${newMapX},${newMapY}`;
+  }
+
+  addItemEntityAt(ent, mapx, mapy){
+    let pos = `${mapx},${mapy}`;
+    this.attr.mapPosToItemEntityId[pos] = ent.getId();
+    this.attr.itemEntityIdToMapPos[ent.getId()] = pos;
+    ent.setMapId(this.getId());
+    ent.setX(mapx);
+    ent.setY(mapy);
+  }
+
+  addItemAt(itemObj, mapx, mapy){
+    let pos = `${mapx},${mapy}`;
+    let itemEntityId = this.attr.mapPosToItemEntityId[pos];
+    if(itemEntityId){
+      let itemEntity = DATASTORE.ENTITIES[itemEntityId];
+      if(typeof itemEntity.addItem === 'function'){
+        itemEntity.addItem(itemObj);
+        return true;
+      }
+    }
+    else{
+      let itemPile = EntityFactory.create('item_pile', true);
+      itemPile.addItem(itemObj);
+      this.addItemEntityAt(itemPile, mapx, mapy);
+      return true;
+    }
+    return false;
+  }
+
+  //Takes in an index
+  removeItemAt(itemIndex, mapx, mapy){
+    let pos = `${mapx},${mapy}`;
+    let itemEntityId = this.attr.mapPosToItemEntityId[pos];
+    if(itemEntityId){
+      let itemEntity = DATASTORE.ENTITIES[itemEntityId];
+      if(typeof itemEntity.removeItem === 'function'){
+        let item = itemEntity.removeItem(itemIndex);
+        let itemsRemaining = this.getItemsAt(mapx, mapy);
+        if(itemsRemaining){
+          if(itemsRemaining.length == 0){
+            let pos = `${mapx},${mapy}`;
+            this.removeItemEntity(itemEntity);
+          }
+        }
+        return item;
+      }
+    }
+    return null;
+  }
+
+  clearItemsAt(mapx, mapy){
+    let pos = `${mapx},${mapy}`;
+    let itemEntityId = this.attr.mapPosToItemEntityId[pos];
+    if(itemEntityId){
+      let itemEntity = DATASTORE.ENTITIES[itemEntityId];
+      if(typeof itemEntity.clearItems === 'function'){
+        itemEntity.clearItems();
+        return true;
+      }
+    }
+    return false;
+  }
+
+  getItemsAt(mapx, mapy){
+    let pos = `${mapx},${mapy}`;
+    let itemEntityId = this.attr.mapPosToItemEntityId[pos];
+    if(itemEntityId){
+      let itemEntity = DATASTORE.ENTITIES[itemEntityId];
+      if(typeof itemEntity.getItems === 'function'){
+        return itemEntity.getItems();
+      }
+    }
+    return null;
+  }
+
+
   removeEntity(ent){
     let oldPos = this.attr.entityIdToMapPos[ent.getId()];
     delete this.attr.mapPosToEntityId[oldPos];
     delete this.attr.entityIdToMapPos[ent.getId()];
+    console.log("removing..."+ent.getName());
+    if(this.attr.mobAmounts[ent.getName()]){
+      this.attr.mobAmounts[ent.getName()]--;
+      console.log("shoulda been remove");
+    }
   }
 
   updateEntityPosition(ent, newMapX, newMapY){
@@ -84,6 +187,9 @@ export class Map{
     ent.setMapId(this.getId());
     ent.setX(mapx);
     ent.setY(mapy);
+    if(this.attr.mobAmounts[ent.getName()]>=0){
+      this.attr.mobAmounts[ent.getName()]++;
+    }
   }
   addEntityAtRandomPosition(ent){
     let openPos = this.getRandomOpenPosition();
@@ -113,11 +219,15 @@ export class Map{
   }
   getTargetPositionInfo(mapx, mapy){
     let entityId = this.attr.mapPosToEntityId[`${mapx},${mapy}`];
+    let itemEntityId = this.attr.mapPosToItemEntityId[`${mapx},${mapy}`];
     let info = {
       tile: this.getTile(mapx, mapy),
     };
     if(entityId){
       info.entity = DATASTORE.ENTITIES[entityId];
+    }
+    if(itemEntityId){
+      info.item = DATASTORE.ENTITIES[itemEntityId];
     }
     return info;
   }
@@ -152,6 +262,9 @@ export class Map{
         let pos = `${xi},${yi}`;
         if(this.attr.mapPosToEntityId[pos]){
           DATASTORE.ENTITIES[this.attr.mapPosToEntityId[pos]].render(display,cx,cy);
+        }
+        else if(this.attr.mapPosToItemEntityId[pos]){
+          DATASTORE.ENTITIES[this.attr.mapPosToItemEntityId[pos]].render(display,cx,cy);
         }
         else{
           this.getTile(xi, yi).render(display, cx, cy);
@@ -215,9 +328,10 @@ let TILE_GRID_GENERATOR = {
 
 let TILE_GRID_POPULATOR = {
   'basic_caves' : function(map){
+    map.attr.mobAmounts['chris'] = 0;
+    map.attr.mobAmounts['jdog'] = 0;
     let origRngState = ROT.RNG.getState();
     ROT.RNG.setSeed(map.attr.mapSeed + 1);
-
     let chris = EntityFactory.create('chris', true);
     map.addEntityAtRandomPosition(chris);
     for(let i = 0; i < map.attr.xdim * map.attr.ydim / 4; i++){
