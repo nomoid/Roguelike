@@ -105,12 +105,14 @@ export class PlayMode extends UIMode{
   }
 
   renderMain(display){
+    /*
     display.drawText(2, 12, "Playing the game");
     display.drawText(2, 13, `[${BINDINGS.GAME.WIN}] to win,
                              [${BINDINGS.GAME.LOSE}] to lose,
                              [${BINDINGS.GAME.ENTER_PERSISTENCE}] to save,
                              [${BINDINGS.GAME.ENTER_MESSAGES}] to view messages`);
     display.drawText(2, 17, "" + this.game._randomSeed);
+    */
     //console.log(this.attr.cameramapx);
     DATASTORE.MAPS[this.game.getMapId()].render(display, this.attr.cameramapx, this.attr.cameramapy, this.getAvatar().generateVisibilityChecker());
     //this.cameraSymbol.render(display, Math.trunc(display.getOptions().width/2), Math.trunc(display.getOptions().height/2));
