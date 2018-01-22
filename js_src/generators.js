@@ -45,9 +45,12 @@ export let TILE_GRID_GENERATOR = {
     let xdim = data.xdim;
     let ydim = data.ydim;
     let mapSeed = data.mapSeed;
-    let entrancePos = data.entrancePos.split(',');
-    let entranceX = entrancePos[0]*1;
-    let entranceY = entrancePos[1]*1;
+    let entrancePos, entranceX, entranceY;
+    if(data.entrancePos){
+      entrancePos = data.entrancePos.split(',');
+      entranceX = entrancePos[0]*1;
+      entranceY = entrancePos[1]*1;
+    }
 
     let borderDepth = 3;
 
@@ -57,21 +60,30 @@ export let TILE_GRID_GENERATOR = {
     let tg = init2DArray(xdim, ydim, TILES.NULLTILE);
 
 
-    for(let xi = 0; xi < xdim; xi++){//generate outer walls
+    for(let xi = 0; xi < xdim; xi++){//first loop
       for(let yi = 0; yi < ydim; yi++){
         let tile = null;
-        if(xi==0 || xi==xdim-1 || yi==0 || yi==ydim-1){
-          tile = TILES.WALL;
+        if(data.entrancePos && xi == entranceX && yi == entranceY){
+          //place the entrance
+          tile = TILES.STAIRS_UP;
+
         }
+        else if(xi==0 || xi==xdim-1 || yi==0 || yi==ydim-1){//outer wall
+          tile = TILES.OUTER_WALL;
+        }
+        //outer wall noise
         else if(xi < borderDepth || xi > xdim - (borderDepth+1) || yi < borderDepth || yi > ydim - (borderDepth+1)){
-          let d = Math.min(Math.abs(borderDepth - xi),Math.abs(xi-(xdim-borderDepth)),Math.abs(borderDepth - yi),Math.abs(yi-(ydim-borderDepth)));
-          if(ROT.RNG.getUniform()*(borderDepth*4/5)<d){
-            tile = TILES.WALL;
+          let d = Math.min(Math.abs(borderDepth - xi),Math.abs(xi-(xdim-1-borderDepth)),Math.abs(borderDepth - yi),Math.abs(yi-(ydim-1-borderDepth)));
+          if(ROT.RNG.getUniform()*(borderDepth*3/4)<d){
+            tile = TILES.OUTER_WALL;
           }
           else{
             tile = TILES.FLOOR;
           }
         }
+
+
+        //default is floor
         else{
           tile = TILES.FLOOR;
         }

@@ -28,6 +28,9 @@ export let TILE_GRID_POPULATOR = {
     let origRngState = ROT.RNG.getState();
     ROT.RNG.setSeed(map.attr.mapSeed + 1);
 
+    map.attr.mobAmounts['chris'] = 0;
+    map.attr.mobAmounts['jdog'] = 0;
+
     let chris = EntityFactory.create('chris', true);
     map.addEntityAtRandomPosition(chris);
     for(let i = 0; i < map.attr.xdim * map.attr.ydim / 4; i++){

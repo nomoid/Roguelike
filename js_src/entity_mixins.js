@@ -312,7 +312,7 @@ export let AIActor = {
       currentActionDuration: 1000
     },
     initialize: function(template){
-      this.setRenderDelay(template.renderDelay || 25);
+      this.setRenderDelay(template.renderDelay || 1);//25
       this.setPriorities(template.priorities);
       SCHEDULER.add(this, true, 0);
     }

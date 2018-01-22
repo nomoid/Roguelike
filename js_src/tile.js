@@ -35,9 +35,12 @@ export let TILESTORE = {
 
 export let TILES = {
   NULLTILE: new Tile({name:'nulltile', chr:'-', transparent: false, passable: false}),
-  WALL: new Tile({name:'wall', chr:'#', transparent: false, passable: false}),
-  FLOOR: new Tile({name:'floor', chr:'.', transparent: true, passable: true}),
-  GLASS: new Tile({name: 'GLASS', chr:'.', transparent: true, passable: false}),
+
   STAIRS_DOWN: new Tile({name:'stairs_down', chr:'>', transparent: true, passable: true}),
-  STAIRS_UP: new Tile({name: 'stairs_up', chr:'<', transparent: true, passable: true})
+  STAIRS_UP: new Tile({name: 'stairs_up', chr:'<', transparent: true, passable: true}),
+
+  WALL: new Tile({name:'wall', chr:'#', transparent: false, passable: false}),
+  OUTER_WALL: new Tile({name:'outer_wall', chr:'#', fg: '#a61', transparent: false, passable: false}),
+  FLOOR: new Tile({name:'floor', chr:'.', transparent: true, passable: true}),
+  GLASS: new Tile({name: 'GLASS', chr:'.', transparent: true, passable: false})
 }
