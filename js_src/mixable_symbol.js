@@ -51,11 +51,19 @@ export class MixableSymbol extends DisplaySymbol{
   }
 
   raiseMixinEvent(evtLabel, evtData){
-    for (let i=0; i < this.mixins.length; i++){
-      let m = this.mixins[i];
-      if(m.LISTENERS && m.LISTENERS[evtLabel]){
-        m.LISTENERS[evtLabel].call(this,evtData);
+
+    if(this._environment.raiseEvent(evtLabel, evtData, this)){
+      for (let i=0; i < this.mixins.length; i++){
+        let m = this.mixins[i];
+        if(m.LISTENERS && m.LISTENERS[evtLabel]){
+          m.LISTENERS[evtLabel].call(this,evtData);
+        }
       }
     }
   }
+
+  setEnvironment(environment){
+    this._environment = environment;
+  }
+
 }

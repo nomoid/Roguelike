@@ -3,7 +3,7 @@
 import ROT from 'rot-js';
 import {Message} from './message.js';
 import {Map} from './map.js';
-import {TIME_ENGINE, SCHEDULER} from './timing.js';
+import {TIME_ENGINE, SCHEDULER, setTimedUnlocker} from './timing.js';
 import {DATASTORE} from './datastore.js';
 
 let _exampleMixin = {
@@ -72,6 +72,9 @@ export let WalkerCorporeal = {
   },
   METHODS: {
     tryWalk: function(dx, dy){
+      if (typeof this.isActing === 'function' && !this.isActing()){
+        return false;
+      }
       let newX = this.attr.x + dx;
       let newY = this.attr.y + dy;
 
@@ -200,6 +203,8 @@ export let HitPoints = {
           target: this
         });
         this.destroy();
+        console.dir(this);
+        console.dir(DATASTORE);
       }
     }
   }
@@ -251,7 +256,7 @@ export let ActorPlayer = {
       currentActionDuration: 1000
     },
     initialize: function(){
-      SCHEDULER.add(this, true, 1);
+      SCHEDULER.add(this, true, 0);
     }
   },
   METHODS: {
@@ -281,14 +286,13 @@ export let ActorPlayer = {
       this.isActing(true);
       TIME_ENGINE.lock();
       DATASTORE.GAME.render();
-      this.isActing(false);
       console.log("player is acting");
     }
   },
   LISTENERS: {
     actionDone: function(evtData){
+      this.isActing(false);
       SCHEDULER.setDuration(this.getBaseActionDuration());
-      this.setBaseActionDuration(this.getBaseActionDuration()); //get random int
       setTimeout(function(){
         TIME_ENGINE.unlock();
       }, 1);
@@ -297,63 +301,122 @@ export let ActorPlayer = {
   }
 };
 
+export let AIActor = {
+  META: {
+    mixinName: 'AIActor',
+    mixinGroupName: 'ActorGroup',
+    stateNamespace: '_AIActor',
+    stateModel: {
+      baseActionDuration: 1000,
+      actingState: false,
+      currentActionDuration: 1000
+    },
+    initialize: function(template){
+      this.setRenderDelay(template.renderDelay || 25);
+      this.setPriorities(template.priorities);
+      SCHEDULER.add(this, true, 0);
+    }
+  },
+  METHODS: {
+    getBaseActionDuration: function(){
+      return this.attr._AIActor.baseActionDuration;
+    },
+    setBaseActionDuration: function(n){
+      this.attr._AIActor.baseActionDuration = n;
+    },
+    getCurrentActionDuration: function(){
+      return this.attr._AIActor.currentActionDuration;
+    },
+    setCurrentActionDuration: function(n){
+      this.attr._AIActor.currentActionDuration = n;
+    },
+    getRenderDelay: function(){
+      return this.attr._AIActor.renderDelay;
+    },
+    setRenderDelay: function(n){
+      this.attr._AIActor.renderDelay = n;
+    },
+    getPriorities: function(){
+      return this.attr._AIActor.priorities;
+    },
+    setPriorities: function(n){
+      this.attr._AIActor.priorities = n;
+    },
+
+    isActing: function(state){
+      if(state !== undefined){
+        this.attr._AIActor.actingState = state;
+      }
+      return this.attr._AIActor.actingState;
+    },
+    act: function(){
+      if(this.isActing()){
+        return false;
+      }
+      setTimedUnlocker(true);
+      this.isActing(true);
+      let priorities = this.getPriorities();
+      if(!priorities){
+        let actorData = {terminate: false};
+        this.raiseMixinEvent('actorPerform', actorData);
+      }
+      else{
+        //Sort array of priorities
+        let priorityArray = Array();
+        for(let name in priorities){
+          priorityArray.push([name, priorityArray[name]]);
+        }
+        priorityArray.sort(function(a, b){
+          return a[1] - b[1];
+        });
+        for(let i = 0; i < priorityArray.length; i++){
+          let currName = priorityArray[i][0];
+          let actorData = {target: currName, terminate: false};
+          this.raiseMixinEvent('actorPerform', actorData);
+          if(actorData.terminate){
+            break;
+          }
+        }
+      }
+      let actor = this;
+      SCHEDULER.setDuration(this.getBaseActionDuration());
+      this.isActing(false);
+      this.raiseMixinEvent('renderMain');
+      return {then: function(unlocker){
+        setTimeout(function(){
+          setTimedUnlocker(false);
+          unlocker();
+        }, actor.getRenderDelay());
+      }};
+    }
+  }
+}
+
 export let ActorRandomWalker = {
   META: {
     mixinName: 'ActorRandomWalker',
     mixinGroupName: 'ActorGroup',
     stateNamespace: '_ActorRandomWalker',
     stateModel: {
-      baseActionDuration: 1000,
-      actingState: false,
-      currentActionDuration: 1000
     },
     initialize: function(){
-      SCHEDULER.add(this, true, 2);
     }
   },
   METHODS: {
-    getBaseActionDuration: function(){
-      return this.attr._ActorRandomWalker.baseActionDuration;
-    },
-    setBaseActionDuration: function(n){
-      this.attr._ActorRandomWalker.baseActionDuration = n;
-    },
-    getCurrentActionDuration: function(){
-      return this.attr._ActorRandomWalker.currentActionDuration;
-    },
-    setCurrentActionDuration: function(n){
-      this.attr._ActorRandomWalker.currentActionDuration = n;
-    },
 
-    isActing: function(state){
-      if(state !== undefined){
-        this.attr._ActorRandomWalker.actingState = state;
-      }
-      return this.attr._ActorRandomWalker.actingState;
-    },
-    act: function(){
-      if(this.isActing()){
+  },
+  LISTENERS: {
+    actorPerform: function(actorData){
+      if(actorData.target && actorData.target !== 'ActorRandomWalker'){
         return;
       }
       console.log("walker is acting");
-      this.isActing(true);
-      TIME_ENGINE.lock();
       //Rand number from -1 to 1
-      console.log("walker has locked");
       let dx = Math.trunc(ROT.RNG.getUniform() * 3) - 1;
       let dy = Math.trunc(ROT.RNG.getUniform() * 3) - 1;
       this.raiseMixinEvent('walkAttempt', {'dx': dx, 'dy': dy});
-      SCHEDULER.setDuration(this.getBaseActionDuration());
-      this.setBaseActionDuration(this.getBaseActionDuration()); //get random int
-      TIME_ENGINE.unlock();
-      this.isActing(false);
       console.log("walker is done acting");
-    }
-  },
-  LISTENERS: {
-    killed: function(evtData){
-      Message.send(this.getName() + " died");
-      SCHEDULER.remove(this);
+      actorData.terminate = true;
     }
   }
 };
@@ -365,7 +428,7 @@ export let FOVHandler = {
     stateNamespace: '_FOVHandler',
     stateModel: {
       radius: 1,
-      memory: {} //mapId --> (pos --> Tile)
+      memory: {} //mapId --> (pos --> chr)
     },
     initialize: function(template){
       this.attr._FOVHandler.radius = template.radius;
@@ -383,7 +446,6 @@ export let FOVHandler = {
           return ent.attr._FOVHandler.memory[ent.getMapId()][`${x},${y}`];
         }
       };
-
       let m = this.getMapId();
       let callback = function(x, y){
         return DATASTORE.MAPS[m].doesLightPass(x, y);
@@ -395,7 +457,7 @@ export let FOVHandler = {
         if(!ent.attr._FOVHandler.memory[ent.getMapId()]){
           ent.attr._FOVHandler.memory[ent.getMapId()] = {};
         }
-        ent.attr._FOVHandler.memory[ent.getMapId()][`${x},${y}`] = DATASTORE.MAPS[m].getTile(x, y);
+        ent.attr._FOVHandler.memory[ent.getMapId()][`${x},${y}`] = DATASTORE.MAPS[m].getTile(x, y).chr;
       });
 
       return checker;

@@ -9,5 +9,6 @@ export function clearDatastore(){
     ID_SEQ: 1,
     MAPS: {},
     ENTITIES: {},
+    TIMING: {}
   }
 }
