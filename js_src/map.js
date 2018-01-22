@@ -15,6 +15,7 @@ export class Map{
     this.attr.mapType = attr.mapType || 'basic_caves';
     this.attr.mapSeed = attr.mapSeed || 0;
     this.attr.entrancePos = attr.entrancePos;
+    this.attr.floor = attr.floor;
     this.attr.exitPos = '';
     this.attr.id = attr.id || uniqueId('map-'+this.attr.mapType);
     this.attr.entityIdToMapPos = attr.entityIdToMapPos || {};
@@ -25,7 +26,7 @@ export class Map{
 
   setupMap(){
     if(!this.tileGrid){
-      let generated = TILE_GRID_GENERATOR[this.attr.mapType]({xdim: this.attr.xdim, ydim: this.attr.ydim, mapSeed: this.attr.mapSeed, entrancePos: this.attr.entrancePos});
+      let generated = TILE_GRID_GENERATOR[this.attr.mapType](this.attr);
       this.tileGrid = generated.map;
 
       if(generated.exitPos){

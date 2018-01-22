@@ -39,8 +39,8 @@ export let TILE_GRID_POPULATOR = {
       if(p < 0.25){
         break;
       }
-      let jdog = EntityFactory.create('jdog', true);
-      map.addEntityAtRandomPosition(jdog);
+      //let jdog = EntityFactory.create('jdog', true);
+      //map.addEntityAtRandomPosition(jdog);
     }
 
     ROT.RNG.setState(origRngState);

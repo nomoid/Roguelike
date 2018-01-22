@@ -286,7 +286,7 @@ export let ActorPlayer = {
       this.isActing(true);
       TIME_ENGINE.lock();
       DATASTORE.GAME.render();
-      console.log("player is acting");
+      //console.log("player is acting");
     }
   },
   LISTENERS: {
@@ -296,7 +296,7 @@ export let ActorPlayer = {
       setTimeout(function(){
         TIME_ENGINE.unlock();
       }, 1);
-      console.log("end player acting");
+      //console.log("end player acting");
     }
   }
 };
@@ -410,12 +410,12 @@ export let ActorRandomWalker = {
       if(actorData.target && actorData.target !== 'ActorRandomWalker'){
         return;
       }
-      console.log("walker is acting");
+      //console.log("walker is acting");
       //Rand number from -1 to 1
       let dx = Math.trunc(ROT.RNG.getUniform() * 3) - 1;
       let dy = Math.trunc(ROT.RNG.getUniform() * 3) - 1;
       this.raiseMixinEvent('walkAttempt', {'dx': dx, 'dy': dy});
-      console.log("walker is done acting");
+      //console.log("walker is done acting");
       actorData.terminate = true;
     }
   }

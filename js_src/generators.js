@@ -1,5 +1,5 @@
 import {TILES} from './tile.js';
-import {init2DArray, uniqueId} from './util.js';
+import {init2DArray, uniqueId, mapExitFromSeed} from './util.js';
 import ROT from 'rot-js';
 import {DATASTORE} from './datastore.js';
 import {EntityFactory} from './entities.js';
@@ -45,12 +45,21 @@ export let TILE_GRID_GENERATOR = {
     let xdim = data.xdim;
     let ydim = data.ydim;
     let mapSeed = data.mapSeed;
+    let floor = data.floor;
+    console.log(data.floor);
     let entrancePos, entranceX, entranceY;
     if(data.entrancePos){
       entrancePos = data.entrancePos.split(',');
       entranceX = entrancePos[0]*1;
       entranceY = entrancePos[1]*1;
     }
+
+    let exitPos = mapExitFromSeed(data).split(',');
+    let exitX = exitPos[0]*1;
+    let exitY = exitPos[1]*1;
+
+    let structs = [];//constains positions in string form
+    let structFreq = 0.2;
 
     let borderDepth = 3;
 
@@ -81,7 +90,11 @@ export let TILE_GRID_GENERATOR = {
             tile = TILES.FLOOR;
           }
         }
-
+        //structure seeds
+        else if(ROT.RNG.getUniform() < structFreq){
+          structs.push(`${xi},${yi}`);
+          tile = TILES.FLOOR;
+        }
 
         //default is floor
         else{
@@ -92,9 +105,21 @@ export let TILE_GRID_GENERATOR = {
       }
     }
 
+    //place exit apart from entrance
+    //let exitX = Math.floor(ROT.RNG.getUniform()*(xdim-(borderDepth*2))+borderDepth);
+    //let exitY = Math.floor(ROT.RNG.getUniform()*(ydim-(borderDepth*2))+borderDepth);
+    tg[exitX][exitY] = TILES.STAIRS_DOWN;
+
+    //structure populating loop:
+    for(let xi = 0; xi < xdim; xi++){
+      for(let yi = 0; yi < ydim; yi++){
+        //check for up stairs first
+      }
+    }
+
     ROT.RNG.setState(origRngState);//*** ALSO IMPORTANT
 
-    //return {map: tg, exitPos: `${exitX},${exitY}`};
-    return {map: tg};
+    return {map: tg, exitPos: `${exitX},${exitY}`};
+    //return {map: tg};
   }
 }

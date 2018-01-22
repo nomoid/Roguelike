@@ -6,6 +6,7 @@ export class Tile extends DisplaySymbol{
     this.name = data.name || '';
     this.transparent = data.transparent || false;
     this.passable = data.passable || false;
+    this.seedData = data.seedData || {};//what mob is it
   }
 
   isA(name){
@@ -19,6 +20,11 @@ export class Tile extends DisplaySymbol{
   isTransparent(){
     return this.transparent;
   }
+
+  getSeedData(){
+    return this.seedData;
+  }
+
 }
 
 export let TILESTORE = {
@@ -42,5 +48,5 @@ export let TILES = {
   WALL: new Tile({name:'wall', chr:'#', transparent: false, passable: false}),
   OUTER_WALL: new Tile({name:'outer_wall', chr:'#', fg: '#a61', transparent: false, passable: false}),
   FLOOR: new Tile({name:'floor', chr:'.', transparent: true, passable: true}),
-  GLASS: new Tile({name: 'GLASS', chr:'.', transparent: true, passable: false})
+  GLASS: new Tile({name: 'GLASS', chr:'|', transparent: true, passable: false})
 }

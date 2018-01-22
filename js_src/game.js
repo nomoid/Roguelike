@@ -11,7 +11,9 @@ export let Game = {
   _SAVE_LIST_NAMESPACE: 'savelist',
   _BINDINGS_NAMESPACE: 'bindings',
   _DISPLAY_SPACING: 1.1,
-  _MAX_FLOORS: 4,
+  _MAX_FLOORS: 10,
+  _xdim: 40,
+  _ydim: 40,
   _display: {
     main: {
       w: 80,
@@ -232,7 +234,11 @@ export let Game = {
 
   getMapId: function(){
     while(!this.mapIds[this.currMap]){
-      let m = MapMaker({xdim: 60, ydim: 60, mapSeed: U.mapSeedFromFloor(this._mapRNGData, this.currMap), mapType: 'basic_floor'});
+      if(this.currMap != 0){
+        //
+      }
+      //let entrance = (this.currMap!=0 ? this.mapIds[this.currMap-1].getExitPos())
+      let m = MapMaker({xdim: this._xdim, ydim: this._ydim, mapSeed: U.mapSeedFromFloor(this._mapRNGData, this.currMap), mapType: 'basic_floor', floor: this.currMap});
       let id = m.getId();
       m.setupMap();
       this.mapIds.push(id);
