@@ -11,7 +11,7 @@ export let Game = {
   _SAVE_LIST_NAMESPACE: 'savelist',
   _BINDINGS_NAMESPACE: 'bindings',
   _DISPLAY_SPACING: 1.1,
-  _MAX_FLOORS: 10,
+  _MAX_FLOORS: 4,
   _display: {
     main: {
       w: 80,
@@ -252,12 +252,13 @@ export let Game = {
     if(this.currMap < this._MAX_FLOORS - 1){
       this.currMap++;
       return true;
+
     }
     return false;
   },
 
-  //For 17 JDOGS use seed 26555
-  //For 28 JDOGS use seed 501628887 (2nd floor)
+  //For 17 JDOGS use seed 26555 on 50x40
+  //For 28 JDOGS use seed 501628887 (2nd floor) on 50x40
   setupRng: function(rseed){
     console.log(rseed);
     this._randomSeed = 328343077;
@@ -273,9 +274,22 @@ export let Game = {
       this.renderDisplayMain();
     }
     if(evtLabel == "killed"){
-      if(src == this.modes.play.getAvatar()){
+      if(src == this.modes.play.getAvatar()){//lose condition
         this.switchMode('lose');
         this.renderDisplayMain();
+      }
+      if(src.getName() == 'jdog'){
+        console.log('killed a dog');
+        console.log(DATASTORE.MAPS[this.getMapId()].getMobAmounts('jdog'));
+        if(DATASTORE.MAPS[this.getMapId()].getMobAmounts('jdog')<=1){
+          if(this.currMap < this._MAX_FLOORS -1){
+            Message.send("Cleared the floor of jdogs!");
+          }
+          else{//win condition
+            this.switchMode('win');
+            this.renderDisplayMain();
+          }
+        }
       }
     }
     return true;

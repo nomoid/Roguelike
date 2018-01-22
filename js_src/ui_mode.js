@@ -121,20 +121,21 @@ export class PlayMode extends UIMode{
     display.drawText(2, 3, `Time: ${this.getAvatar().getTime()}`);
     display.drawText(2, 4, `HP: ${this.getAvatar().getHp()}/${this.getAvatar().getMaxHp()}`);
     display.drawText(2, 5, `Location: ${this.getAvatar().getX()}, ${this.getAvatar().getY()}`);
-    display.drawText(2, 6, `Floor: ${this.game.currMap}`);
+    display.drawText(2, 6, `Floor: ${this.game.currMap+1}`);
+    display.drawText(2, 7, `${DATASTORE.MAPS[this.game.getMapId()].getMobAmounts('jdog')} jdogs left`);
   }
 
   handleInput(eventType, evt){
     if(eventType == "keyup"){
-      if(evt.key == BINDINGS.GAME.WIN){
-        this.game.switchMode('win');
-        return true;
-      }
-      else if(evt.key == BINDINGS.GAME.LOSE){
-        this.game.switchMode('lose');
-        return true;
-      }
-      else if(evt.key == BINDINGS.GAME.ENTER_MESSAGES){
+      // if(evt.key == BINDINGS.GAME.WIN){//real win condition now!
+      //   this.game.switchMode('win');
+      //   return true;
+      // }
+      // else if(evt.key == BINDINGS.GAME.LOSE){//Better lose condition now!
+      //   this.game.switchMode('lose');
+      //   return true;
+      // }
+      if(evt.key == BINDINGS.GAME.ENTER_MESSAGES){
         this.game.pushMode('messages');
         return true;
       }
@@ -157,11 +158,16 @@ export class PlayMode extends UIMode{
       }
       else if(evt.key == BINDINGS.GAME.NEXT_FLOOR){
         let oldId = this.game.getMapId();
-        if(this.game.nextFloor()){
-          Message.send("You have entered the next floor");
-          this.setupAvatar();
-          DATASTORE.MAPS[oldId].removeEntity(DATASTORE.ENTITIES[this.attr.avatarId]);
-          return true;
+        if(DATASTORE.MAPS[oldId].getMobAmounts('jdog')==0){
+          if(this.game.nextFloor()){
+            Message.send("You have entered the next floor");
+            this.setupAvatar();
+            DATASTORE.MAPS[oldId].removeEntity(DATASTORE.ENTITIES[this.attr.avatarId]);
+            return true;
+          }
+        }
+        else{
+          Message.send(`Still ${DATASTORE.MAPS[oldId].getMobAmounts('jdog')} jdogs on floor. Kill them before continuing.`);
         }
       }
       else if(evt.key == BINDINGS.GAME.MOVE_NORTH){

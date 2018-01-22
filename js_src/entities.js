@@ -21,7 +21,7 @@ EntityFactory.learn({
 
 EntityFactory.learn({
   name: 'jdog',
-  chr: '$',
+  chr: 'd',
   fg: '#d06',
   maxHp: 4,
   priorities: {
