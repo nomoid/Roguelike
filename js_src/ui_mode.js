@@ -212,6 +212,19 @@ export class PlayMode extends UIMode{
           //Message.send("This path is blocked!");
         }
       }
+      else if(evt.key == BINDINGS.GAME.PICK_UP_ITEM){
+        if(this.getAvatar().pickUpItem()){
+          return true;
+        }
+      }
+      else if(evt.key == BINDINGS.GAME.PICK_UP_ALL_ITEMS){
+        if(this.getAvatar().pickUpAllItems() > 0){
+          return true;
+        }
+      }
+      else if(evt.key == BINDINGS.GAME.ENTER_INVENTORY){
+        console.dir(this.getAvatar().getItems());
+      }
     }
     return false;
   }

@@ -122,7 +122,15 @@ export class Map{
     if(itemEntityId){
       let itemEntity = DATASTORE.ENTITIES[itemEntityId];
       if(typeof itemEntity.removeItem === 'function'){
-        return itemEntity.removeItem(itemIndex);
+        let item = itemEntity.removeItem(itemIndex);
+        let itemsRemaining = this.getItemsAt(mapx, mapy);
+        if(itemsRemaining){
+          if(itemsRemaining.length == 0){
+            let pos = `${mapx},${mapy}`;
+            this.removeItemEntity(itemEntity);
+          }
+        }
+        return item;
       }
     }
     return null;
