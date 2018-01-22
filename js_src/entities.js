@@ -27,5 +27,12 @@ EntityFactory.learn({
   priorities: {
     'ActorRandomWalker': 1
   },
-  mixinNames: ['HitPoints', 'AIActor', 'ActorRandomWalker', 'WalkerCorporeal', 'MeleeAttacker']
+  mixinNames: ['HitPoints', 'AIActor', 'ActorRandomWalker', 'WalkerCorporeal', 'MeleeAttacker', 'ItemDropper']
+});
+
+EntityFactory.learn({
+  name: 'item_pile',
+  chr: 'o',
+  fg: Color.ITEM_PILE_FG,
+  mixinNames: ['ItemPile']
 });

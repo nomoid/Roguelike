@@ -466,7 +466,32 @@ export let FOVHandler = {
 };
 
 export let ItemDropper = {
+  META: {
+    mixinName: 'ItemDropper',
+    mixinGroupName: 'ItemGroup',
+    stateNamespace: '_ItemDropper',
+    stateModel: {
+    },
+    initialize: function(){
+    }
+  },
+  METHODS: {
 
+  },
+  LISTENERS: {
+    //For testing, drop a dummy item
+    killed: function(evtData){
+      let itemData = {x: this.getX(), y: this.getY()};
+      if(evtData.src.getName() == 'avatar'){
+        itemData.item = {name: "JDog's Ramen", type: "Food", healAmount: 2};
+        this.raiseMixinEvent('addItemToMap', itemData);
+      }
+      else{
+        itemData.item = {name: "JDog's Spicy Ramen", type: "Food", healAmount: 5};
+        this.raiseMixinEvent('addItemToMap', itemData);
+      }
+    }
+  }
 }
 
 export let ItemPile = {

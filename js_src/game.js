@@ -292,6 +292,9 @@ export let Game = {
         }
       }
     }
+    if(evtLabel == "addItemToMap"){
+      DATASTORE.MAPS[this.getMapId()].addItemAt(evtData.item, evtData.x, evtData.y);
+    }
     return true;
   }
 };

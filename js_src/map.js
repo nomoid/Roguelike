@@ -106,6 +106,12 @@ export class Map{
         return true;
       }
     }
+    else{
+      let itemPile = EntityFactory.create('item_pile', true);
+      itemPile.addItem(itemObj);
+      this.addItemEntityAt(itemPile, mapx, mapy);
+      return true;
+    }
     return false;
   }
 
@@ -248,6 +254,9 @@ export class Map{
         let pos = `${xi},${yi}`;
         if(this.attr.mapPosToEntityId[pos]){
           DATASTORE.ENTITIES[this.attr.mapPosToEntityId[pos]].render(display,cx,cy);
+        }
+        else if(this.attr.mapPosToItemEntityId[pos]){
+          DATASTORE.ENTITIES[this.attr.mapPosToItemEntityId[pos]].render(display,cx,cy);
         }
         else{
           this.getTile(xi, yi).render(display, cx, cy);
