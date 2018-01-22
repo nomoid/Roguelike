@@ -232,7 +232,7 @@ export let Game = {
 
   getMapId: function(){
     while(!this.mapIds[this.currMap]){
-      let m = MapMaker({xdim: 20, ydim: 20, mapSeed: U.mapSeedFromFloor(this._mapRNGData, this.currMap)});
+      let m = MapMaker({xdim: 50, ydim: 40, mapSeed: U.mapSeedFromFloor(this._mapRNGData, this.currMap)});
       let id = m.getId();
       m.setupMap();
       this.mapIds.push(id);
@@ -260,7 +260,7 @@ export let Game = {
   //For 28 JDOGS use seed 501628887 (2nd floor)
   setupRng: function(rseed){
     console.log(rseed);
-    this._randomSeed = 328343077;
+    this._randomSeed = rseed;//328343077;
     console.log("using random seed" + this._randomSeed);
     ROT.RNG.setSeed(this._randomSeed);
     let initSeedValue = U.getRandomSeed();
