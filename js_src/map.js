@@ -78,6 +78,7 @@ export class Map{
   }
   getExitPos(){
     return this.attr.exitPos;
+  }
   getMobAmounts(name){
     if(name){
       return this.attr.mobAmounts[name];
