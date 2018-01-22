@@ -97,6 +97,12 @@ export let WalkerCorporeal = {
         return false;
       }
       else{
+        if(targetPositionInfo.item){
+          this.raiseMixinEvent('walkedOnItem', {
+            actor:this,
+            item:targetPositionInfo.item
+          });
+        }
         this.attr.x = newX;
         this.attr.y = newY;
         this.getMap().updateEntityPosition(this, this.attr.x, this.attr.y);
@@ -143,6 +149,24 @@ export let PlayerMessage = {
     },
     killed: function(evtData){
       Message.send(`You were killed by ${evtData.src.getName()}...`);
+    },
+    walkedOnItem: function(evtData){
+      let items = evtData.item.getItems();
+      if(items.length == 0){
+        return;
+      }
+      else if(items.length == 1){
+        let item = items[0];
+        if(item.name){
+          Message.send(`You walked on ${item.name}`);
+        }
+        else{
+          Message.send(`You walked on an unidentified item`);
+        }
+      }
+      else{
+        Message.send(`You walked on a pile of ${items.length} items`);
+      }
     }
   }
 };
