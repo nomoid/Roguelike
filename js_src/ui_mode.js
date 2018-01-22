@@ -7,7 +7,7 @@ import {Color} from './color.js';
 import {Entity} from './entity.js';
 import {EntityFactory} from './entities.js';
 import {BINDINGS, BINDING_DESCRIPTIONS, setKeybindingsArrowKeys, setKeybindingsWASD, setInventoryBindings} from './keybindings.js';
-import {TIME_ENGINE} from './timing.js';
+import {TIME_ENGINE, loadScheduler, saveScheduler} from './timing.js';
 
 class UIMode{
   constructor(game){
@@ -511,6 +511,10 @@ export class PersistenceMode extends UIMode{
         Message.send("Error Saving!");
         return;
       }
+      //Generate timing save state
+      let schedulerData = saveScheduler();
+      DATASTORE.TIMING = schedulerData;
+
       window.localStorage.setItem(this.game._uid, JSON.stringify(DATASTORE));
       console.log('post-save datastore');
       console.dir(DATASTORE);
@@ -542,6 +546,8 @@ export class PersistenceMode extends UIMode{
       DATASTORE.ID_SEQ = data.ID_SEQ;
       this.game.fromJSON(data.GAME);
 
+      DATASTORE.GAME = this.game;
+
       for(let entityid in data.ENTITIES){
         let attr = JSON.parse(data.ENTITIES[entityid]);
         let e = EntityFactory.create(attr.name, false);
@@ -555,14 +561,14 @@ export class PersistenceMode extends UIMode{
         DATASTORE.MAPS[mapid].setupMap();
       }
 
-      DATASTORE.GAME = this.game;
+      loadScheduler(data.TIMING);
 
       console.log('post-load datastore:');
       console.dir(DATASTORE);
     }
     catch(e){
       Message.send("Error Loading!");
-      return;
+      throw e;
     }
   }
 
