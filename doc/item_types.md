@@ -37,15 +37,19 @@
     * Alchemy Ingredients
     * Cooking Ingredients
 * Effects
-  * type: string
+  * name: string
   * Instant Heal
-    * hp: int
-    * "Instantly heal for ${hp} HP"
+    * effect.hpAmount: int
+    * "Instantly heal for ${this.effect.hpAmount} HP"
   * Cure Poison
     * "Instantly cure poison"
 * Buffs
-  * type: string
+  * name: string
   * duration: int
+  * frequency: int
   * HP Regeneration
-    * hpPerSec: int
-    * "Increases HP regeneration by ${hpPerSec} HP per second."
+    * effect.hpAmount: int
+    * "Regenerates ${this.effect.hpAmount} HP every ${this.frequency} turns."
+  * Lifelink
+    * effect.hpAmount: int
+    * "Regenerates ${this.effect.hpAmount} HP every time you kill an enemy."
