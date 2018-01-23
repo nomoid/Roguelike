@@ -1,6 +1,6 @@
 import * as U from './util.js';
 import ROT from 'rot-js';
-import {TILES} from './tile.js';
+import {Tile, TILES} from './tile.js';
 
 export function rotate(grid, dir){
   //dir: -1 is ccw, 0 is none, 1 is cw
@@ -126,7 +126,8 @@ let charsToTiles = {
   '#': TILES.WALL,
   '.': TILES.FLOOR,
   '|': TILES.GLASS,
-  '-': TILES.NULLTILE
+  '-': TILES.NULLTILE,
+  'C': new Tile({name: 'mob_seed', chr: '?', seedData: {mobName: 'chris'}})
   //0-9 can be loot chests - different
   //a-z mob seeds
 }
@@ -169,7 +170,7 @@ export let BASIC_FLOOR = {
     grid: [
       ['#','#','#'],
       ['-','-','#'],
-      ['-','#','#'],
+      ['C','#','#'],
       ['-','-','#'],
       ['#','#','#']
     ],
