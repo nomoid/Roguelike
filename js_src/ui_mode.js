@@ -9,6 +9,7 @@ import {Entity} from './entity.js';
 import {EntityFactory} from './entities.js';
 import {BINDINGS, BINDING_DESCRIPTIONS, setKeybindingsArrowKeys, setKeybindingsWASD, setInventoryBindings} from './keybindings.js';
 import {TIME_ENGINE, loadScheduler, saveScheduler} from './timing.js';
+import {getFunctionality} from './items.js';
 
 class UIMode{
   constructor(game){
@@ -852,6 +853,7 @@ export class InventoryMode extends UIMode{
       display.drawText(2, i + 4, name);
     }
     if(this.selected < items.length){
+      //Render description
       let selectedItem = items[this.selected];
       let descriptionX = 40;
       let description = "Nobody knows what this item is used for...";
@@ -859,7 +861,16 @@ export class InventoryMode extends UIMode{
         description = U.fillTemplate(selectedItem.description, selectedItem);
       }
       display.drawText(descriptionX, 4, description);
+      //Render functionality
+      let functionalityX = 40;
+      let functionalityList = getFunctionality(selectedItem.type);
+      for(let i = 0; i < functionalityList.length; i++){
+        let functionality = functionalityList[i];
+        let functionalityString = `[${functionality.key}] - ${functionality.description}`;
+        display.drawText(functionalityX, 8 + i, functionalityString);
+      }
     }
+
   }
 
   handleInput(eventType, evt){
