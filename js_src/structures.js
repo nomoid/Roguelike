@@ -47,6 +47,38 @@ export function parseCharsToTiles(grid){
   return tileGrid;
 }
 
+export function mergeGrids(canvas, structure, canvasX, canvasY, dir){
+  //places *middle* of structure at cX, cY in canvas grid, optionally rotated by some amount
+  if(dir){
+    structure = rotate(structure, dir);
+  }
+  //calculate midpoint of structure
+  let structureWidth = structure[0].length;
+  let structureHeight = structure.length;
+  //Mids may mess up on rotation
+  let midX = Math.floor(structureWidth/2);
+  let midY = Math.floor(structureHeight/2);
+
+  //from this, calculate top left corner pos in canvas
+  let canvasTLY = canvasY - midX;
+  let canvasTLX = canvasX - midY;
+
+  //now loop in struct and place the tiles
+  //null tiles in the struct are ignored, meant to be 'transparency' in the struct
+  for(let xi = 0; xi < structureWidth; xi++){
+    for(let yi = 0; yi < structureHeight; yi++){
+      if(structure[yi][xi] === TILES.NULLTILE){
+        continue;
+      }
+      else{
+        //console.log(`stair: ${yi+canvasTLY},${xi+canvasTLX}`);
+        canvas[yi+canvasTLX][xi+canvasTLY] = structure[yi][xi];
+      }
+    }
+  }
+
+}
+
 let charsToTiles = {
   '#': TILES.WALL,
   '.': TILES.FLOOR,
@@ -63,5 +95,6 @@ export let BASIC_FLOOR = {
     ['#', '.', '-', '.', '#'],
     ['#', '.', '.', '.', '#'],
     ['#', '#', '.', '#', '#']
+
   ],
 }

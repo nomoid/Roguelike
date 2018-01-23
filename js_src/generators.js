@@ -3,6 +3,7 @@ import {init2DArray, uniqueId, mapExitFromSeed} from './util.js';
 import ROT from 'rot-js';
 import {DATASTORE} from './datastore.js';
 import {EntityFactory} from './entities.js';
+import * as STRUCT from './structures.js';
 
 export let TILE_GRID_GENERATOR = {
   'basic_caves': function(data){
@@ -56,7 +57,7 @@ export let TILE_GRID_GENERATOR = {
 
     let exitPos = mapExitFromSeed(data).split(',');
     let exitX = exitPos[0]*1;
-    let exitY = exitPos[1]*1;//set exitq
+    let exitY = exitPos[1]*1;
 
     let structs = [];//constains positions in string form
     let structFreq = 0.2;
@@ -72,9 +73,6 @@ export let TILE_GRID_GENERATOR = {
     for(let xi = 0; xi < xdim; xi++){//first loop
       for(let yi = 0; yi < ydim; yi++){
         let tile = null;
-        if(xi == exitX && yi == exitY){
-          tile = TILES.STAIRS_DOWN;
-        }
         if(data.entrancePos && xi == entranceX && yi == entranceY){
           //place the entrance
           tile = TILES.STAIRS_UP;
@@ -108,15 +106,16 @@ export let TILE_GRID_GENERATOR = {
       }
     }
 
-    //place exit apart from entrance
-    //let exitX = Math.floor(ROT.RNG.getUniform()*(xdim-(borderDepth*2))+borderDepth);
-    //let exitY = Math.floor(ROT.RNG.getUniform()*(ydim-(borderDepth*2))+borderDepth);
     tg[exitX][exitY] = TILES.STAIRS_DOWN;
 
-    //stairs populating:
-
-    //place a stairs room on entrance
-    //place a stairs room on exit
+    //place stairs structures
+    let stairs = STRUCT.parseCharsToTiles(STRUCT.BASIC_FLOOR.STAIRS);
+    let rotation = Math.floor(ROT.RNG.getUniform()*4)-1;
+    STRUCT.mergeGrids(tg, stairs, exitX, exitY, rotation);
+    if(data.entrancePos){
+      let rotation = Math.floor(ROT.RNG.getUniform()*4)-1;
+      STRUCT.mergeGrids(tg, stairs, entranceX, entranceY, rotation);
+    }
 
 
     ROT.RNG.setState(origRngState);//*** ALSO IMPORTANT
