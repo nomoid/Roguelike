@@ -832,16 +832,27 @@ export class InventoryMode extends UIMode{
     if(skip > 0){
       display.drawText(0, 4, Character.UP_TRIANGLE);
     }
+    //Render items
     for(let i = 0; i < renderEnd; i++){
       let item = items[skip + i];
       let name = "Unidentified item";
       if(item.name){
         name = item.name;
       }
+      //Highlight selected item
       if(skip + i == this.selected){
         name = U.applyBackground(U.applyColor(name, Color.TEXT_HIGHLIGHTED), Color.TEXT_HIGHLIGHTED_BG)
       }
       display.drawText(2, i + 4, name);
+    }
+    if(this.selected < items.length){
+      let selectedItem = items[this.selected];
+      let descriptionX = 40;
+      let description = "Nobody knows what this item is used for...";
+      if(selectedItem.description){
+        description = selectedItem.description;
+      }
+      display.drawText(descriptionX, 4, description);
     }
   }
 

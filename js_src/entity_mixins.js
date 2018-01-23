@@ -5,6 +5,7 @@ import {Message} from './message.js';
 import {Map} from './map.js';
 import {TIME_ENGINE, SCHEDULER, setTimedUnlocker} from './timing.js';
 import {DATASTORE} from './datastore.js';
+import {getItem} from './items.js';
 
 let _exampleMixin = {
   META: {
@@ -532,16 +533,16 @@ export let ItemDropper = {
       let itemData = {x: this.getX(), y: this.getY()};
       if(evtData.src.getName() == 'avatar'){
         for(let i = 0; i < 10; i++){
-          itemData.item = {name: "JDog's Ramen", type: "Food", healAmount: 2};
+          itemData.item = getItem("JDog's Ramen");
           this.raiseMixinEvent('addItemToMap', itemData);
         }
         for(let i = 0; i < 2; i++){
-          itemData.item = {name: "JDog's Calves", type: "Key Item"};
+          itemData.item = getItem("JDog's Calves");
           this.raiseMixinEvent('addItemToMap', itemData);
         }
       }
       else{
-        itemData.item = {name: "JDog's Spicy Ramen", type: "Food", healAmount: 5};
+        itemData.item = getItem("JDog's Spicy Ramen");
         this.raiseMixinEvent('addItemToMap', itemData);
       }
     }
