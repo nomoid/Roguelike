@@ -27,6 +27,11 @@ export let BINDINGS = {
 
 export let BINDING_DESCRIPTIONS = {
   INVENTORY: {
+    DROP: "Drop an item",
+    EQUIP: "Equip an item",
+    CONSUME: "Consume an item",
+    TRASH: "Trash an item permanently",
+    ENTER_BINDINGS: "Show/switch key bindings"
   },
   GAME: {
     MOVE_NORTH: "Move north",
@@ -92,6 +97,10 @@ export function setKeybindingsArrowKeys(){
 
 export function setInventoryBindings(){
   BINDINGS.INVENTORY = {
-
+    DROP: "r",
+    EQUIP: "e",
+    CONSUME: "c",
+    TRASH: "T",
+    ENTER_BINDINGS: "?"
   }
 }

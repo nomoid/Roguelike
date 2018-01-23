@@ -150,11 +150,15 @@ export class PlayMode extends UIMode{
         return true;
       }
       else if(evt.key == BINDINGS.GAME.ENTER_BINDINGS){
-        this.game.pushMode('bindings');
+        this.game.pushMode('bindings', {
+          mode: 'GAME'
+        });
         return true;
       }
       else if(evt.key == BINDINGS.GAME.ENTER_INVENTORY){
-        this.game.pushMode('inventory', {avatarId: this.attr.avatarId});
+        this.game.pushMode('inventory', {
+          avatarId: this.attr.avatarId
+        });
         return true;
       }
       else if(evt.key == BINDINGS.GAME.PREV_FLOOR){
@@ -631,17 +635,16 @@ export class BindingsMode extends UIMode{
     super(game);
   }
 
-  enter(){
+  enter(template){
     console.log("Entering Bindings Mode");
     this.changingBinding = false;
     this.keyToChange = null;
-    let prevMode = this.game.prevMode();
-    // if(prevMode == this.game.modes.inventory){
-    //   this.mode = "INVENTORY";
-    // }
-    // else{
-    this.mode = "GAME";
-    //}
+    if(template){
+      this.mode = template.mode;
+    }
+    else{
+      this.mode = 'GAME';
+    }
   }
 
   renderMain(display){
@@ -815,8 +818,11 @@ export class InventoryMode extends UIMode{
   }
 
   enter(template){
-    this.avatarId = template.avatarId;
-    this.selected = 0;
+    //Otherwise coming from popping
+    if(template){
+      this.avatarId = template.avatarId;
+      this.selected = 0;
+    }
   }
 
   renderMain(display){
@@ -875,6 +881,12 @@ export class InventoryMode extends UIMode{
           this.selected--;
           return true;
         }
+      }
+      else if(evt.key == BINDINGS.INVENTORY.ENTER_BINDINGS){
+        this.game.pushMode('bindings', {
+          mode: 'INVENTORY'
+        });
+        return true;
       }
     }
     return false;
