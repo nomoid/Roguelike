@@ -56,7 +56,7 @@ export let TILE_GRID_GENERATOR = {
 
     let exitPos = mapExitFromSeed(data).split(',');
     let exitX = exitPos[0]*1;
-    let exitY = exitPos[1]*1;
+    let exitY = exitPos[1]*1;//set exitq
 
     let structs = [];//constains positions in string form
     let structFreq = 0.2;
@@ -72,6 +72,9 @@ export let TILE_GRID_GENERATOR = {
     for(let xi = 0; xi < xdim; xi++){//first loop
       for(let yi = 0; yi < ydim; yi++){
         let tile = null;
+        if(xi == exitX && yi == exitY){
+          tile = TILES.STAIRS_DOWN;
+        }
         if(data.entrancePos && xi == entranceX && yi == entranceY){
           //place the entrance
           tile = TILES.STAIRS_UP;

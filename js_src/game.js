@@ -234,11 +234,24 @@ export let Game = {
 
   getMapId: function(){
     while(!this.mapIds[this.currMap]){
+      let entrancePos = null;
       if(this.currMap != 0){
-        //
+        entrancePos = U.mapExitFromSeed({
+          xdim: this._xdim,
+          ydim: this._ydim,
+          mapSeed: U.mapSeedFromFloor(this._mapRNGData, this.currMap-1),
+          floor: this.currMap-1
+        });
       }
       //let entrance = (this.currMap!=0 ? this.mapIds[this.currMap-1].getExitPos())
-      let m = MapMaker({xdim: this._xdim, ydim: this._ydim, mapSeed: U.mapSeedFromFloor(this._mapRNGData, this.currMap), mapType: 'basic_floor', floor: this.currMap});
+      let m = MapMaker({
+        xdim: this._xdim,
+        ydim: this._ydim,
+        mapSeed: U.mapSeedFromFloor(this._mapRNGData, this.currMap),
+        mapType: 'basic_floor',
+        floor: this.currMap,
+        'entrancePos': entrancePos
+      });
       let id = m.getId();
       m.setupMap();
       this.mapIds.push(id);
