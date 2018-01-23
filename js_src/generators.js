@@ -111,6 +111,15 @@ export let TILE_GRID_GENERATOR = {
 
     tg[exitX][exitY] = TILES.STAIRS_DOWN;
 
+    //place stairs structures first so other structures respect them
+    let stairs = STRUCT.parseCharsToTiles(STRUCT.BASIC_FLOOR.STAIRS.grid);
+    let rotation = Math.floor(ROT.RNG.getUniform()*4)-1;
+    STRUCT.mergeGrids(tg, stairs, exitX, exitY, rotation);
+    if(data.entrancePos){
+      let rotation = Math.floor(ROT.RNG.getUniform()*4)-1;
+      STRUCT.mergeGrids(tg, stairs, entranceX, entranceY, rotation);
+    }
+
     //place some structures in each quadrant
     //quadrants: (i think)
     //  0   1
@@ -138,23 +147,14 @@ export let TILE_GRID_GENERATOR = {
           TLX = wideBorderDepth;
           TLY = wideBorderDepth;
       }
-      for(let i = 0; i < 5; i++){
+      for(let i = 0; i < 30; i++){
         let randomX = Math.floor(ROT.RNG.getUniform()*(quadrantWidth)+TLX);
         let randomY = Math.floor(ROT.RNG.getUniform()*(quadrantHeight)+TLY);
         let rotation = Math.floor(ROT.RNG.getUniform()*4)-1;
-        STRUCT.mergeGrids(tg, STRUCT.parseCharsToTiles(STRUCT.getRandomStructure(STRUCT.BASIC_FLOOR)), randomX, randomY, rotation);
+        STRUCT.tryPlaceStructure(tg, STRUCT.parseCharsToTiles(STRUCT.getRandomStructure(STRUCT.BASIC_FLOOR)), randomX, randomY, rotation);
       }
     }
 
-    //place stairs structures last (TODO: check availablility for structures.)
-    //Once TODO is done, stairs generate first.
-    let stairs = STRUCT.parseCharsToTiles(STRUCT.BASIC_FLOOR.STAIRS.grid);
-    let rotation = Math.floor(ROT.RNG.getUniform()*4)-1;
-    STRUCT.mergeGrids(tg, stairs, exitX, exitY, rotation);
-    if(data.entrancePos){
-      let rotation = Math.floor(ROT.RNG.getUniform()*4)-1;
-      STRUCT.mergeGrids(tg, stairs, entranceX, entranceY, rotation);
-    }
 
 
 

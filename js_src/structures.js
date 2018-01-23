@@ -48,11 +48,39 @@ export function parseCharsToTiles(grid){
   return tileGrid;
 }
 
-export function mergeGrids(canvas, structure, canvasX, canvasY, dir){
-  //places *middle* of structure at cX, cY in canvas grid, optionally rotated by some amount
+export function tryPlaceStructure(canvas, structure, canvasX, canvasY, dir){
+
   if(dir){
     structure = rotate(structure, dir);
   }
+
+  //places *middle* of structure at cX, cY in canvas grid
+  //calculate midpoint of structure
+  let structureWidth = structure[0].length;
+  let structureHeight = structure.length;
+  //Mids may mess up on rotation
+  let midX = Math.floor(structureWidth/2);
+  let midY = Math.floor(structureHeight/2);
+
+  //from this, calculate top left corner pos in canvas
+  let canvasTLY = canvasY - midX;
+  let canvasTLX = canvasX - midY;
+
+  //loop through struct width
+  for(let xi = -1; xi < structureWidth+1; xi++){
+    for(let yi = -1; yi < structureHeight+1; yi++){
+      if(!(canvas[yi+canvasTLX][xi+canvasTLY].isA('floor'))){
+        console.log('failed to place a thing');
+        return false;
+      }
+    }
+  }
+
+  mergeGrids(canvas, structure, canvasX, canvasY);
+}
+
+export function mergeGrids(canvas, structure, canvasX, canvasY){
+  //places *middle* of structure at cX, cY in canvas grid
   //calculate midpoint of structure
   let structureWidth = structure[0].length;
   let structureHeight = structure.length;
@@ -89,8 +117,8 @@ export function getRandomStructure(structureSet){//probably a bad implementation
     }
   }
   let index = Math.floor(ROT.RNG.getUniform()*structs.length);
-  console.dir(structs);
-  console.log(index);
+  //console.dir(structs);
+  //console.log(index);
   return structs[index].grid;
 }
 
