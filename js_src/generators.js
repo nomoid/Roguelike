@@ -113,12 +113,11 @@ export let TILE_GRID_GENERATOR = {
     //let exitY = Math.floor(ROT.RNG.getUniform()*(ydim-(borderDepth*2))+borderDepth);
     tg[exitX][exitY] = TILES.STAIRS_DOWN;
 
-    //structure populating loop:
-    for(let xi = 0; xi < xdim; xi++){
-      for(let yi = 0; yi < ydim; yi++){
-        //check for up stairs first
-      }
-    }
+    //stairs populating:
+
+    //place a stairs room on entrance
+    //place a stairs room on exit
+
 
     ROT.RNG.setState(origRngState);//*** ALSO IMPORTANT
 

@@ -83,7 +83,7 @@ export function mapExitFromSeed(data){
   let mapSeed = data.mapSeed;
   let floor = data.floor;
 
-  let border = 4;
+  let border = 6;
   let partitionWidth = ydim/3;
   let exitX, exitY;
 

@@ -5,6 +5,7 @@ import {Message} from './message.js';
 import {MapMaker} from './map.js';
 import {DATASTORE, clearDatastore} from './datastore.js';
 import {initTiming} from './timing.js';
+import * as STRUCT from './structures.js';
 
 export let Game = {
   _PERSISTENCE_NAMESPACE: 'pickledpopcorn',
@@ -12,8 +13,8 @@ export let Game = {
   _BINDINGS_NAMESPACE: 'bindings',
   _DISPLAY_SPACING: 1.1,
   _MAX_FLOORS: 10,
-  _xdim: 40,
-  _ydim: 40,
+  _xdim: 90,
+  _ydim: 90,
   _display: {
     main: {
       w: 80,
@@ -76,6 +77,12 @@ export let Game = {
         tileHeight: 32
       });
     }
+
+    console.log(STRUCT.BASIC_FLOOR.TEST);
+    console.log(STRUCT.rotate(STRUCT.BASIC_FLOOR.TEST, 1));
+    console.log(STRUCT.rotate(STRUCT.BASIC_FLOOR.TEST, 2));
+    console.log(STRUCT.rotate(STRUCT.BASIC_FLOOR.TEST, -1));
+
   },
 
   setupModes: function(){
