@@ -1,6 +1,6 @@
 import ROT from 'rot-js';
 import * as U from './util.js';
-import {StartupMode, PlayMode, WinMode, LoseMode, MessagesMode, PersistenceMode, BindingsMode} from './ui_mode.js'
+import {StartupMode, PlayMode, WinMode, LoseMode, MessagesMode, PersistenceMode, BindingsMode, InventoryMode} from './ui_mode.js'
 import {Message} from './message.js';
 import {MapMaker} from './map.js';
 import {DATASTORE, clearDatastore} from './datastore.js';
@@ -84,23 +84,24 @@ export let Game = {
     this.modes.messages = new MessagesMode(this);
     this.modes.persistence = new PersistenceMode(this);
     this.modes.bindings = new BindingsMode(this);
+    this.modes.inventory = new InventoryMode(this);
   },
 
-  switchMode: function(newModeName){
+  switchMode: function(newModeName, template){
     if (this.modeStack.length > 0) {
       this.curMode().exit();
     }
     this.modeStack = Array();
     this.modeStack.push(this.modes[newModeName]);
-    this.curMode().enter();
+    this.curMode().enter(template);
   },
 
-  pushMode: function(newModeName){
+  pushMode: function(newModeName, template){
     if (this.modeStack.length > 0) {
       this.curMode().exit();
     }
     this.modeStack.push(this.modes[newModeName]);
-    this.curMode().enter();
+    this.curMode().enter(template);
   },
 
   curMode: function(){

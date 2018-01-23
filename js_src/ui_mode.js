@@ -128,6 +128,9 @@ export class PlayMode extends UIMode{
   }
 
   handleInput(eventType, evt){
+    if(!this.getAvatar().isActing()){
+      return false;
+    }
     if(eventType == "keyup"){
       // if(evt.key == BINDINGS.GAME.WIN){//real win condition now!
       //   this.game.switchMode('win');
@@ -147,6 +150,10 @@ export class PlayMode extends UIMode{
       }
       else if(evt.key == BINDINGS.GAME.ENTER_BINDINGS){
         this.game.pushMode('bindings');
+        return true;
+      }
+      else if(evt.key == BINDINGS.GAME.ENTER_INVENTORY){
+        this.game.pushMode('inventory', {avatarId: this.attr.avatarId});
         return true;
       }
       else if(evt.key == BINDINGS.GAME.PREV_FLOOR){
@@ -221,9 +228,6 @@ export class PlayMode extends UIMode{
         if(this.getAvatar().pickUpAllItems() > 0){
           return true;
         }
-      }
-      else if(evt.key == BINDINGS.GAME.ENTER_INVENTORY){
-        console.dir(this.getAvatar().getItems());
       }
     }
     return false;
@@ -664,7 +668,7 @@ export class BindingsMode extends UIMode{
     for(let binding in BINDINGS[this.mode]){
       let text = `${BINDING_DESCRIPTIONS[this.mode][binding]} - [${BINDINGS[this.mode][binding]}]`;
       if(binding == this.keyToChange){
-        text = U.applyColor(text, Color.TEXT_CHANGING_KEY);
+        text = U.applyColor(text, Color.TEXT_SELECTED);
       }
       display.drawText(2, 4+i, text);
       i++;
@@ -802,8 +806,45 @@ export class BindingsMode extends UIMode{
       return;
     }
   }
+}
 
+export class InventoryMode extends UIMode{
+  constructor(game){
+    super(game);
+  }
 
+  enter(template){
+    this.avatarId = template.avatarId;
+    this.skip = 0;
+  }
 
+  renderMain(display){
+    display.drawText(0, 0, '|Equipment|' + U.applyBackground(U.applyColor('Inventory', Color.TEXT_HIGHLIGHTED), Color.TEXT_HIGHLIGHTED_BG) + '|Skills|');
 
+    let items = this.getAvatar().getItems();
+    let maxRender = 20;
+    let renderEnd = Math.min(maxRender, items.length - this.skip);
+    for(let i = 0; i < renderEnd; i++){
+      let item = items[this.skip + i];
+      let name = "Unidentified item";
+      if(item.name){
+        name = item.name;
+      }
+      display.drawText(2, i + 4, name);
+    }
+  }
+
+  handleInput(eventType, evt){
+    if(eventType == "keyup"){
+      if(evt.key == BINDINGS.MASTER.EXIT_MENU){
+        this.game.popMode();
+        return true;
+      }
+    }
+    return false;
+  }
+
+  getAvatar(){
+    return DATASTORE.ENTITIES[this.avatarId];
+  }
 }

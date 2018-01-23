@@ -27,6 +27,10 @@ export function applyColor(text, color){
   return '%c{' + color + '}' + text + '%c{}';
 }
 
+export function applyBackground(text, color){
+  return '%b{' + color + '}' + text + '%b{}';
+}
+
 export function removeByValue(array, element){
   const index = array.indexOf(element);
 

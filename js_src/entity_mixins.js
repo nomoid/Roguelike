@@ -359,7 +359,7 @@ export let AIActor = {
       currentActionDuration: 1000
     },
     initialize: function(template){
-      this.setRenderDelay(template.renderDelay || 25);
+      this.setRenderDelay(template.renderDelay || 10);
       this.setPriorities(template.priorities);
       SCHEDULER.add(this, true, 0);
     }
@@ -531,8 +531,14 @@ export let ItemDropper = {
     killed: function(evtData){
       let itemData = {x: this.getX(), y: this.getY()};
       if(evtData.src.getName() == 'avatar'){
-        itemData.item = {name: "JDog's Ramen", type: "Food", healAmount: 2};
-        this.raiseMixinEvent('addItemToMap', itemData);
+        for(let i = 0; i < 10; i++){
+          itemData.item = {name: "JDog's Ramen", type: "Food", healAmount: 2};
+          this.raiseMixinEvent('addItemToMap', itemData);
+        }
+        for(let i = 0; i < 2; i++){
+          itemData.item = {name: "JDog's Calves", type: "Key Item"};
+          this.raiseMixinEvent('addItemToMap', itemData);
+        }
       }
       else{
         itemData.item = {name: "JDog's Spicy Ramen", type: "Food", healAmount: 5};
@@ -595,7 +601,8 @@ export let Inventory = {
         //Stop if there's an issue
         let failed = null;
         let itemsPickedUp = Array();
-        for(let i = 0; i < items.length; i++){
+        let itemLength = items.length;
+        for(let i = 0; i < itemLength; i++){
           let item = map.removeItemAt(0, this.getX(), this.getY());
           if(!this.addItem(item)){
             failed = item;
