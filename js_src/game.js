@@ -78,7 +78,7 @@ export let Game = {
       });
     }
 
-    console.log(STRUCT.parseCharsToTiles(STRUCT.BASIC_FLOOR.STAIRS));
+    //console.log(STRUCT.parseCharsToTiles(STRUCT.BASIC_FLOOR.STAIRS.grid));
     // console.log(STRUCT.rotate(STRUCT.BASIC_FLOOR.TEST, 1));
     // console.log(STRUCT.rotate(STRUCT.BASIC_FLOOR.TEST, 2));
     // console.log(STRUCT.rotate(STRUCT.BASIC_FLOOR.TEST, -1));

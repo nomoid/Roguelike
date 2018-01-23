@@ -59,10 +59,13 @@ export let TILE_GRID_GENERATOR = {
     let exitX = exitPos[0]*1;
     let exitY = exitPos[1]*1;
 
-    let structs = [];//constains positions in string form
-    let structFreq = 0.2;
+    // let structs = [];//constains positions in string form
+    // let structFreq = 0.2;
 
     let borderDepth = 3;
+    let wideBorderDepth = 3;
+    let quadrantWidth = Math.floor(xdim/2)-wideBorderDepth;
+    let quadrantHeight = Math.floor(ydim/2)-wideBorderDepth;
 
     let origRngState = ROT.RNG.getState();//*** IMPORTANT
     ROT.RNG.setSeed(mapSeed);
@@ -91,11 +94,11 @@ export let TILE_GRID_GENERATOR = {
             tile = TILES.FLOOR;
           }
         }
-        //structure seeds
-        else if(ROT.RNG.getUniform() < structFreq){
-          structs.push(`${xi},${yi}`);
-          tile = TILES.FLOOR;
-        }
+        // //structure seeds
+        // else if(ROT.RNG.getUniform() < structFreq){
+        //   structs.push(`${xi},${yi}`);
+        //   tile = TILES.FLOOR;
+        // }
 
         //default is floor
         else{
@@ -108,14 +111,52 @@ export let TILE_GRID_GENERATOR = {
 
     tg[exitX][exitY] = TILES.STAIRS_DOWN;
 
-    //place stairs structures
-    let stairs = STRUCT.parseCharsToTiles(STRUCT.BASIC_FLOOR.STAIRS);
+    //place some structures in each quadrant
+    //quadrants: (i think)
+    //  0   1
+    //  2   3
+    for(let q = 0; q < 4; q++){
+      let TLX, TLY;
+      switch (q) {
+        case 0:
+          TLX = wideBorderDepth;
+          TLY = wideBorderDepth;
+          break;
+        case 1:
+          TLX = wideBorderDepth + quadrantWidth;
+          TLY = wideBorderDepth;
+          break;
+        case 2:
+          TLX = wideBorderDepth;
+          TLY = wideBorderDepth + quadrantHeight;
+          break;
+        case 3:
+          TLX = wideBorderDepth + quadrantWidth;
+          TLY = wideBorderDepth + quadrantHeight;
+          break;
+        default:
+          TLX = wideBorderDepth;
+          TLY = wideBorderDepth;
+      }
+      for(let i = 0; i < 5; i++){
+        let randomX = Math.floor(ROT.RNG.getUniform()*(quadrantWidth)+TLX);
+        let randomY = Math.floor(ROT.RNG.getUniform()*(quadrantHeight)+TLY);
+        let rotation = Math.floor(ROT.RNG.getUniform()*4)-1;
+        STRUCT.mergeGrids(tg, STRUCT.parseCharsToTiles(STRUCT.getRandomStructure(STRUCT.BASIC_FLOOR)), randomX, randomY, rotation);
+      }
+    }
+
+    //place stairs structures last (TODO: check availablility for structures.)
+    //Once TODO is done, stairs generate first.
+    let stairs = STRUCT.parseCharsToTiles(STRUCT.BASIC_FLOOR.STAIRS.grid);
     let rotation = Math.floor(ROT.RNG.getUniform()*4)-1;
     STRUCT.mergeGrids(tg, stairs, exitX, exitY, rotation);
     if(data.entrancePos){
       let rotation = Math.floor(ROT.RNG.getUniform()*4)-1;
       STRUCT.mergeGrids(tg, stairs, entranceX, entranceY, rotation);
     }
+
+
 
 
     ROT.RNG.setState(origRngState);//*** ALSO IMPORTANT

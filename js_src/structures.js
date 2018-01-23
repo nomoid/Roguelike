@@ -1,4 +1,5 @@
 import * as U from './util.js';
+import ROT from 'rot-js';
 import {TILES} from './tile.js';
 
 export function rotate(grid, dir){
@@ -40,7 +41,7 @@ export function parseCharsToTiles(grid){
 
   for(let row = 0; row < ydim; row++){
     for(let col = 0; col < xdim; col++){
-      tileGrid[row][col] = charsToTiles[grid[row][col]];
+      tileGrid[ydim-row-1][col] = charsToTiles[grid[row][col]];
     }
   }
 
@@ -79,6 +80,20 @@ export function mergeGrids(canvas, structure, canvasX, canvasY, dir){
 
 }
 
+export function getRandomStructure(structureSet){//probably a bad implementation
+  let structs = Array();
+  for(let struct in structureSet){
+    let n = structureSet[struct].chance;
+    for(let i = 0; i < n; i++){
+      structs.push(structureSet[struct]);
+    }
+  }
+  let index = Math.floor(ROT.RNG.getUniform()*structs.length);
+  console.dir(structs);
+  console.log(index);
+  return structs[index].grid;
+}
+
 let charsToTiles = {
   '#': TILES.WALL,
   '.': TILES.FLOOR,
@@ -89,12 +104,48 @@ let charsToTiles = {
 }
 
 export let BASIC_FLOOR = {
-  STAIRS: [
-    ['#', '#', '#', '#', '#'],
-    ['#', '.', '.', '.', '#'],
-    ['#', '.', '-', '.', '#'],
-    ['#', '.', '.', '.', '#'],
-    ['#', '#', '.', '#', '#']
+  STAIRS: {
+    grid: [
+      ['#', '#', '#', '#', '#'],
+      ['#', '.', '.', '.', '#'],
+      ['#', '.', '-', '.', '#'],
+      ['#', '.', '.', '.', '#'],
+      ['#', '#', '.', '#', '#']
+    ],
+    chance: 0
+  },
 
-  ],
+  TEST1:{
+    grid: [
+      ['-','#','-'],
+      ['#','#','-'],
+      ['-','#','-'],
+      ['-','#','-'],
+      ['#','#','#']
+    ],
+    chance: 1
+  },
+
+  TEST2:{
+    grid: [
+      ['-','#','-'],
+      ['#','-','#'],
+      ['-','-','#'],
+      ['-','#','-'],
+      ['#','#','#']
+    ],
+    chance: 2
+  },
+
+  TEST3:{
+    grid: [
+      ['#','#','#'],
+      ['-','-','#'],
+      ['-','#','#'],
+      ['-','-','#'],
+      ['#','#','#']
+    ],
+    chance: 3
+  },
+
 }
