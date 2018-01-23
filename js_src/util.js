@@ -123,3 +123,9 @@ export function localStorageAvailable() {
 export function deepCopy(obj){
   return JSON.parse(JSON.stringify(obj));
 }
+
+//Code from https://stackoverflow.com/questions/30003353/can-es6-template-literals-be-substituted-at-runtime-or-reused
+//Retrieved 2018-01-23
+export function fillTemplate(templateString, templateVars){
+    return new Function("return `"+templateString +"`;").call(templateVars);
+}

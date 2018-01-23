@@ -5,7 +5,7 @@ export let Items = {
     name: "JDog's Ramen",
     type: "Food",
     healAmount: 2,
-    description: "A common drop item that jdogs like to eat in his free time"
+    description: "A common drop item that jdogs like to eat in his free time. Heals for ${this.healAmount}."
   },
   "JDog's Calves": {
     name: "JDog's Calves",
@@ -16,7 +16,7 @@ export let Items = {
     name: "JDog's Spicy Ramen",
     type: "Food",
     healAmount: 5,
-    decription: "A rare drop that only occurs when jdogs defeat each other"
+    description: "A rare drop that only occurs when jdogs defeat each other. Heals for ${this.healAmount}."
   }
 }
 
