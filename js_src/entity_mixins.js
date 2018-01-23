@@ -207,6 +207,7 @@ export let PlayerMessage = {
     },
     buffGained: function(evtData){
       Message.send(`You gained the ${evtData.name} buff.`);
+      Message.send(U.fillTemplate(evtData.description, evtData));
     },
     buffLost: function(evtData){
       Message.send(`You lost the ${evtData.name} buff.`);
@@ -752,6 +753,7 @@ export let BuffHandler = {
       let duration = buffTemplate.duration || 1;
       let frequency = buffTemplate.frequency || 1;
       let effect = buffTemplate.effect;
+      let description = buffTemplate.description || "It is currently unknown what this buff will do";
       this.removeBuff(buffName);
       let endTime = duration;
       if(duration >= 0){
@@ -763,7 +765,8 @@ export let BuffHandler = {
         startTime: this.attr._BuffHandler.timeCounter,
         'endTime': endTime,
         'effect': effect,
-        'frequency': frequency
+        'frequency': frequency,
+        'description': description
       };
       this.getBuffInfoList().push(buffObj);
       let buffInfo = this.generateBuffInfo(buffObj);
@@ -802,7 +805,8 @@ export let BuffHandler = {
         name: buffObj.name,
         timeLeft: endTime,
         effect: U.deepCopy(buffObj.effect),
-        frequency: buffObj.frequency
+        frequency: buffObj.frequency,
+        description: buffObj.description
       };
     }
   },
