@@ -6,6 +6,7 @@ import {Map} from './map.js';
 import {TIME_ENGINE, SCHEDULER, setTimedUnlocker} from './timing.js';
 import {DATASTORE} from './datastore.js';
 import {getItem} from './items.js';
+import * as U from './util.js';
 
 let _exampleMixin = {
   META: {
@@ -57,8 +58,18 @@ export let TimeTracker = {
   },
   LISTENERS: {
     // timeUsed(int): the amount of time to be added to the time tracker
-    turnTaken: function(evtData){
-      this.addTime(evtData.timeUsed);
+    actionDone: function(evtData){
+      let timeUsed = 1;
+      if(evtData){
+        if(evtData.timeUsed){
+          timeUsed = evtData.timeUsed;
+        }
+      }
+      this.addTime(timeUsed);
+      this.raiseMixinEvent('endOfTurn', {
+        timeCounter: this.getTime()
+      });
+      this.raiseMixinEvent('turnDone');
     }
   }
 };
@@ -107,8 +118,6 @@ export let WalkerCorporeal = {
         this.attr.x = newX;
         this.attr.y = newY;
         this.getMap().updateEntityPosition(this, this.attr.x, this.attr.y);
-
-        this.raiseMixinEvent('turnTaken', {timeUsed: 1});
         this.raiseMixinEvent('actionDone');
         return true;
       }
@@ -138,6 +147,9 @@ export let PlayerMessage = {
     // hpLeft(int): the amount of hp remaining for the caller
     lostHealth: function(evtData){
       Message.send(`Lost ${evtData.hpLost} hp! Only ${evtData.hpLeft} left...`);
+    },
+    gainedHealth: function(evtData){
+      Message.send(`Gained ${evtData.hpGained} hp! Now you have ${evtData.hpLeft}.`);
     },
     attacks: function(evtData){
       Message.send(`You attack the ${evtData.target.getName()}!`);
@@ -191,7 +203,13 @@ export let PlayerMessage = {
     },
     itemPickUpFailed: function(evtData){
       Message.send(`Can't pick up item. ${evtData.reason}`);
-    }
+    },
+    buffGained: function(evtData){
+      Message.send(`You gained the ${evtData.name} buff.`);
+    },
+    buffLost: function(evtData){
+      Message.send(`You lost the ${evtData.name} buff.`);
+    },
   }
 };
 
@@ -214,11 +232,25 @@ export let HitPoints = {
       let curHp = this.attr._HitPoints.hp;
       this.attr._HitPoints.hp -= amt;
       this.attr._HitPoints.hp = Math.max(0, this.attr._HitPoints.hp);
-      this.raiseMixinEvent('lostHealth', {hpLost: curHp-this.attr._HitPoints.hp, hpLeft: this.attr._HitPoints.hp});
+      let hpDiff = curHp-this.attr._HitPoints.hp;
+      if(hpDiff > 0){
+        this.raiseMixinEvent('lostHealth', {
+          hpLost: hpDiff,
+          hpLeft: this.attr._HitPoints.hp
+        });
+      }
     },
     gainHp: function(amt){
+      let curHp = this.attr._HitPoints.hp;
       this.attr._HitPoints.hp += amt;
       this.attr._HitPoints.hp = Math.min(this.attr._HitPoints.maxHp, this.attr._HitPoints.hp);
+      let hpDiff = this.attr._HitPoints.hp-curHp;
+      if(hpDiff > 0){
+        this.raiseMixinEvent('gainedHealth', {
+          hpGained: hpDiff,
+          hpLeft: this.attr._HitPoints.hp
+        });
+      }
     },
     getHp: function(){
       return this.attr._HitPoints.hp;
@@ -253,6 +285,21 @@ export let HitPoints = {
         this.destroy();
         console.dir(this);
         console.dir(DATASTORE);
+      }
+    },
+    buffEvent: function(evtData){
+      if(evtData.name != 'HP Regeneration'){
+        return;
+      }
+      this.gainHp(evtData.effect.hpAmount);
+    },
+    kills: function(evtData){
+      if(typeof this.getBuffInfo !== 'function'){
+        return;
+      }
+      let info = this.getBuffInfo('Lifelink');
+      if(info){
+        this.gainHp(info.effect.hpAmount);
       }
     }
   }
@@ -338,7 +385,7 @@ export let ActorPlayer = {
     }
   },
   LISTENERS: {
-    actionDone: function(evtData){
+    turnDone: function(evtData){
       this.isActing(false);
       SCHEDULER.setDuration(this.getBaseActionDuration());
       setTimeout(function(){
@@ -674,5 +721,142 @@ export let ItemPile = {
   },
   LISTENERS: {
 
+  }
+}
+
+//Requires TimeTracker
+//Also handles debuffs
+export let BuffHandler = {
+  META: {
+    mixinName: 'BuffHandler',
+    mixinGroupName: 'BuffGroup',
+    stateNamespace: '_BuffHandler',
+    stateModel: {
+      timeCounter: 0,
+      buffInfoList: []
+      //Each buffinfo has a
+      //name(str),
+      //startTime(int),
+      //endTime(int),
+      //effect(obj),
+      //frequency(int)
+    },
+    initialize: function(){
+      // do any initialization
+    }
+  },
+  METHODS: {
+    addBuff: function(buffName, duration, frequency, effect){
+      this.removeBuff(buffName);
+      let endTime = duration;
+      if(duration >= 0){
+        endTime = this.attr._BuffHandler.timeCounter + duration;
+      }
+      //If it's already in the list remove it first
+      let buffObj = {
+        name: buffName,
+        startTime: this.attr._BuffHandler.timeCounter,
+        'endTime': endTime,
+        'effect': effect,
+        'frequency': frequency
+      };
+      this.getBuffInfoList().push(buffObj);
+      let buffInfo = this.generateBuffInfo(buffObj);
+      this.raiseMixinEvent('buffGained', buffInfo);
+    },
+    removeBuff: function(buffName){
+      let buffList = this.getBuffInfoList();
+      for(let i = 0; i < buffList.length; i++){
+        if(buffList[i].name === buffName){
+          let buff = buffList[i];
+          let buffInfo = this.generateBuffInfo(buff);
+          buffList.splice(i, 1);
+          this.raiseMixinEvent('buffLost', buffInfo);
+          return buffInfo;
+        }
+      }
+      return null;
+    },
+    getBuffInfo: function(buffName){
+      let buffList = this.getBuffInfoList();
+      for(let i = 0; i < buffList.length; i++){
+        if(buffList[i].name === buffName){
+          return this.generateBuffInfo(buffList[i]);
+        }
+      }
+    },
+    getBuffInfoList: function(){
+      return this.attr._BuffHandler.buffInfoList;
+    },
+    generateBuffInfo: function(buffObj){
+      let endTime = buffObj.endTime;
+      if(buffObj.endTime >= 0){
+        endTime = buffObj.endTime - this.attr._BuffHandler.timeCounter
+      }
+      return {
+        name: buffObj.name,
+        timeLeft: endTime,
+        effect: U.deepCopy(buffObj.effect),
+        frequency: buffObj.frequency
+      };
+    }
+  },
+  LISTENERS: {
+    endOfTurn: function(evtData){
+      let timeCounter = evtData.timeCounter;
+      this.attr._BuffHandler.timeCounter = timeCounter;
+      let removedIndices = Array();
+      let buffList = this.getBuffInfoList();
+      for(let i = 0; i < buffList.length; i++){
+        //Happens even if removed this turn
+        let buff = buffList[i];
+        let buffInfo = this.generateBuffInfo(buff);
+        if((timeCounter - buff.startTime) % buff.frequency === 0){
+          this.raiseMixinEvent('buffEvent', buffInfo);
+        }
+        if(buff.endTime >= 0 && timeCounter >= buff.endTime){
+          removedIndices.push(i);
+        }
+      }
+      //Remove in reverse
+      for(let i = removedIndices.length - 1; i >= 0; i--){
+        let buff = buffList[i];
+        let buffInfo = this.generateBuffInfo(buff);
+        buffList.splice(removedIndices[i], 1);
+        this.raiseMixinEvent('buffLost', buffInfo);
+      }
+    }
+  }
+}
+
+//Requres BuffHandler
+export let Bloodthirst = {
+  META: {
+    mixinName: 'Bloodthirst',
+    mixinGroupName: 'BuffGroup',
+    stateNamespace: '_Bloodthirst',
+    stateModel: {
+    },
+    initialize: function(){
+      // do any initialization
+    }
+  },
+  METHODS: {
+  },
+  LISTENERS: {
+    kills: function(evtData){
+      if(typeof this.addBuff === 'function'){
+        if(ROT.RNG.getUniform() < 0.5){
+          this.addBuff('HP Regeneration', 20, 5, {
+            hpAmount: 1
+          });
+        }
+        else{
+          this.addBuff('Lifelink', 50, 1, {
+            hpAmount: 5
+          });
+        }
+      }
+    }
   }
 }
