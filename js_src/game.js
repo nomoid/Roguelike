@@ -5,13 +5,16 @@ import {Message} from './message.js';
 import {MapMaker} from './map.js';
 import {DATASTORE, clearDatastore} from './datastore.js';
 import {initTiming} from './timing.js';
+import * as STRUCT from './structures.js';
 
 export let Game = {
   _PERSISTENCE_NAMESPACE: 'pickledpopcorn',
   _SAVE_LIST_NAMESPACE: 'savelist',
   _BINDINGS_NAMESPACE: 'bindings',
   _DISPLAY_SPACING: 1.1,
-  _MAX_FLOORS: 4,
+  _MAX_FLOORS: 10,
+  _xdim: 90,
+  _ydim: 90,
   _display: {
     main: {
       w: 80,
@@ -74,6 +77,12 @@ export let Game = {
         tileHeight: 32
       });
     }
+
+    //console.log(STRUCT.parseCharsToTiles(STRUCT.BASIC_FLOOR.STAIRS.grid));
+    // console.log(STRUCT.rotate(STRUCT.BASIC_FLOOR.TEST, 1));
+    // console.log(STRUCT.rotate(STRUCT.BASIC_FLOOR.TEST, 2));
+    // console.log(STRUCT.rotate(STRUCT.BASIC_FLOOR.TEST, -1));
+
   },
 
   setupModes: function(){
@@ -232,7 +241,24 @@ export let Game = {
 
   getMapId: function(){
     while(!this.mapIds[this.currMap]){
-      let m = MapMaker({xdim: 50, ydim: 40, mapSeed: U.mapSeedFromFloor(this._mapRNGData, this.currMap)});
+      let entrancePos = null;
+      if(this.currMap != 0){
+        entrancePos = U.mapExitFromSeed({
+          xdim: this._xdim,
+          ydim: this._ydim,
+          mapSeed: U.mapSeedFromFloor(this._mapRNGData, this.currMap-1),
+          floor: this.currMap-1
+        });
+      }
+      //let entrance = (this.currMap!=0 ? this.mapIds[this.currMap-1].getExitPos())
+      let m = MapMaker({
+        xdim: this._xdim,
+        ydim: this._ydim,
+        mapSeed: U.mapSeedFromFloor(this._mapRNGData, this.currMap),
+        mapType: 'basic_floor',
+        floor: this.currMap,
+        'entrancePos': entrancePos
+      });
       let id = m.getId();
       m.setupMap();
       this.mapIds.push(id);

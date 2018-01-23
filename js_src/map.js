@@ -3,6 +3,8 @@ import {init2DArray, uniqueId} from './util.js';
 import ROT from 'rot-js';
 import {DATASTORE} from './datastore.js';
 import {EntityFactory} from './entities.js';
+import {TILE_GRID_GENERATOR} from './generators.js';
+import {TILE_GRID_POPULATOR} from './populators.js';
 
 export class Map{
   constructor(attr){
@@ -12,6 +14,9 @@ export class Map{
     this.attr.ydim = attr.ydim || 1;
     this.attr.mapType = attr.mapType || 'basic_caves';
     this.attr.mapSeed = attr.mapSeed || 0;
+    this.attr.entrancePos = attr.entrancePos;
+    this.attr.floor = attr.floor;
+    this.attr.exitPos = '';
     this.attr.id = attr.id || uniqueId('map-'+this.attr.mapType);
     this.attr.entityIdToMapPos = attr.entityIdToMapPos || {};
     this.attr.mapPosToEntityId = attr.mapPosToEntityId || {};
@@ -23,8 +28,12 @@ export class Map{
 
   setupMap(){
     if(!this.tileGrid){
-      this.tileGrid =
-      TILE_GRID_GENERATOR[this.attr.mapType](this.attr.xdim, this.attr.ydim, this.attr.mapSeed);
+      let generated = TILE_GRID_GENERATOR[this.attr.mapType](this.attr);
+      this.tileGrid = generated.map;
+
+      if(generated.exitPos){
+        this.attr.exitPos = generated.exitPos;
+      }
     }
     if(!this.attr.hasPopulated){
       this.attr.hasPopulated = true;
@@ -67,6 +76,12 @@ export class Map{
     this.attr.mapSeed = mapSeed;
   }
 
+  getEntrancePos(){
+    return this.attr.entrancePos;
+  }
+  getExitPos(){
+    return this.attr.exitPos;
+  }
   getMobAmounts(name){
     if(name){
       return this.attr.mobAmounts[name];
@@ -290,62 +305,6 @@ export class Map{
   }
 
 
-}
-
-let TILE_GRID_GENERATOR = {
-  'basic_caves': function(xdim, ydim, mapSeed){
-
-    let origRngState = ROT.RNG.getState();
-    ROT.RNG.setSeed(mapSeed);
-
-    let tg = init2DArray(xdim, ydim, TILES.NULLTILE);
-    let gen = new ROT.Map.Cellular(xdim, ydim, {connected: true});
-
-
-    gen.randomize(0.625);//0.625
-    for(let i = 0; i < 3; i++){
-      gen.create();
-    }
-    gen.connect(
-      function(x, y, isFloor){
-        let floorCondition = isFloor && x != 0 && y != 0 && x != xdim - 1 && y != ydim - 1;
-        let tile = null;
-        if(floorCondition){
-          tile = TILES.FLOOR;
-        }
-        else{
-          tile = TILES.WALL;
-        }
-        tg[x][y] = tile;
-      },
-    1);
-
-    ROT.RNG.setState(origRngState);
-
-    return tg;
-  }
-}
-
-let TILE_GRID_POPULATOR = {
-  'basic_caves' : function(map){
-    map.attr.mobAmounts['chris'] = 0;
-    map.attr.mobAmounts['jdog'] = 0;
-    let origRngState = ROT.RNG.getState();
-    ROT.RNG.setSeed(map.attr.mapSeed + 1);
-    let chris = EntityFactory.create('chris', true);
-    map.addEntityAtRandomPosition(chris);
-    for(let i = 0; i < map.attr.xdim * map.attr.ydim / 4; i++){
-      let p = ROT.RNG.getUniform();
-      console.log(p);
-      if(p < 0.25){
-        break;
-      }
-      let jdog = EntityFactory.create('jdog', true);
-      map.addEntityAtRandomPosition(jdog);
-    }
-
-    ROT.RNG.setState(origRngState);
-  }
 }
 
 export function MapMaker(mapData){

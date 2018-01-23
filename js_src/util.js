@@ -76,6 +76,36 @@ export function mapSeedFromFloor(mapRNGData, floor){
   return (initSeed + (floor * offset)) % mapSeedModulo;
 }
 
+export function mapExitFromSeed(data){
+  //odd floors have exit on top, even have exit on bottom
+  let xdim = data.xdim;
+  let ydim = data.ydim;
+  let mapSeed = data.mapSeed;
+  let floor = data.floor;
+
+  let border = 8;
+  let partitionWidth = ydim/3;
+  let exitX, exitY;
+
+  let origRngState = ROT.RNG.getState();
+  ROT.RNG.setSeed(mapSeed+2);
+
+  if(floor%2==0){
+    console.log(floor);
+    exitY = Math.floor(ROT.RNG.getUniform()*partitionWidth+(ydim-border-partitionWidth));
+  }
+  else{
+    console.log(floor );
+    exitY = Math.floor(ROT.RNG.getUniform()*partitionWidth+(border));
+  }
+  exitX = Math.floor(ROT.RNG.getUniform()*(xdim-border*2)+border);
+
+  ROT.RNG.setState(origRngState);
+  console.log(`${exitX},${exitY}`);
+  return `${exitX},${exitY}`;
+
+}
+
 export function getRandomSeed(){
   return Math.trunc(ROT.RNG.getUniform() * mapSeedModulo);
 }
