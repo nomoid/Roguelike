@@ -79,12 +79,14 @@ export class PlayMode extends UIMode{
   }
 
   enter(){
+    let first = false;
     if(!this.attr.avatarId){
       let a = EntityFactory.create('avatar', true);
       this.attr.avatarId = a.getId();
+      first = true;
     }
     this.game.isPlaying = true;
-    this.setupAvatar();
+    this.setupAvatar(first);
     TIME_ENGINE.unlock();
   }
 
@@ -151,16 +153,18 @@ export class PlayMode extends UIMode{
       }
       else if(evt.key == BINDINGS.GAME.PREV_FLOOR){
         let oldId = this.game.getMapId();
-        if(this.game.previousFloor()){
-          Message.send("You have entered the previous floor");
-          this.setupAvatar();
-          DATASTORE.MAPS[oldId].removeEntity(DATASTORE.ENTITIES[this.attr.avatarId]);
-          return true;
+        if(`${this.getAvatar().getX()},${this.getAvatar().getY()}` === DATASTORE.MAPS[oldId].getEntrancePos()){
+          if(this.game.previousFloor()){
+            Message.send("You have entered the previous floor");
+            this.setupAvatar();
+            DATASTORE.MAPS[oldId].removeEntity(DATASTORE.ENTITIES[this.attr.avatarId]);
+            return true;
+          }
         }
       }
       else if(evt.key == BINDINGS.GAME.NEXT_FLOOR){
         let oldId = this.game.getMapId();
-        if(DATASTORE.MAPS[oldId].getMobAmounts('jdog')==0){
+        if(`${this.getAvatar().getX()},${this.getAvatar().getY()}` === DATASTORE.MAPS[oldId].getExitPos()){
           if(this.game.nextFloor()){
             Message.send("You have entered the next floor");
             this.setupAvatar();
@@ -169,7 +173,7 @@ export class PlayMode extends UIMode{
           }
         }
         else{
-          Message.send(`Still ${DATASTORE.MAPS[oldId].getMobAmounts('jdog')} jdogs on floor. Kill them before continuing.`);
+          Message.send('Find the exit to continue!');
         }
       }
       else if(evt.key == BINDINGS.GAME.MOVE_NORTH){
@@ -216,11 +220,16 @@ export class PlayMode extends UIMode{
     return false;
   }
 
-  setupAvatar(){
+  setupAvatar(first){
     let m = DATASTORE.MAPS[this.game.getMapId()];
     if(!m.attr.entityIdToMapPos[this.attr.avatarId]){
       let a = DATASTORE.ENTITIES[this.attr.avatarId];
-      m.addEntityAtRandomPosition(a);
+      if(first){
+        m.addEntityAtRandomPosition(a);
+      }
+      else{
+        m.addEntityAt(a, a.getX(), a.getY());
+      }
     }
     this.moveCameraToAvatar();
   }
