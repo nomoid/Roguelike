@@ -850,7 +850,7 @@ export class InventoryMode extends UIMode{
       let descriptionX = 40;
       let description = "Nobody knows what this item is used for...";
       if(selectedItem.description){
-        description = selectedItem.description;
+        description = U.fillTemplate(selectedItem.description, selectedItem);
       }
       display.drawText(descriptionX, 4, description);
     }
