@@ -6,6 +6,7 @@ import {Map} from './map.js';
 import {TIME_ENGINE, SCHEDULER, setTimedUnlocker} from './timing.js';
 import {DATASTORE} from './datastore.js';
 import {getItem} from './items.js';
+import {getBuff} from './buffs.js';
 import * as U from './util.js';
 
 let _exampleMixin = {
@@ -746,7 +747,11 @@ export let BuffHandler = {
     }
   },
   METHODS: {
-    addBuff: function(buffName, duration, frequency, effect){
+    addBuff: function(buffTemplate){
+      let buffName = buffTemplate.name;
+      let duration = buffTemplate.duration || 1;
+      let frequency = buffTemplate.frequency || 1;
+      let effect = buffTemplate.effect;
       this.removeBuff(buffName);
       let endTime = duration;
       if(duration >= 0){
@@ -847,14 +852,10 @@ export let Bloodthirst = {
     kills: function(evtData){
       if(typeof this.addBuff === 'function'){
         if(ROT.RNG.getUniform() < 0.5){
-          this.addBuff('HP Regeneration', 20, 5, {
-            hpAmount: 1
-          });
+          this.addBuff(getBuff("hp_regen_1"));
         }
         else{
-          this.addBuff('Lifelink', 50, 1, {
-            hpAmount: 5
-          });
+          this.addBuff(getBuff("lifelink_1"));
         }
       }
     }
