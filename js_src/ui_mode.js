@@ -4,6 +4,7 @@ import {Map, MapMaker} from './map.js';
 import {DisplaySymbol} from './display_symbol.js';
 import {DATASTORE, clearDatastore} from './datastore.js';
 import {Color} from './color.js';
+import {Character} from './character.js';
 import {Entity} from './entity.js';
 import {EntityFactory} from './entities.js';
 import {BINDINGS, BINDING_DESCRIPTIONS, setKeybindingsArrowKeys, setKeybindingsWASD, setInventoryBindings} from './keybindings.js';
@@ -815,20 +816,30 @@ export class InventoryMode extends UIMode{
 
   enter(template){
     this.avatarId = template.avatarId;
-    this.skip = 0;
+    this.selected = 0;
   }
 
   renderMain(display){
+    let bottom = 23;
     display.drawText(0, 0, '|Equipment|' + U.applyBackground(U.applyColor('Inventory', Color.TEXT_HIGHLIGHTED), Color.TEXT_HIGHLIGHTED_BG) + '|Skills|');
-
     let items = this.getAvatar().getItems();
     let maxRender = 20;
-    let renderEnd = Math.min(maxRender, items.length - this.skip);
+    if(items.length - this.selected > maxRender){
+      display.drawText(0, bottom, Character.DOWN_TRIANGLE);
+    }
+    let skip = Math.max(0, Math.min(items.length - maxRender, this.selected));
+    let renderEnd = Math.min(maxRender, items.length - skip);
+    if(skip > 0){
+      display.drawText(0, 4, Character.UP_TRIANGLE);
+    }
     for(let i = 0; i < renderEnd; i++){
-      let item = items[this.skip + i];
+      let item = items[skip + i];
       let name = "Unidentified item";
       if(item.name){
         name = item.name;
+      }
+      if(skip + i == this.selected){
+        name = U.applyBackground(U.applyColor(name, Color.TEXT_HIGHLIGHTED), Color.TEXT_HIGHLIGHTED_BG)
       }
       display.drawText(2, i + 4, name);
     }
@@ -839,6 +850,20 @@ export class InventoryMode extends UIMode{
       if(evt.key == BINDINGS.MASTER.EXIT_MENU){
         this.game.popMode();
         return true;
+      }
+      else if(evt.key == BINDINGS.MASTER.MENU_DOWN){
+        let maxRender = 20;
+        let items = this.getAvatar().getItems();
+        if(this.selected < items.length - 1){
+          this.selected++;
+          return true;
+        }
+      }
+      else if(evt.key == BINDINGS.MASTER.MENU_UP){
+        if(this.selected > 0){
+          this.selected--;
+          return true;
+        }
       }
     }
     return false;
