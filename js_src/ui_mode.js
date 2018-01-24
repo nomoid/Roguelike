@@ -1008,10 +1008,9 @@ export class EquipmentMode extends UIMode{
       let slotName = EquipmentSlots[slot];
       if(slotName){
         let item = equipment[slot];
-        console.dir(item);
         let itemText = "Empty";
         if(item){
-          itemText = "Unidentified Item";
+          itemText = "Unidentified item";
           if(item.name){
             itemText = item.name;
           }
@@ -1022,6 +1021,31 @@ export class EquipmentMode extends UIMode{
         }
         display.drawText(2, 4 + i, slotText);
       }
+    }
+    let selectedItemSlot = EquipmentOrder[this.selectedSlot];
+    let selectedItem = equipment[selectedItemSlot];
+    if(selectedItem){
+      let descriptionX = 40;
+      let description = "Nobody knows what this item is used for...";
+      if(selectedItem.description){
+        description = U.fillTemplate(selectedItem.description, selectedItem);
+      }
+      let slotType = "Equipment";
+      if(selectedItem.slot){
+        slotType = selectedItem.slot;
+      }
+      display.drawText(descriptionX, 4, slotType);
+      display.drawText(descriptionX, 5, description);
+    }
+    //Render functionality
+    let functionalityX = 40;
+    if(this.equipping){
+      display.drawText(functionalityX, 8, `[${BINDINGS.INVENTORY.EQUIP}] - Equip here`);
+      display.drawText(functionalityX, 9, `[${BINDINGS.MASTER.EXIT_MENU}] - Cancel`);
+    }
+    else if(selectedItem){
+      display.drawText(functionalityX, 8, `[${BINDINGS.INVENTORY.UNEQUIP}] - Unequip`);
+      display.drawText(functionalityX, 9, `[${BINDINGS.INVENTORY.DROP}] - Drop`);
     }
   }
 
@@ -1064,8 +1088,14 @@ export class EquipmentMode extends UIMode{
           }
         }
         else{
+          if(evt.key == BINDINGS.INVENTORY.ENTER_BINDINGS){
+            this.game.pushMode('bindings', {
+              mode: 'INVENTORY'
+            });
+            return true;
+          }
           //Disallow L/R when equipping
-          if(evt.key == BINDINGS.MASTER.MENU_LEFT){
+          else if(evt.key == BINDINGS.MASTER.MENU_LEFT){
             //this.game.swapMode('skills');
             //return true;
           }

@@ -1051,7 +1051,7 @@ export let BuffHandler = {
       }
       //Remove in reverse
       for(let i = removedIndices.length - 1; i >= 0; i--){
-        let buff = buffList[i];
+        let buff = buffList[removedIndices[i]];
         let buffInfo = this.generateBuffInfo(buff);
         buffList.splice(removedIndices[i], 1);
         this.raiseMixinEvent('buffLost', buffInfo);
