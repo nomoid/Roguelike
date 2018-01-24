@@ -5,6 +5,7 @@ import {Message} from './message.js';
 import {Map} from './map.js';
 import {TIME_ENGINE, SCHEDULER, setTimedUnlocker} from './timing.js';
 import {DATASTORE} from './datastore.js';
+import * as U from './util.js';
 
 let _exampleMixin = {
   META: {
@@ -444,6 +445,48 @@ export let AIActor = {
   }
 }
 
+export let OmniscientEnemyTargeter = {
+  META: {
+    mixinName: 'OmniscientEnemyTargeter',
+    mixinGroupName: 'Targeter',
+    stateNamespace: '_OmniscientEnemyTargeter',
+    stateModel: {
+      targetName: '',
+    },
+    initialize: function(template){
+      targetName = template.targetName;
+    }
+  },
+  METHODS: {
+    getTargetPos: function(){
+      let map = this.getMap();
+      let targets = [];
+      for(let entId in map.attr.entityIdToMapPos){
+        let ent = DATASTORE.ENTITIES[entId];
+        if(ent.getName()===this._OmniscientEnemyTargeter.stateModel.targetName){
+          targets.push(ent);
+        }
+      }
+      let minD = 100000
+      let minDIndex = 0;
+      for(let i = 0; i < targets.length; i++){
+        let enemy = targets[i];
+        let d = U.distance2D(this.getX(), this.getY(), enemy.getX(), enemy.getY());
+        if(d < minD){
+          minD = d;
+          minDIndex = i;
+        }
+      }
+      let target = targets[minDIndex];
+      return `${target.getX(),target.getY()}`;
+
+    }
+  },
+  LISTENERS: {
+
+  }
+}
+
 //Requires AIActor mixin
 export let ActorRandomWalker = {
   META: {
@@ -499,13 +542,14 @@ export let ActorRandomWalker = {
   }
 };
 
-//Requires AIActor mixin
-export let ShortsightedAttacker = {
+//Requires AIActor mixin and ANY targeter mixin
+export let NearsightedAttacker = {
   META: {
-    mixinName: 'ShortsightedAttacker',
+    mixinName: 'NearsightedAttacker',
     mixinGroupName: 'ActorGroup',
-    stateNamespace: '_ShortsightedAttacker',
+    stateNamespace: '_NearsightedAttacker',
     stateModel: {
+      enemy: {}
     },
     initialize: function(){
     }
@@ -518,13 +562,18 @@ export let ShortsightedAttacker = {
       if(actorData.target && actorData.target !== 'ShortsightedAttacker'){
         return;
       }
-      //console.log("walker is acting");
-      //Rand number from -1 to 1
-      let dx = Math.trunc(ROT.RNG.getUniform() * 3) - 1;
-      let dy = Math.trunc(ROT.RNG.getUniform() * 3) - 1;
-      this.raiseMixinEvent('walkAttempt', {'dx': dx, 'dy': dy});
-      //console.log("walker is done acting");
+      let targetPos = this.getTargetPosition();
+      let targetX = targetPos[0];
+      let targetY = targetPos[1];
+      let x = this.getX();
+      let y = this.getY();
+      //if enemy is in adjacent tile
+
+
+      //if it attacked
       actorData.terminate = true;
+
+      //else dont terminate so we do whatever is best
     }
   }
 };

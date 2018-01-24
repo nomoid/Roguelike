@@ -160,7 +160,7 @@ export let TILE_GRID_GENERATOR = {
         let randomX = Math.floor(ROT.RNG.getUniform()*(quadrantWidth)+TLX);
         let randomY = Math.floor(ROT.RNG.getUniform()*(quadrantHeight)+TLY);
         let rotation = Math.floor(ROT.RNG.getUniform()*4)-1;
-        //STRUCT.tryPlaceStructure(tg, STRUCT.parseCharsToTiles(STRUCT.getRandomStructure(STRUCT.BASIC_FLOOR)), randomX, randomY, rotation);
+        STRUCT.tryPlaceStructure(tg, STRUCT.parseCharsToTiles(STRUCT.getRandomStructure(STRUCT.BASIC_FLOOR)), randomX, randomY, rotation);
       }
     }
 

@@ -204,7 +204,7 @@ export let BASIC_FLOOR = {
       ['#', '|', '|', '|', '|', '|', '|', '|', '|', '#'],
     ],
 
-    chance: 1,
+    chance: 10,
   },
 
   SMALL_L: {

@@ -35,6 +35,10 @@ export function removeByValue(array, element){
   }
 }
 
+export function distance2D(ax, ay, bx, by){
+  return Math.sqrt(Math.pow(Math.abs(ax-bx), 2)+Math.pow(Math.abs(ay-by), 2));
+}
+
 export function init2DArray(xdim, ydim, initialValue){
   let a = Array();
   for(let x = 0; x < xdim; x++){
