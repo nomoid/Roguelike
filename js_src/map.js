@@ -34,10 +34,16 @@ export class Map{
       if(generated.exitPos){
         this.attr.exitPos = generated.exitPos;
       }
+      if(generated.entrancePos){
+        this.attr.entrancePos = generated.entrancePos;
+      }
     }
     if(!this.attr.hasPopulated){
       this.attr.hasPopulated = true;
       TILE_GRID_POPULATOR[this.attr.mapType](this);
+    }
+    else{
+      this.clearMobSeeds();
     }
   }
 
@@ -202,7 +208,8 @@ export class Map{
     ent.setMapId(this.getId());
     ent.setX(mapx);
     ent.setY(mapy);
-    if(this.attr.mobAmounts[ent.getName()]>=0){
+    if(typeof this.attr.mobAmounts[ent.getName()]!=='undefined'){
+      console.log(this.attr.mobAmounts[ent.getName()]);
       this.attr.mobAmounts[ent.getName()]++;
     }
   }
@@ -219,6 +226,17 @@ export class Map{
       return this.getRandomOpenPosition();
     }
     return `${x},${y}`;
+  }
+
+  clearMobSeeds(){
+    for(let xi = 0; xi < this.attr.xdim; xi++){
+      for(let yi = 0; yi < this.attr.ydim; yi++){
+        let tile = this.tileGrid[xi][yi];
+        if(tile.isA('mob_seed')){
+          this.tileGrid[xi][yi] = TILES.FLOOR;
+        }
+      }
+    }
   }
 
   isPositionOpen(mapx, mapy){

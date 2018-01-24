@@ -79,12 +79,14 @@ export class PlayMode extends UIMode{
   }
 
   enter(){
+    let first = false;
     if(!this.attr.avatarId){
       let a = EntityFactory.create('avatar', true);
       this.attr.avatarId = a.getId();
+      first = true;
     }
     this.game.isPlaying = true;
-    this.setupAvatar();
+    this.setupAvatar(first);
     TIME_ENGINE.unlock();
   }
 
@@ -160,7 +162,7 @@ export class PlayMode extends UIMode{
       }
       else if(evt.key == BINDINGS.GAME.NEXT_FLOOR){
         let oldId = this.game.getMapId();
-        if(DATASTORE.MAPS[oldId].getMobAmounts('jdog')==0){
+        if(!DATASTORE.MAPS[oldId].getMobAmounts('jdog')){
           if(this.game.nextFloor()){
             Message.send("You have entered the next floor");
             this.setupAvatar();
@@ -229,11 +231,16 @@ export class PlayMode extends UIMode{
     return false;
   }
 
-  setupAvatar(){
+  setupAvatar(first){
     let m = DATASTORE.MAPS[this.game.getMapId()];
     if(!m.attr.entityIdToMapPos[this.attr.avatarId]){
       let a = DATASTORE.ENTITIES[this.attr.avatarId];
-      m.addEntityAtRandomPosition(a);
+      if(first){
+        m.addEntityAt(a, m.getEntrancePos().split(',')[0]*1, m.getEntrancePos().split(',')[1]*1);
+      }
+      else{
+        m.addEntityAt(a, a.getX(), a.getY());
+      }
     }
     this.moveCameraToAvatar();
   }

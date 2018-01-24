@@ -95,7 +95,7 @@ export function mapExitFromSeed(data){
     exitY = Math.floor(ROT.RNG.getUniform()*partitionWidth+(ydim-border-partitionWidth));
   }
   else{
-    console.log(floor );
+    console.log(floor);
     exitY = Math.floor(ROT.RNG.getUniform()*partitionWidth+(border));
   }
   exitX = Math.floor(ROT.RNG.getUniform()*(xdim-border*2)+border);
