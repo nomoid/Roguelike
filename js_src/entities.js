@@ -24,10 +24,12 @@ EntityFactory.learn({
   chr: 'd',
   fg: '#d06',
   maxHp: 4,
+  targetName: 'avatar',
   priorities: {
-    'ActorRandomWalker': 1
+    'NearsightedAttacker': 1,
+    'ActorRandomWalker': 2
   },
-  mixinNames: ['HitPoints', 'AIActor', 'ActorRandomWalker', 'WalkerCorporeal', 'MeleeAttacker', 'ItemDropper']
+  mixinNames: ['HitPoints', 'AIActor', 'ActorRandomWalker', 'WalkerCorporeal', 'MeleeAttacker', 'ItemDropper', 'NearsightedAttacker', 'OmniscientEnemyTargeter']
 });
 
 EntityFactory.learn({

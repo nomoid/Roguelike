@@ -454,7 +454,7 @@ export let OmniscientEnemyTargeter = {
       targetName: '',
     },
     initialize: function(template){
-      targetName = template.targetName;
+      this.attr._OmniscientEnemyTargeter.targetName = template.targetName;
     }
   },
   METHODS: {
@@ -463,7 +463,7 @@ export let OmniscientEnemyTargeter = {
       let targets = [];
       for(let entId in map.attr.entityIdToMapPos){
         let ent = DATASTORE.ENTITIES[entId];
-        if(ent.getName()===this._OmniscientEnemyTargeter.stateModel.targetName){
+        if(ent.getName()===this.attr._OmniscientEnemyTargeter.targetName){
           targets.push(ent);
         }
       }
@@ -477,8 +477,11 @@ export let OmniscientEnemyTargeter = {
           minDIndex = i;
         }
       }
+      if(targets.length==0){
+        return null;
+      }
       let target = targets[minDIndex];
-      return `${target.getX(),target.getY()}`;
+      return `${target.getX()},${target.getY()}`;
 
     }
   },
@@ -559,21 +562,43 @@ export let NearsightedAttacker = {
   },
   LISTENERS: {
     actorPerform: function(actorData){
-      if(actorData.target && actorData.target !== 'ShortsightedAttacker'){
+      if(actorData.target && actorData.target !== 'NearsightedAttacker'){
         return;
       }
-      let targetPos = this.getTargetPosition();
-      let targetX = targetPos[0];
-      let targetY = targetPos[1];
+      let targetPos = this.getTargetPos().split(',');
+      if(targetPos===null){
+        actorData.terminate = false;
+        return;
+      }
+      let targetX = targetPos[0]*1;
+      let targetY = targetPos[1]*1;
       let x = this.getX();
       let y = this.getY();
+      let dx, dy;
       //if enemy is in adjacent tile
-
-
-      //if it attacked
-      actorData.terminate = true;
-
-      //else dont terminate so we do whatever is best
+      if(targetX == x-1 && targetY == y){
+        dx = -1;
+        dy = 0;
+      }
+      else if(targetX == x && targetY == y-1){
+        dx = 0;
+        dy = -1;
+      }
+      else if(targetX == x+1 && targetY == y){
+        dx = 1;
+        dy = 0;
+      }
+      else if(targetX == x && targetY == y+1){
+        dx = 0;
+        dy = 1;
+      }
+      else{
+        actorData.terminate = false;
+        return;
+      }
+      if(this.tryWalk(dx, dy)){
+        actorData.terminate = true;
+      }
     }
   }
 };
