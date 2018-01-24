@@ -1181,3 +1181,21 @@ export class EquipmentMode extends UIMode{
     return DATASTORE.ENTITIES[this.avatarId];
   }
 }
+
+export class SkillsMode extends UIMode{
+  constructor(game){
+    super(game);
+  }
+
+  enter(template){
+    
+  }
+
+  renderMain(display){
+
+  }
+
+  handleInput(eventType, evt){
+
+  }
+}

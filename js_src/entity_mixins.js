@@ -9,7 +9,7 @@ import {generateItem} from './items.js';
 import {generateEquipment, EquipmentSlots} from './equipment.js';
 import {generateBuff} from './buffs.js';
 import * as U from './util.js';
-import {getLevelForSkill, getXpForSkillLevel, PlayerSkills} from './skills.js';
+import * as S './skills.js';
 
 let _exampleMixin = {
   META: {
@@ -1196,6 +1196,7 @@ export let Skills = {
       //Each skill has a
       //name(str),
       //xp(int) - cumulative skill xp
+      //seen(bool)
     },
     initialize: function(){
 
@@ -1207,9 +1208,9 @@ export let Skills = {
     },
     getSkillInfo: function(name){
       let skill = this.getSkills()[name];
-      let lvl = getLevelForSkill(skill.name, skill.xp);
+      let lvl = S.getLevelForSkill(skill.name, skill.xp);
       //xp remaining needed to level up
-      let xpNeeded = getXpForSkillLevel(skill.name, lvl+1) - skill.xp;
+      let xpNeeded = S.getXpForSkillLevel(skill.name, lvl+1) - skill.xp;
       let skillInfo = {
         name: skill.name,
         level: lvl,
@@ -1223,7 +1224,17 @@ export let Skills = {
     addSkill: function(name, xp){
       let skills = this.getSkills();
       let skill = skills[name];
+      let oldLevel = 0;
+      //Check for prereqs
+      if(!S.hasPrereqs(name, skills)){
+        this.raiseMixinEvent('addSkillFailed', {
+          'name': name,
+          'xp': xp,
+          'reason': 'You do not have the proper prerequisites.'
+        });
+      }
       if(skill){
+        oldLevel = S.getLevelForSkill(skill.name, skill.xp);
         //If new skill has higher xp, replace
         if(xp){
           skill.xp += xp;
@@ -1232,8 +1243,27 @@ export let Skills = {
       else{
         skills[name] = {
           'name': name,
-          'xp': xp ? xp : 0
+          'xp': xp ? xp : 0,
+          seen: false
         };
+      }
+      let newSkill = skills[name];
+      let newLevel = S.getLevelForSkill(newSkill.name, newSkill.xp);
+        if(newLevel > oldLevel){
+        //If level up, fire an event
+        this.raiseMixinEvent('skillLevelUp', {
+          'name': newSkill.name
+        });
+      }
+      //If skill reaches level 1, set seen flag to true
+      if(newLevel > 0){
+        if(!newSkill.seen){
+          //If level up, fire an event
+          this.raiseMixinEvent('skillSeen', {
+            'name': newSkill.name
+          });
+          newSkill.seen = true;
+        }
       }
     }
   },
@@ -1244,7 +1274,7 @@ export let Skills = {
     },
     initAvatar: function(evtData){
       for(let i = 0; i < PlayerSkills.length; i++){
-        this.addSkill(PlayerSkills[i]);
+        this.addSkill(S.PlayerSkills[i]);
       }
     }
   }
