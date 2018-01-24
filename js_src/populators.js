@@ -28,8 +28,6 @@ export let TILE_GRID_POPULATOR = {
     let origRngState = ROT.RNG.getState();
     ROT.RNG.setSeed(map.attr.mapSeed + 1);
 
-    map.attr.mobAmounts['chris'] = 0;
-    map.attr.mobAmounts['jdog'] = 0;
 
     //populate through seeds!
     for(let xi = 0; xi < map.attr.xdim; xi++){
@@ -38,7 +36,7 @@ export let TILE_GRID_POPULATOR = {
         if(tile.isA('mob_seed')){
           let mobName = tile.seedData.mobName;
           if(!map.attr.mobAmounts[mobName]){
-            map.attr.mobAmounts[mobName] = 0;
+            //map.attr.mobAmounts[mobName] = 0;
           }
           let mob = EntityFactory.create(mobName, true);
           map.addEntityAt(mob, xi, yi);

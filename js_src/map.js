@@ -32,6 +32,9 @@ export class Map{
       if(generated.exitPos){
         this.attr.exitPos = generated.exitPos;
       }
+      if(generated.entrancePos){
+        this.attr.entrancePos = generated.entrancePos;
+      }
     }
     if(!this.attr.hasPopulated){
       this.attr.hasPopulated = true;
@@ -114,7 +117,8 @@ export class Map{
     ent.setMapId(this.getId());
     ent.setX(mapx);
     ent.setY(mapy);
-    if(this.attr.mobAmounts[ent.getName()]>=0){
+    if(typeof this.attr.mobAmounts[ent.getName()]!=='undefined'){
+      console.log(this.attr.mobAmounts[ent.getName()]);
       this.attr.mobAmounts[ent.getName()]++;
     }
   }
