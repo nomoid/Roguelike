@@ -47,16 +47,14 @@ export let TILE_GRID_POPULATOR = {
       }
     }
 
-    //let chris = EntityFactory.create('chris', true);
-    //map.addEntityAtRandomPosition(chris);
     for(let i = 0; i < map.attr.xdim * map.attr.ydim / 4; i++){
       let p = ROT.RNG.getUniform();
       console.log(p);
       if(p < 0.25){
         break;
       }
-      //let jdog = EntityFactory.create('jdog', true);
-      //map.addEntityAtRandomPosition(jdog);
+      let jdog = EntityFactory.create('jdog', true);
+      map.addEntityAtRandomPosition(jdog);
     }
 
 
