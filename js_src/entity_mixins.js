@@ -359,7 +359,7 @@ export let AIActor = {
       currentActionDuration: 1000
     },
     initialize: function(template){
-      this.setRenderDelay(template.renderDelay || 1);//25
+      this.setRenderDelay(template.renderDelay || -1);
       this.setPriorities(template.priorities);
       SCHEDULER.add(this, true, 0);
     }
@@ -428,13 +428,18 @@ export let AIActor = {
       let actor = this;
       SCHEDULER.setDuration(this.getBaseActionDuration());
       this.isActing(false);
-      this.raiseMixinEvent('renderMain');
-      return {then: function(unlocker){
-        setTimeout(function(){
-          setTimedUnlocker(false);
-          unlocker();
-        }, actor.getRenderDelay());
-      }};
+      if(actor.getRenderDelay() > 0){
+        this.raiseMixinEvent('renderMain');
+        return {then: function(unlocker){
+            setTimeout(function(){
+              setTimedUnlocker(false);
+              unlocker();
+            }, actor.getRenderDelay());
+        }};
+      }
+      else{
+        setTimedUnlocker(false);
+      }
     }
   }
 }
