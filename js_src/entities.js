@@ -8,7 +8,7 @@ EntityFactory.learn({
   name: 'avatar',
   chr: '@',
   fg: Color.AVATAR_FG,
-  maxHp: 10,
+  maxHp: 100,
   radius: 16,
   mixinNames: ['TimeTracker', 'WalkerCorporeal', 'PlayerMessage', 'HitPoints', 'ActorPlayer', 'MeleeAttacker', 'FOVHandler', 'ItemPile', 'Inventory']
 });
@@ -27,9 +27,9 @@ EntityFactory.learn({
   targetName: 'avatar',
   priorities: {
     'NearsightedAttacker': 1,
-    'ActorRandomWalker': 2
+    'OmniscientPathfinder': 2
   },
-  mixinNames: ['HitPoints', 'AIActor', 'ActorRandomWalker', 'WalkerCorporeal', 'MeleeAttacker', 'ItemDropper', 'NearsightedAttacker', 'OmniscientEnemyTargeter']
+  mixinNames: ['HitPoints', 'AIActor', 'ActorRandomWalker', 'WalkerCorporeal', 'MeleeAttacker', 'ItemDropper', 'NearsightedAttacker', 'OmniscientEnemyTargeter', 'OmniscientPathfinder']
 });
 
 EntityFactory.learn({

@@ -45,7 +45,7 @@ export let TILE_GRID_POPULATOR = {
       }
     }
 
-    for(let i = 0; i < map.attr.xdim * map.attr.ydim / 4; i++){
+    for(let i = 0; i < 2; i++){
       let p = ROT.RNG.getUniform();
       console.log(p);
       if(p < 0.25){

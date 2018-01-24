@@ -459,6 +459,7 @@ export let OmniscientEnemyTargeter = {
   },
   METHODS: {
     getTargetPos: function(){
+      console.dir(this);
       let map = this.getMap();
       let targets = [];
       for(let entId in map.attr.entityIdToMapPos){
@@ -599,6 +600,71 @@ export let NearsightedAttacker = {
       if(this.tryWalk(dx, dy)){
         actorData.terminate = true;
       }
+    }
+  }
+};
+
+//Requires aiactor and ANY targeter
+export let OmniscientPathfinder = {
+  META: {
+    mixinName: 'OmniscientPathfinder',
+    mixinGroupName: 'Pathfinder',
+    stateNamespace: '_OmniscientPathfinder',
+    stateModel: {
+      enemy: {}
+    },
+    initialize: function(){
+    }
+  },
+  METHODS: {
+    getNextMoveDijkstra: function(){
+      let targetPos = this.getTargetPos().split(',');
+      let targetX = targetPos[0]*1;
+      let targetY = targetPos[1]*1;
+      let thisx = this.getX();
+      let thisy = this.getY();
+      let map = this.getMap();
+      let passableCallback = function(x, y){
+        //console.log(`${x},${y}`);
+        return map.getTile(x, y).isPassable();
+      }
+      let dijkstra = new ROT.Path.AStar(thisx, thisy, passableCallback, {topology: 8});
+
+      let dx = 'a';
+      let dy = 'a';
+      //console.log('target pos:');
+      //console.log(`${targetX},${targetY}`);
+      dijkstra.compute(targetX, targetY, function(x, y){
+        if(x!=thisx || y!=thisy){
+          dx = x-thisx;
+          dy = y-thisy;
+        }
+      });
+      return `${dx},${dy}`;
+
+    }
+  },
+  LISTENERS: {
+    actorPerform: function(actorData){
+      if(actorData.target && actorData.target !== 'OmniscientPathfinder'){
+        return;
+      }
+      let move = this.getNextMoveDijkstra().split(',');
+      //console.log(move);
+      if(move[0]==='a' || move[1]==='a'){
+        actorData.terminate = false;
+        //console.log('No path...');
+        return;
+      }
+      let dx = move[0]*1;
+      let dy = move[1]*1;
+
+      if(this.tryWalk(dx, dy)){
+        actorData.terminate = true;
+        return;
+      }
+
+      actorData.terminate = false;
     }
   }
 };

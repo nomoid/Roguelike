@@ -250,6 +250,17 @@ export class Map{
     }
     return true;
   }
+
+  isPositionOpenOrAvatar(mapx, mapy){
+    let check = this.attr.mapPosToEntityId[`${mapx},${mapy}`];
+    if(check){
+      if(DATASTORE.ENTITIES[check].getName()==='avatar'){
+        return true;
+      }
+    }
+    return this.isPositionOpen(mapx, mapy);
+  }
+
   getTargetPositionInfo(mapx, mapy){
     let entityId = this.attr.mapPosToEntityId[`${mapx},${mapy}`];
     let itemEntityId = this.attr.mapPosToItemEntityId[`${mapx},${mapy}`];
