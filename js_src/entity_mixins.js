@@ -402,6 +402,7 @@ export let AIActor = {
       }
       setTimedUnlocker(true);
       this.isActing(true);
+      SCHEDULER.setDuration(this.getBaseActionDuration());
       let priorities = this.getPriorities();
       if(!priorities){
         let actorData = {terminate: false};
@@ -426,7 +427,6 @@ export let AIActor = {
         }
       }
       let actor = this;
-      SCHEDULER.setDuration(this.getBaseActionDuration());
       this.isActing(false);
       if(actor.getRenderDelay() > 0){
         this.raiseMixinEvent('renderMain');
@@ -461,6 +461,61 @@ export let ActorRandomWalker = {
   LISTENERS: {
     actorPerform: function(actorData){
       if(actorData.target && actorData.target !== 'ActorRandomWalker'){
+        return;
+      }
+      //console.log("walker is acting");
+      //Rand number from -1 to 1
+      let dir = Math.floor(ROT.RNG.getUniform() * 5);
+      let dx, dy;
+      switch (dir) {
+        case 0:
+          dx = 0;
+          dy = 0;
+          break;
+        case 1:
+          dx = -1;
+          dy = 0;
+          break;
+        case 2:
+          dx = 0;
+          dy = -1;
+          break;
+        case 3:
+          dx = 1;
+          dy = 0;
+          break;
+        case 4:
+          dx = 0;
+          dy = 1;
+          break;
+        default:
+          dx = 0;
+          dy = 0;
+      }
+      this.raiseMixinEvent('walkAttempt', {'dx': dx, 'dy': dy});
+      //console.log("walker is done acting");
+      actorData.terminate = true;
+    }
+  }
+};
+
+//Requires AIActor mixin
+export let ShortsightedAttacker = {
+  META: {
+    mixinName: 'ShortsightedAttacker',
+    mixinGroupName: 'ActorGroup',
+    stateNamespace: '_ShortsightedAttacker',
+    stateModel: {
+    },
+    initialize: function(){
+    }
+  },
+  METHODS: {
+
+  },
+  LISTENERS: {
+    actorPerform: function(actorData){
+      if(actorData.target && actorData.target !== 'ShortsightedAttacker'){
         return;
       }
       //console.log("walker is acting");
