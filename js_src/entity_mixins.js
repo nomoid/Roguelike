@@ -745,14 +745,21 @@ export let Inventory = {
       evtData.removed = true;
     },
     initAvatar: function(evtData){
+      let startingEquipment = [
+        "boots_1",
+        "boots_2",
+        "cursed_boots_1",
+        "shortsword_1",
+        "longsword_1",
+        "battle_axe_1",
+        "wooden_shield_1"
+      ];
       let item = generateItem("Swiftness Candy");
       this.addItem(item);
-      let equip1 = generateEquipment("boots_1");
-      this.addItem(equip1);
-      let equip2 = generateEquipment("boots_2");
-      this.addItem(equip2);
-      let equip3 = generateEquipment("cursed_boots_1");
-      this.addItem(equip3);
+      for(let i = 0; i < startingEquipment.length; i++){
+        let equip1 = generateEquipment(startingEquipment[i]);
+        this.addItem(equip1);
+      }
     }
   }
 };
@@ -772,8 +779,8 @@ export let Equipment = {
         amulet: null,
         ring1: null,
         ring2: null,
-        leftHand: null,
-        rightHand: null
+        primaryHand: null,
+        secondaryHand: null
       }
     },
     initialize: function(){
@@ -785,9 +792,21 @@ export let Equipment = {
       return this.attr._Equipment.equipment;
     },
     addEquipment: function(slot, item, oldItemHolder){
+      let primarySlot = "primaryHand";
+      let secondarySlot = "secondaryHand";
+      let oneHandedSlot = "One-Handed";
+      let twoHandedSlot = "Two-Handed";
       //Check if item is allowed in slot
       let allowed = false;
-      if(item.type === "Equipment" && item.slot === EquipmentSlots[slot]){
+      if(item.type == "Equipment" && item.slot == EquipmentSlots[slot]){
+        allowed = true;
+      }
+      //Check for primary/secondary hand
+      if(item.slot == oneHandedSlot && (slot == primarySlot || slot == secondarySlot)){
+        allowed = true;
+      }
+      //Check for two handed
+      if(item.slot == twoHandedSlot && (slot == primarySlot)){
         allowed = true;
       }
       if(!allowed){
@@ -797,8 +816,12 @@ export let Equipment = {
         });
         return false;
       }
+      if(oldItemHolder){
+        if(!oldItemHolder.items){
+          oldItemHolder.items = Array();
+        }
+      }
       let equipmentHolder = this.getEquipment();
-      oldItemHolder.item = equipmentHolder[slot];
       //If there's already one there swap it out
       let removeItemHolder = {item: null};
       if(!this.removeEquipment(slot, removeItemHolder)){
@@ -806,7 +829,34 @@ export let Equipment = {
           'item': item,
           message: `Failed to remove the item occupying the same slot!`
         });
+        if(oldItemHolder && removeItemHolder.item){
+          oldItemHolder.items.push(removeItemHolder.item);
+        }
         return false;
+      }
+      else{
+        if(oldItemHolder && removeItemHolder.item){
+          oldItemHolder.items.push(removeItemHolder.item);
+        }
+      }
+      //Unequip from secondary if equipping two-handed
+      if(item.slot == twoHandedSlot){
+        let secondaryRemoveItemHolder = {item: null};
+        if(!this.removeEquipment(secondarySlot, secondaryRemoveItemHolder)){
+          this.raiseMixinEvent('equipFailed', {
+            'item': item,
+            message: `Failed to remove the item occupying the secondary hand slot!`
+          });
+          if(oldItemHolder && secondaryRemoveItemHolder.item){
+            oldItemHolder.items.push(secondaryRemoveItemHolder.item);
+          }
+          return false;
+        }
+        else{
+          if(oldItemHolder && secondaryRemoveItemHolder.item){
+            oldItemHolder.items.push(secondaryRemoveItemHolder.item);
+          }
+        }
       }
       equipmentHolder[slot] = item;
       this.raiseMixinEvent('equipSuccess', {
@@ -816,9 +866,29 @@ export let Equipment = {
       return true;
     },
     removeEquipment: function(slot, oldItemHolder){
+      let primarySlot = "primaryHand";
+      let secondarySlot = "secondaryHand";
+      let twoHandedSlot = "Two-Handed";
       let equipmentHolder = this.getEquipment();
+      //If removing from the secondary slot remove any two handed weapons from primary
+      if(slot == secondarySlot){
+        let primaryItem = equipmentHolder[primarySlot];
+        if(primaryItem){
+          if(primaryItem.slot == twoHandedSlot){
+            let removedItemHolder = {item: null};
+            let success = this.removeEquipment(primarySlot, removedItemHolder);
+            if(oldItemHolder){
+              oldItemHolder.item = removedItemHolder.item;
+            }
+            return success;
+          }
+        }
+      }
+      //Remove the item
       let item = equipmentHolder[slot];
-      oldItemHolder.item = item;
+      if(oldItemHolder){
+        oldItemHolder.item = item;
+      }
       if(item){
         if(item.equipmentData){
           if(item.equipmentData.cursed){

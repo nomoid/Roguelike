@@ -883,6 +883,9 @@ export class InventoryMode extends UIMode{
       if(selectedItem.type){
         itemType = selectedItem.type;
       }
+      if(itemType == "Equipment" && selectedItem.slot){
+        itemType = `${itemType} - ${selectedItem.slot}`;
+      }
       display.drawText(descriptionX, 4, itemType);
       display.drawText(descriptionX, 5, description);
       //Render functionality
@@ -1070,8 +1073,10 @@ export class EquipmentMode extends UIMode{
               if(this.getAvatar().addEquipment(slot, this.item, oldItemHolder)){
                 //Remove from inventory on success
                 this.getAvatar().removeItem(this.itemIndex);
-                if(oldItemHolder.item){
-                  this.getAvatar().addItem(oldItemHolder.item);
+                if(oldItemHolder.items){
+                  for(let i = 0; i < oldItemHolder.items.length; i++){
+                    this.getAvatar().addItem(oldItemHolder.items[i]);
+                  }
                 }
                 this.game.popMode({
                   selected: this.itemIndex
@@ -1140,7 +1145,7 @@ export class EquipmentMode extends UIMode{
     let equipment = this.getAvatar().getEquipment();
     for(let i = 0; i < EquipmentOrder.length; i++){
       let slot = EquipmentOrder[i];
-      if(item.slot === EquipmentSlots[slot]){
+      if(this.allowedSlot(slot, item)){
         if(equipment[slot] == null){
           allowedOpen.push(i);
         }
@@ -1157,6 +1162,18 @@ export class EquipmentMode extends UIMode{
     }
     else{
       return 0;
+    }
+  }
+
+  allowedSlot(slot, item){
+    if(item.slot == EquipmentSlots[slot]){
+      return true;
+    }
+    if(item.slot == "One-Handed"){
+      return slot == "primaryHand" || slot == "secondaryHand";
+    }
+    if(item.slot == "Two-Handed"){
+      return slot == "primaryHand";
     }
   }
 

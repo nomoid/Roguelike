@@ -28,6 +28,42 @@ export let Equipment = {
       cursed: true
     },
     description: "Cursed boots that can't be removed! Provides ${this.equipmentData.defense} defense."
+  },
+  "shortsword_1": {
+    name: "Shortsword",
+    type: "Equipment",
+    slot: "One-Handed",
+    equipmentData: {
+      attack: 4
+    },
+    description: "A short sword. Deals ${this.equipmentData.attack} damage."
+  },
+  "longsword_1": {
+    name: "Longsword",
+    type: "Equipment",
+    slot: "Primary Hand",
+    equipmentData: {
+      attack: 6
+    },
+    description: "A long sword. Cannot be equipped to the secondary hand. Deals ${this.equipmentData.attack} damage."
+  },
+  "battle_axe_1": {
+    name: "Battle Axe",
+    type: "Equipment",
+    slot: "Two-Handed",
+    equipmentData: {
+      attack: 8
+    },
+    description: "A heavy battle axe. Deals ${this.equipmentData.attack} damage."
+  },
+  "wooden_shield_1": {
+    name: "Wooden Shield",
+    type: "Equipment",
+    slot: "Secondary Hand",
+    equipmentData: {
+      defense: 2
+    },
+    description: "Simple wooden shield. Provides ${this.equipmentData.defense} defense."
   }
 }
 
@@ -40,12 +76,12 @@ export let EquipmentSlots = {
   amulet: "Amulet",
   ring1: "Ring",
   ring2: "Ring",
-  leftHand: "Left Hand",
-  rightHand: "Right Hand"
+  primaryHand: "Primary Hand",
+  secondaryHand: "Secondary Hand"
 }
 
 export let EquipmentOrder = [
-  'head', 'armor', 'pants', 'boots', 'gauntlets', 'amulet', 'ring1', 'ring2', 'leftHand', 'rightHand'
+  'head', 'armor', 'pants', 'boots', 'gauntlets', 'amulet', 'ring1', 'ring2', 'primaryHand', 'secondaryHand'
 ]
 
 export function generateEquipment(name){
