@@ -37,6 +37,9 @@ export class Map{
       this.attr.hasPopulated = true;
       TILE_GRID_POPULATOR[this.attr.mapType](this);
     }
+    else{
+      this.clearMobSeeds();
+    }
   }
 
   getId(){
@@ -128,6 +131,17 @@ export class Map{
       return this.getRandomOpenPosition();
     }
     return `${x},${y}`;
+  }
+
+  clearMobSeeds(){
+    for(let xi = 0; xi < this.attr.xdim; xi++){
+      for(let yi = 0; yi < this.attr.ydim; yi++){
+        let tile = this.tileGrid[xi][yi];
+        if(tile.isA('mob_seed')){
+          this.tileGrid[xi][yi] = TILES.FLOOR;
+        }
+      }
+    }
   }
 
   isPositionOpen(mapx, mapy){
