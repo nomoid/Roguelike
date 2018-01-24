@@ -9,6 +9,7 @@ import {generateItem} from './items.js';
 import {generateEquipment, EquipmentSlots} from './equipment.js';
 import {generateBuff} from './buffs.js';
 import * as U from './util.js';
+import {getLevelForSkill, getXpForSkillLevel, PlayerSkills} from './skills.js';
 
 let _exampleMixin = {
   META: {
@@ -1178,6 +1179,72 @@ export let Bloodthirst = {
             src: this
           });
         }
+      }
+    }
+  }
+}
+
+export let Skills = {
+  META: {
+    mixinName: 'Skills',
+    mixinGroupName: 'SkillsGroup',
+    stateNamespace: '_Skills',
+    stateModel: {
+      skills: {
+
+      }
+      //Each skill has a
+      //name(str),
+      //xp(int) - cumulative skill xp
+    },
+    initialize: function(){
+
+    }
+  },
+  METHODS: {
+    getSkills: function(){
+      return this.attr._Skills.skills;
+    },
+    getSkillInfo: function(name){
+      let skill = this.getSkills()[name];
+      let lvl = getLevelForSkill(skill.name, skill.xp);
+      //xp remaining needed to level up
+      let xpNeeded = getXpForSkillLevel(skill.name, lvl+1) - skill.xp;
+      let skillInfo = {
+        name: skill.name,
+        level: lvl,
+        xp: skill.xp
+      };
+      if(xpNeeded > 0){
+        skillInfo.xpNeeded = xpNeeded;
+      }
+      return skillInfo;
+    },
+    addSkill: function(name, xp){
+      let skills = this.getSkills();
+      let skill = skills[name];
+      if(skill){
+        //If new skill has higher xp, replace
+        if(xp){
+          skill.xp += xp;
+        }
+      }
+      else{
+        skills[name] = {
+          'name': name,
+          'xp': xp ? xp : 0
+        };
+      }
+    }
+  },
+  LISTENERS: {
+    //Also learns skills
+    addSkillXp: function(evtData){
+      this.addSkill(evtData.name, evtData.xp ? evtData.xp : 0);
+    },
+    initAvatar: function(evtData){
+      for(let i = 0; i < PlayerSkills.length; i++){
+        this.addSkill(PlayerSkills[i]);
       }
     }
   }
