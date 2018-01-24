@@ -395,7 +395,15 @@ export let ActorPlayer = {
   LISTENERS: {
     turnDone: function(evtData){
       this.isActing(false);
-      SCHEDULER.setDuration(this.getBaseActionDuration());
+      let duration = this.getBaseActionDuration();
+      if(typeof this.getBuffInfo === 'function'){
+        let info = this.getBuffInfo('Haste');
+        if(info){
+          //Min duration 1
+          duration = Math.max(1, Math.trunc(duration * info.effect.durationMultiplier));
+        }
+      }
+      SCHEDULER.setDuration(duration);
       setTimeout(function(){
         TIME_ENGINE.unlock();
       }, 1);
@@ -590,18 +598,20 @@ export let ItemDropper = {
   LISTENERS: {
     //For testing, drop a dummy item
     killed: function(evtData){
-      let itemData = {x: this.getX(), y: this.getY()};
       if(evtData.src.getName() == 'avatar'){
         for(let i = 0; i < 10; i++){
+          let itemData = {x: this.getX(), y: this.getY()};
           itemData.item = getItem("JDog's Ramen");
           this.raiseMixinEvent('addItemToMap', itemData);
         }
         for(let i = 0; i < 2; i++){
+          let itemData = {x: this.getX(), y: this.getY()};
           itemData.item = getItem("JDog's Calves");
           this.raiseMixinEvent('addItemToMap', itemData);
         }
       }
       else{
+        let itemData = {x: this.getX(), y: this.getY()};
         itemData.item = getItem("JDog's Spicy Ramen");
         this.raiseMixinEvent('addItemToMap', itemData);
       }
@@ -704,6 +714,10 @@ export let Inventory = {
     },
     tryTrashItem: function(evtData){
       evtData.removed = true;
+    },
+    initAvatar: function(evtData){
+      let item = getItem("Swiftness Candy");
+      this.addItem(item);
     }
   }
 };
@@ -919,6 +933,9 @@ export let BuffHandler = {
         buffList.splice(removedIndices[i], 1);
         this.raiseMixinEvent('buffLost', buffInfo);
       }
+    },
+    addBuffFromName: function(evtData){
+      this.addBuff(getBuff(evtData.buffName), evtData.src);
     }
   }
 }
@@ -941,10 +958,16 @@ export let Bloodthirst = {
     kills: function(evtData){
       if(typeof this.addBuff === 'function'){
         if(ROT.RNG.getUniform() < 0.5){
-          this.addBuff(getBuff("hp_regen_1"), this);
+          this.raiseMixinEvent("addBuffFromName", {
+            buffName: "hp_regen_1",
+            src: this
+          });
         }
         else{
-          this.addBuff(getBuff("lifelink_1"), this);
+          this.raiseMixinEvent("addBuffFromName", {
+            buffName: "lifelink_1",
+            src: this
+          });
         }
       }
     }

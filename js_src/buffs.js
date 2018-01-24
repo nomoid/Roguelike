@@ -19,6 +19,14 @@ export let Buffs = {
     effect: {
       healAmount: 5
     }
+  },
+  "haste_1": {
+    name: 'Haste',
+    duration: 10,
+    description: 'Multiplies action duration by ${this.effect.durationMultiplier}.',
+    effect: {
+      durationMultiplier: 0.5
+    }
   }
 }
 

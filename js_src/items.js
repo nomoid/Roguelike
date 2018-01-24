@@ -24,6 +24,15 @@ export let Items = {
       healAmount: 20
     },
     description: "A rare drop that only occurs when jdogs defeat each other. Heals for ${this.effect.healAmount}."
+  },
+  "Swiftness Candy": {
+    name: "Swiftness Candy",
+    type: "Food",
+    effect: {
+      mixinEvent: "addBuffFromName",
+      buffName: "haste_1"
+    },
+    description: "A candy that makes you act twice as fast."
   }
 };
 

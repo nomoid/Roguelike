@@ -84,6 +84,7 @@ export class PlayMode extends UIMode{
     if(!this.attr.avatarId){
       let a = EntityFactory.create('avatar', true);
       this.attr.avatarId = a.getId();
+      a.raiseMixinEvent('initAvatar');
     }
     this.game.isPlaying = true;
     this.setupAvatar();
