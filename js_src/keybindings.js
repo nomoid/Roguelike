@@ -29,6 +29,7 @@ export let BINDING_DESCRIPTIONS = {
   INVENTORY: {
     DROP: "Drop an item",
     EQUIP: "Equip an item",
+    UNEQUIP: "Unequip an item",
     CONSUME: "Consume an item",
     TRASH: "Trash an item permanently",
     ENTER_BINDINGS: "Show/switch key bindings"
@@ -102,6 +103,7 @@ export function setInventoryBindings(){
   BINDINGS.INVENTORY = {
     DROP: "r",
     EQUIP: "e",
+    UNEQUIP: "x",
     CONSUME: "c",
     TRASH: "T",
     ENTER_BINDINGS: "?"

@@ -5,9 +5,9 @@ import {Message} from './message.js';
 import {Map} from './map.js';
 import {TIME_ENGINE, SCHEDULER, setTimedUnlocker} from './timing.js';
 import {DATASTORE} from './datastore.js';
-import {getItem} from './items.js';
-import {EquipmentSlots} from './equipment.js';
-import {getBuff} from './buffs.js';
+import {generateItem} from './items.js';
+import {generateEquipment, EquipmentSlots} from './equipment.js';
+import {generateBuff} from './buffs.js';
 import * as U from './util.js';
 
 let _exampleMixin = {
@@ -614,18 +614,18 @@ export let ItemDropper = {
       if(evtData.src.getName() == 'avatar'){
         for(let i = 0; i < 10; i++){
           let itemData = {x: this.getX(), y: this.getY()};
-          itemData.item = getItem("JDog's Ramen");
+          itemData.item = generateItem("JDog's Ramen");
           this.raiseMixinEvent('addItemToMap', itemData);
         }
         for(let i = 0; i < 2; i++){
           let itemData = {x: this.getX(), y: this.getY()};
-          itemData.item = getItem("JDog's Calves");
+          itemData.item = generateItem("JDog's Calves");
           this.raiseMixinEvent('addItemToMap', itemData);
         }
       }
       else{
         let itemData = {x: this.getX(), y: this.getY()};
-        itemData.item = getItem("JDog's Spicy Ramen");
+        itemData.item = generateItem("JDog's Spicy Ramen");
         this.raiseMixinEvent('addItemToMap', itemData);
       }
     }
@@ -729,8 +729,14 @@ export let Inventory = {
       evtData.removed = true;
     },
     initAvatar: function(evtData){
-      let item = getItem("Swiftness Candy");
+      let item = generateItem("Swiftness Candy");
       this.addItem(item);
+      let equip1 = generateEquipment("boots_1");
+      this.addItem(equip1);
+      let equip2 = generateEquipment("boots_2");
+      this.addItem(equip2);
+      let equip3 = generateEquipment("cursed_boots_1");
+      this.addItem(equip3);
     }
   }
 };
@@ -775,11 +781,11 @@ export let Equipment = {
         });
         return false;
       }
-      let equipmentHolder = getEquipment();
+      let equipmentHolder = this.getEquipment();
       oldItemHolder.item = equipmentHolder[slot];
       //If there's already one there swap it out
       let removeItemHolder = {item: null};
-      if(!removeEquipment(slot, removeItemHolder)){
+      if(!this.removeEquipment(slot, removeItemHolder)){
         this.raiseMixinEvent('equipFailed', {
           'item': item,
           message: `Failed to remove the item occupying the same slot!`
@@ -788,27 +794,31 @@ export let Equipment = {
       }
       equipmentHolder[slot] = item;
       this.raiseMixinEvent('equipSuccess', {
-        'item': item
+        'item': item,
+        'slot': slot
       });
       return true;
     },
     removeEquipment: function(slot, oldItemHolder){
-      let equipmentHolder = getEquipment();
+      let equipmentHolder = this.getEquipment();
       let item = equipmentHolder[slot];
       oldItemHolder.item = item;
-      if(item.equipmentData){
-        if(item.equipmentData.cursed){
-          this.raiseMixinEvent('unequipFailed', {
-            'item': item,
-            message: `Can't remove the item from the ${EquipmentSlots[slot]} slot!`
-          });
-          return false;
+      if(item){
+        if(item.equipmentData){
+          if(item.equipmentData.cursed){
+            this.raiseMixinEvent('unequipFailed', {
+              'item': item,
+              message: `Can't remove the item from the ${EquipmentSlots[slot]} slot!`
+            });
+            return false;
+          }
         }
+        equipmentHolder[slot] = null;
+        this.raiseMixinEvent('unequipSuccess', {
+          'item': item,
+          'slot': slot
+        });
       }
-      equipmentHolder[slot] = null;
-      this.raiseMixinEvent('unequipSuccess', {
-        'item': item
-      });
       return true;
     }
   },
@@ -1048,7 +1058,7 @@ export let BuffHandler = {
       }
     },
     addBuffFromName: function(evtData){
-      this.addBuff(getBuff(evtData.buffName), evtData.src);
+      this.addBuff(generateBuff(evtData.buffName), evtData.src);
     }
   }
 }

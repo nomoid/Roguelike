@@ -30,6 +30,6 @@ export let Buffs = {
   }
 }
 
-export function getBuff(name){
+export function generateBuff(name){
   return deepCopy(Buffs[name]);
 }

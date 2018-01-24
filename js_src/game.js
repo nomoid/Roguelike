@@ -335,17 +335,18 @@ export let Game = {
     else if(evtLabel == "switchMode"){
       let template = evtData.template;
       let type = evtData.type;
+      let mode = evtData.mode;
       if(type == "push"){
-        this.pushMode(type, template);
+        this.pushMode(mode, template);
       }
       else if(type == "pop"){
-        this.popMode(type, template);
+        this.popMode(mode, template);
       }
       else if(type == "switch"){
-        this.switchMode(type, template);
+        this.switchMode(mode, template);
       }
       else if(type == "swap"){
-        this.swapMode(type, template);
+        this.swapMode(mode, template);
       }
     }
     return true;

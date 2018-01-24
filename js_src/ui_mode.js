@@ -990,7 +990,7 @@ export class EquipmentMode extends UIMode{
       this.itemIndex = template.itemIndex;
       this.item = template.item;
       //Try to find the correct slot
-      this.selectedSlot = this.getPreferredSlot(template.item);
+      this.selectedSlot = this.getPreferredSlotIndex(template.item);
     }
     else{
       this.equipping = false;
@@ -1008,9 +1008,10 @@ export class EquipmentMode extends UIMode{
       let slotName = EquipmentSlots[slot];
       if(slotName){
         let item = equipment[slot];
+        console.dir(item);
         let itemText = "Empty";
         if(item){
-          let itemText = "Unidentified Item";
+          itemText = "Unidentified Item";
           if(item.name){
             itemText = item.name;
           }
@@ -1114,6 +1115,7 @@ export class EquipmentMode extends UIMode{
     let allowedOpen = Array();
     let equipment = this.getAvatar().getEquipment();
     for(let i = 0; i < EquipmentOrder.length; i++){
+      let slot = EquipmentOrder[i];
       if(item.slot === EquipmentSlots[slot]){
         if(equipment[slot] == null){
           allowedOpen.push(i);

@@ -36,7 +36,7 @@ export let Items = {
   }
 };
 
-export function getItem(name){
+export function generateItem(name){
   return deepCopy(Items[name]);
 }
 
