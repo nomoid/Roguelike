@@ -310,7 +310,7 @@ export let Game = {
     if(evtLabel == "renderMain"){
       this.renderDisplayMain();
     }
-    if(evtLabel == "killed"){
+    else if(evtLabel == "killed"){
       if(src == this.modes.play.getAvatar()){//lose condition
         this.switchMode('lose');
         this.renderDisplayMain();
@@ -329,8 +329,24 @@ export let Game = {
         }
       }
     }
-    if(evtLabel == "addItemToMap"){
+    else if(evtLabel == "addItemToMap"){
       DATASTORE.MAPS[this.getMapId()].addItemAt(evtData.item, evtData.x, evtData.y);
+    }
+    else if(evtLabel == "switchMode"){
+      let template = evtData.template;
+      let type = evtData.type;
+      if(type == "push"){
+        this.pushMode(type, template);
+      }
+      else if(type == "pop"){
+        this.popMode(type, template);
+      }
+      else if(type == "switch"){
+        this.switchMode(type, template);
+      }
+      else if(type == "swap"){
+        this.swapMode(type, template);
+      }
     }
     return true;
   }

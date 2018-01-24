@@ -10,6 +10,7 @@ import {EntityFactory} from './entities.js';
 import {BINDINGS, BINDING_DESCRIPTIONS, setKeybindingsArrowKeys, setKeybindingsWASD, setInventoryBindings} from './keybindings.js';
 import {TIME_ENGINE, loadScheduler, saveScheduler} from './timing.js';
 import {getFunctionality} from './items.js';
+import {EquipmentSlots, EquipmentOrder} from './equipment.js';
 
 class UIMode{
   constructor(game){
@@ -832,7 +833,17 @@ export class InventoryMode extends UIMode{
     if(template.avatarId){
       this.avatarId = template.avatarId;
     }
-    if(!template.popping && !template.swapping){
+    if(template.selected){
+      let items = this.getAvatar().getItems();
+      this.selected = template.selected;
+      if(this.selected >= items.length){
+        this.selected = items.length - 1;
+      }
+      if(this.selected < 0){
+        this.selected = 0;
+      }
+    }
+    else if(!this.selected || (!template.popping && !template.swapping)){
       this.selected = 0;
     }
   }
@@ -939,7 +950,9 @@ export class InventoryMode extends UIMode{
             if(evt.key == functionality.key){
               //Perform the functionality
               let functionalityData = {
+                itemIndex: this.selected,
                 item: selectedItem,
+                src: this.getAvatar(),
                 removed: false
               };
               this.getAvatar().raiseMixinEvent(functionality.mixinEvent, functionalityData);
@@ -972,13 +985,43 @@ export class EquipmentMode extends UIMode{
     if(template.avatarId){
       this.avatarId = template.avatarId;
     }
-    if(!template.popping && !template.swapping){
-      this.selected = 0;
+    if(template.equipping){
+      this.equipping = true;
+      this.itemIndex = template.itemIndex;
+      this.item = template.item;
+      //Try to find the correct slot
+      this.selectedSlot = this.getPreferredSlot(template.item);
+    }
+    else{
+      this.equipping = false;
+      if(!this.selectedSlot || (!template.popping && !template.swapping)){
+        this.selectedSlot = 0;
+      }
     }
   }
 
   renderMain(display){
     display.drawText(0, 0, '|' + U.applyBackground(U.applyColor('Equipment', Color.TEXT_HIGHLIGHTED), Color.TEXT_HIGHLIGHTED_BG) + '|Inventory|Skills|');
+    let equipment = this.getAvatar().getEquipment();
+    for(let i = 0; i < EquipmentOrder.length; i++){
+      let slot = EquipmentOrder[i];
+      let slotName = EquipmentSlots[slot];
+      if(slotName){
+        let item = equipment[slot];
+        let itemText = "Empty";
+        if(item){
+          let itemText = "Unidentified Item";
+          if(item.name){
+            itemText = item.name;
+          }
+        }
+        let slotText = `${slotName} - ${itemText}`;
+        if(i == this.selectedSlot){
+          slotText = U.applyBackground(U.applyColor(slotText, Color.TEXT_HIGHLIGHTED), Color.TEXT_HIGHLIGHTED_BG)
+        }
+        display.drawText(2, 4 + i, slotText);
+      }
+    }
   }
 
   handleInput(eventType, evt){
@@ -987,8 +1030,108 @@ export class EquipmentMode extends UIMode{
         this.game.popMode();
         return true;
       }
+      else if(evt.key == BINDINGS.MASTER.MENU_UP){
+        if(this.selectedSlot > 0){
+          this.selectedSlot--;
+          return true;
+        }
+      }
+      else if(evt.key == BINDINGS.MASTER.MENU_DOWN){
+        if(this.selectedSlot < EquipmentOrder.length - 1){
+          this.selectedSlot++;
+          return true;
+        }
+      }
+      else{
+        if(this.equipping){
+          if(evt.key == BINDINGS.INVENTORY.EQUIP){
+            let oldItemHolder = {};
+            let slot = EquipmentOrder[this.selectedSlot];
+            if(this.getAvatar().canRemoveItem(this.itemIndex)){
+              if(this.getAvatar().addEquipment(slot, this.item, oldItemHolder)){
+                //Remove from inventory on success
+                this.getAvatar().removeItem(this.itemIndex);
+                if(oldItemHolder.item){
+                  this.getAvatar().addItem(oldItemHolder.item);
+                }
+                this.game.popMode({
+                  selected: this.itemIndex
+                });
+              }
+            }
+            return true;
+          }
+        }
+        else{
+          //Disallow L/R when equipping
+          if(evt.key == BINDINGS.MASTER.MENU_LEFT){
+            //this.game.swapMode('skills');
+            //return true;
+          }
+          else if(evt.key == BINDINGS.MASTER.MENU_RIGHT){
+            this.game.swapMode('inventory', {
+              avatarId: this.avatarId
+            });
+            return true;
+          }
+          else if(evt.key == BINDINGS.INVENTORY.UNEQUIP){
+            let oldItemHolder = {};
+            let slot = EquipmentOrder[this.selectedSlot];
+            if(this.getAvatar().removeEquipment(slot, oldItemHolder)){
+              if(oldItemHolder.item){
+                this.getAvatar().addItem(oldItemHolder.item);
+              }
+            }
+            return true;
+          }
+          else if(evt.key == BINDINGS.INVENTORY.DROP){
+            let oldItemHolder = {};
+            let slot = EquipmentOrder[this.selectedSlot];
+            if(this.getAvatar().removeEquipment(slot, oldItemHolder)){
+              if(oldItemHolder.item){
+                let tryDropHolder = {
+                  item: oldItemHolder.item,
+                  removed: false
+                };
+                this.getAvatar().raiseMixinEvent('tryDropItem', tryDropHolder);
+                if(!tryDropHolder.removed){
+                  this.getAvatar().addItem(oldItemHolder.item);
+                }
+              }
+            }
+            return true;
+          }
+          //For a safety measure, you can't trash things equipped on yourself
+        }
+      }
     }
     return false;
+  }
+
+  getPreferredSlotIndex(item){
+    //Try finding an empty one
+    let allowedClosed = Array();
+    let allowedOpen = Array();
+    let equipment = this.getAvatar().getEquipment();
+    for(let i = 0; i < EquipmentOrder.length; i++){
+      if(item.slot === EquipmentSlots[slot]){
+        if(equipment[slot] == null){
+          allowedOpen.push(i);
+        }
+        else{
+          allowedClosed.push(i);
+        }
+      }
+    }
+    if(allowedOpen.length > 0){
+      return allowedOpen[0];
+    }
+    else if(allowedClosed.length > 0){
+      return allowedClosed[0];
+    }
+    else{
+      return 0;
+    }
   }
 
   getAvatar(){

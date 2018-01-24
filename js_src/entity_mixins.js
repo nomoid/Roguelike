@@ -6,6 +6,7 @@ import {Map} from './map.js';
 import {TIME_ENGINE, SCHEDULER, setTimedUnlocker} from './timing.js';
 import {DATASTORE} from './datastore.js';
 import {getItem} from './items.js';
+import {EquipmentSlots} from './equipment.js';
 import {getBuff} from './buffs.js';
 import * as U from './util.js';
 
@@ -214,6 +215,18 @@ export let PlayerMessage = {
     },
     buffLost: function(evtData){
       Message.send(`You lost the ${evtData.name} buff.`);
+    },
+    equipSuccess: function(evtData){
+      Message.send(`You equipped ${evtData.item.name} to the ${EquipmentSlots[evtData.slot]} slot.`);
+    },
+    equipFailed: function(evtData){
+      Message.send(`You failed to equip ${evtData.item.name}.${evtData.message ? ' ' + evtData.message : ''}`);
+    },
+    unequipSuccess: function(evtData){
+      Message.send(`You unequipped ${evtData.item.name} from the ${EquipmentSlots[evtData.slot]} slot.`);
+    },
+    unequipFailed: function(evtData){
+      Message.send(`You failed to unequip ${evtData.item.name}.${evtData.message ? ' ' + evtData.message : ''}`);
     }
   }
 };
@@ -722,6 +735,99 @@ export let Inventory = {
   }
 };
 
+export let Equipment = {
+  META: {
+    mixinName: 'Equipment',
+    mixinGroupName: 'ItemGroup',
+    stateNamespace: '_Equipment',
+    stateModel: {
+      equipment: {
+        head: null,
+        armor: null,
+        pants: null,
+        boots: null,
+        gauntlets: null,
+        amulet: null,
+        ring1: null,
+        ring2: null,
+        leftHand: null,
+        rightHand: null
+      }
+    },
+    initialize: function(){
+      // do any initialization
+    }
+  },
+  METHODS: {
+    getEquipment: function(){
+      return this.attr._Equipment.equipment;
+    },
+    addEquipment: function(slot, item, oldItemHolder){
+      //Check if item is allowed in slot
+      let allowed = false;
+      if(item.type === "Equipment" && item.slot === EquipmentSlots[slot]){
+        allowed = true;
+      }
+      if(!allowed){
+        this.raiseMixinEvent('equipFailed', {
+          'item': item,
+          message: `Can't equip to this to the ${EquipmentSlots[slot]} slot!`
+        });
+        return false;
+      }
+      let equipmentHolder = getEquipment();
+      oldItemHolder.item = equipmentHolder[slot];
+      //If there's already one there swap it out
+      let removeItemHolder = {item: null};
+      if(!removeEquipment(slot, removeItemHolder)){
+        this.raiseMixinEvent('equipFailed', {
+          'item': item,
+          message: `Failed to remove the item occupying the same slot!`
+        });
+        return false;
+      }
+      equipmentHolder[slot] = item;
+      this.raiseMixinEvent('equipSuccess', {
+        'item': item
+      });
+      return true;
+    },
+    removeEquipment: function(slot, oldItemHolder){
+      let equipmentHolder = getEquipment();
+      let item = equipmentHolder[slot];
+      oldItemHolder.item = item;
+      if(item.equipmentData){
+        if(item.equipmentData.cursed){
+          this.raiseMixinEvent('unequipFailed', {
+            'item': item,
+            message: `Can't remove the item from the ${EquipmentSlots[slot]} slot!`
+          });
+          return false;
+        }
+      }
+      equipmentHolder[slot] = null;
+      this.raiseMixinEvent('unequipSuccess', {
+        'item': item
+      });
+      return true;
+    }
+  },
+  LISTENERS: {
+    tryEquip: function(evtData){
+      this.raiseMixinEvent('switchMode', {
+        mode: 'equipment',
+        type: 'push',
+        template: {
+          equipping: true,
+          itemIndex: evtData.itemIndex,
+          item: evtData.item,
+          avatarId: evtData.src.getId()
+        }
+      });
+    }
+  }
+};
+
 export let ItemPile = {
   META: {
     mixinName: 'ItemPile',
@@ -735,14 +841,21 @@ export let ItemPile = {
     }
   },
   METHODS: {
+    canRemoveItem: function(itemIndex){
+      if(itemIndex >= 0 && itemIndex < this.getItems().length){
+        return true;
+      }
+      return false;
+    },
     addItem: function(item){
-      this.attr._ItemPile.items.push(item);
+      this.getItems().push(item);
       return true;
     },
     removeItem: function(itemIndex){
-      let item = this.attr._ItemPile.items[itemIndex];
-      if(itemIndex < this.attr._ItemPile.items.length){
-        this.attr._ItemPile.items.splice(itemIndex, 1);
+      let items = this.getItems();
+      let item = items[itemIndex];
+      if(itemIndex < items.length){
+        items.splice(itemIndex, 1);
       }
       return item;
     },
