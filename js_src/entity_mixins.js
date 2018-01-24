@@ -227,6 +227,12 @@ export let PlayerMessage = {
     },
     unequipFailed: function(evtData){
       Message.send(`You failed to unequip ${evtData.item.name}.${evtData.message ? ' ' + evtData.message : ''}`);
+    },
+    itemDropped: function(evtData){
+      Message.send(`You dropped ${evtData.item.name}.`);
+    },
+    itemTrashed: function(evtData){
+      Message.send(`You trashed ${evtData.item.name}.`);
     }
   }
 };
@@ -723,9 +729,19 @@ export let Inventory = {
   LISTENERS: {
     tryDropItem: function(evtData){
       this.getMap().addItemAt(evtData.item, this.getX(), this.getY());
+      this.raiseMixinEvent('itemDropped', {
+        item: evtData.item,
+        src: this,
+        xPos: this.getX(),
+        yPos: this.getY()
+      });
       evtData.removed = true;
     },
     tryTrashItem: function(evtData){
+      this.raiseMixinEvent('itemTrashed', {
+        item: evtData.item,
+        src: this
+      });
       evtData.removed = true;
     },
     initAvatar: function(evtData){
