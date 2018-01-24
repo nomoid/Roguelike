@@ -191,6 +191,9 @@ export let PlayerMessage = {
     },
     itemPickUpFailed: function(evtData){
       Message.send(`Can't pick up item. ${evtData.reason}`);
+    },
+    consumed: function(evtData){
+      Message.send(`You consumed ${evtData.item.name}.${evtData.message ? ' ' + evtData.message : ''}`);
     }
   }
 };
@@ -254,6 +257,10 @@ export let HitPoints = {
         console.dir(this);
         console.dir(DATASTORE);
       }
+    },
+    healed: function(evtData){
+      let amt = evtData.healAmount;
+      this.gainHp(amt);
     }
   }
 };
@@ -360,7 +367,7 @@ export let AIActor = {
       currentActionDuration: 1000
     },
     initialize: function(template){
-      this.setRenderDelay(template.renderDelay || 10);
+      this.setRenderDelay(template.renderDelay || -1);
       this.setPriorities(template.priorities);
       SCHEDULER.add(this, true, 0);
     }
@@ -429,13 +436,18 @@ export let AIActor = {
       let actor = this;
       SCHEDULER.setDuration(this.getBaseActionDuration());
       this.isActing(false);
-      this.raiseMixinEvent('renderMain');
-      return {then: function(unlocker){
-        setTimeout(function(){
-          setTimedUnlocker(false);
-          unlocker();
-        }, actor.getRenderDelay());
-      }};
+      if(actor.getRenderDelay() > 0){
+        this.raiseMixinEvent('renderMain');
+        return {then: function(unlocker){
+            setTimeout(function(){
+              setTimedUnlocker(false);
+              unlocker();
+            }, actor.getRenderDelay());
+        }};
+      }
+      else{
+        setTimedUnlocker(false);
+      }
     }
   }
 }
@@ -680,5 +692,61 @@ export let ItemPile = {
     }
   },
   LISTENERS: {
+  }
+}
+
+export let ItemConsumer = {
+  META: {
+    mixinName: 'ItemConsumer',
+    mixinGroupName: 'ItemGroup',
+    stateNamespace: '_ItemConsumer',
+    stateModel: {
+    },
+    initialize: function(){
+      // do any initialization
+    }
+  },
+  METHODS: {
+  },
+  LISTENERS: {
+    //Only called on misc consumables
+    tryConsume: function(evtData){
+      if(evtData.item.effect){
+        this.raiseMixinEvent('consumed', {
+          item: eatenItem
+        });
+        this.raiseMixinEvent(evtData.item.effect.mixinEvent, eatenItem.effect.evtData);
+      }
+      else{
+        this.raiseMixinEvent('consumed', {
+          item: evtData.item,
+          message: "But nothing happened..."
+        });
+      }
+      evtData.removed = true;
+    },
+    tryEat: function(evtData){
+      let eatenItem = evtData.item;
+      this.raiseMixinEvent('consumed', {
+        item: eatenItem
+      });
+      if(eatenItem.satiation){
+        this.raiseMixinEvent('gainSatiation', {
+          amount: eatenItem.satiation
+        });
+      }
+      //More than one effect in an array
+      if(eatenItem.effects){
+        for(let i = 0; i < eatenItem.effects.length; i++){
+          let effect = eatenItem.effects[i];
+          this.raiseMixinEvent(effect.mixinEvent, effect);
+        }
+      }
+      //A single effect
+      else if(eatenItem.effect){
+        this.raiseMixinEvent(eatenItem.effect.mixinEvent, eatenItem.effect);
+      }
+      evtData.removed = true;
+    }
   }
 }

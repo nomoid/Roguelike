@@ -5,8 +5,11 @@ export let Items = {
   "JDog's Ramen": {
     name: "JDog's Ramen",
     type: "Food",
-    healAmount: 2,
-    description: "A common drop item that jdogs like to eat in his free time. Heals for ${this.healAmount}."
+    effect: {
+      mixinEvent: "healed",
+      healAmount: 2
+    },
+    description: "A common drop item that jdogs like to eat in his free time. Heals for ${this.effect.healAmount}."
   },
   "JDog's Calves": {
     name: "JDog's Calves",
@@ -16,8 +19,11 @@ export let Items = {
   "JDog's Spicy Ramen": {
     name: "JDog's Spicy Ramen",
     type: "Food",
-    healAmount: 5,
-    description: "A rare drop that only occurs when jdogs defeat each other. Heals for ${this.healAmount}."
+    effect: {
+      mixinEvent: "healed",
+      healAmount: 5
+    },
+    description: "A rare drop that only occurs when jdogs defeat each other. Heals for ${this.effect.healAmount}."
   }
 };
 
