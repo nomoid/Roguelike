@@ -5,17 +5,19 @@ export let Buffs = {
     name: 'HP Regeneration',
     duration: 20,
     frequency: 4,
-    description: 'Regenerates ${this.effect.hpAmount} HP every ${this.frequency} turns.',
+    description: 'Regenerates ${this.effect.healAmount} HP every ${this.frequency} turns.',
     effect: {
-      hpAmount: 1
+      mixinEvent: "healed",
+      healAmount: 1
     }
   },
   "lifelink_1": {
     name: 'Lifelink',
     duration: 50,
-    description: 'Regenerates ${this.effect.hpAmount} HP every time you kill an enemy.',
+    description: 'Regenerates ${this.effect.healAmount} HP every time you kill an enemy.',
+    //No mixin event because it is checked by the mixin on kill
     effect: {
-      hpAmount: 5
+      healAmount: 5
     }
   }
 }

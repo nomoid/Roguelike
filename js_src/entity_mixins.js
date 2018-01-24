@@ -296,19 +296,18 @@ export let HitPoints = {
       let amt = evtData.healAmount;
       this.gainHp(amt);
     },
-    buffEvent: function(evtData){
-      if(evtData.name != 'HP Regeneration'){
-        return;
-      }
-      this.gainHp(evtData.effect.hpAmount);
-    },
     kills: function(evtData){
       if(typeof this.getBuffInfo !== 'function'){
         return;
       }
       let info = this.getBuffInfo('Lifelink');
       if(info){
-        this.gainHp(info.effect.hpAmount);
+        this.raiseMixinEvent('healed', {
+          srcBuffInfo: info,
+          srcType: 'buff',
+          src: DATASTORE.ENTITIES[info.srcId],
+          healAmount: info.effect.healAmount
+        });
       }
     }
   }
@@ -764,7 +763,12 @@ export let ItemConsumer = {
         this.raiseMixinEvent('consumed', {
           item: eatenItem
         });
-        this.raiseMixinEvent(evtData.item.effect.mixinEvent, eatenItem.effect.evtData);
+        let data = U.deepCopy(eatenItem.effect);
+        data.srcItem = eatenItem;
+        data.srcType = 'consumable';
+        data.src = this;
+        delete data.mixinEvent;
+        this.raiseMixinEvent(evtData.item.effect.mixinEvent, data);
       }
       else{
         this.raiseMixinEvent('consumed', {
@@ -788,12 +792,22 @@ export let ItemConsumer = {
       if(eatenItem.effects){
         for(let i = 0; i < eatenItem.effects.length; i++){
           let effect = eatenItem.effects[i];
-          this.raiseMixinEvent(effect.mixinEvent, effect);
+          let data = U.deepCopy(effect);
+          data.srcItem = eatenItem;
+          data.srcType = 'food';
+          data.src = this;
+          delete data.mixinEvent;
+          this.raiseMixinEvent(effect.mixinEvent, data);
         }
       }
       //A single effect
       else if(eatenItem.effect){
-        this.raiseMixinEvent(eatenItem.effect.mixinEvent, eatenItem.effect);
+        let data = U.deepCopy(eatenItem.effect);
+        data.srcItem = eatenItem;
+        data.srcType = 'food';
+        data.src = this;
+        delete data.mixinEvent;
+        this.raiseMixinEvent(eatenItem.effect.mixinEvent, data);
       }
       evtData.removed = true;
     }
@@ -822,26 +836,18 @@ export let BuffHandler = {
     }
   },
   METHODS: {
-    addBuff: function(buffTemplate){
-      let buffName = buffTemplate.name;
-      let duration = buffTemplate.duration || 1;
-      let frequency = buffTemplate.frequency || 1;
-      let effect = buffTemplate.effect;
-      let description = buffTemplate.description || "It is currently unknown what this buff will do";
-      this.removeBuff(buffName);
-      let endTime = duration;
-      if(duration >= 0){
-        endTime = this.attr._BuffHandler.timeCounter + duration;
+    addBuff: function(buffTemplate, src){
+      let buffObj = U.deepCopy(buffTemplate);
+      this.removeBuff(buffObj.name);
+      buffObj.duration = buffObj.duration || 1;
+      buffObj.frequency = buffObj.frequency || 1;
+      buffObj.description = buffObj.description || "It is currently unknown what this buff will do";
+      buffObj.endTime = buffObj.duration;
+      if(buffObj.duration >= 0){
+        buffObj.endTime = this.attr._BuffHandler.timeCounter + buffObj.duration;
       }
-      //If it's already in the list remove it first
-      let buffObj = {
-        name: buffName,
-        startTime: this.attr._BuffHandler.timeCounter,
-        'endTime': endTime,
-        'effect': effect,
-        'frequency': frequency,
-        'description': description
-      };
+      buffObj.startTime = this.attr._BuffHandler.timeCounter;
+      buffObj.srcId = src.getId();
       this.getBuffInfoList().push(buffObj);
       let buffInfo = this.generateBuffInfo(buffObj);
       this.raiseMixinEvent('buffGained', buffInfo);
@@ -871,17 +877,15 @@ export let BuffHandler = {
       return this.attr._BuffHandler.buffInfoList;
     },
     generateBuffInfo: function(buffObj){
-      let endTime = buffObj.endTime;
-      if(buffObj.endTime >= 0){
-        endTime = buffObj.endTime - this.attr._BuffHandler.timeCounter
+      let newBuffObj = U.deepCopy(buffObj);
+      let endTime = newBuffObj.endTime;
+      if(newBuffObj.endTime >= 0){
+        endTime = newBuffObj.endTime - this.attr._BuffHandler.timeCounter;
       }
-      return {
-        name: buffObj.name,
-        timeLeft: endTime,
-        effect: U.deepCopy(buffObj.effect),
-        frequency: buffObj.frequency,
-        description: buffObj.description
-      };
+      newBuffObj.timeLeft = endTime;
+      delete newBuffObj.startTime;
+      delete newBuffObj.endTime;
+      return newBuffObj;
     }
   },
   LISTENERS: {
@@ -894,8 +898,15 @@ export let BuffHandler = {
         //Happens even if removed this turn
         let buff = buffList[i];
         let buffInfo = this.generateBuffInfo(buff);
-        if((timeCounter - buff.startTime) % buff.frequency === 0){
-          this.raiseMixinEvent('buffEvent', buffInfo);
+        if(buff.effect.mixinEvent){
+          if((timeCounter - buff.startTime) % buff.frequency === 0){
+            let effectData = U.deepCopy(buff.effect);
+            delete effectData.mixinEvent;
+            effectData.srcBuffInfo = buffInfo;
+            effectData.srcType = 'buff';
+            effectData.src = DATASTORE.ENTITIES[buff.srcId];
+            this.raiseMixinEvent(buff.effect.mixinEvent, effectData);
+          }
         }
         if(buff.endTime >= 0 && timeCounter >= buff.endTime){
           removedIndices.push(i);
@@ -930,10 +941,10 @@ export let Bloodthirst = {
     kills: function(evtData){
       if(typeof this.addBuff === 'function'){
         if(ROT.RNG.getUniform() < 0.5){
-          this.addBuff(getBuff("hp_regen_1"));
+          this.addBuff(getBuff("hp_regen_1"), this);
         }
         else{
-          this.addBuff(getBuff("lifelink_1"));
+          this.addBuff(getBuff("lifelink_1"), this);
         }
       }
     }
