@@ -1,30 +1,30 @@
 * Item Types
-  * [d]: Drop
-  * [t]: Trash
+  * \[d\]: Drop
+  * \[t\]: Trash
   * type: string
   * weight: int (grams)
   * description: string
   * Consumables
     * Food
-      * [c]: Eat
+      * \[c\]: Eat
       * satiation: int
       * effect: effect
       * buff: buff
     * Potions - affects only drinker
-      * [c]: Drink
+      * \[c\]: Drink
       * effect: effect
       * buff: buff
     * Scrolls - affects environment/all characters/all enemies
-      * [c]: Read
+      * \[c\]: Read
       * scrollType: string
       * scrollPower: int
     * Tomes
-      * [c]: Read
+      * \[c\]: Read
       * Skill Tomes
         * skillName: string
         * skillXP: int
   * Equipment
-    * [e]: Equip
+    * \[e\]: Equip
     * Weapons
       * One-Handed
       * Two-Handed
