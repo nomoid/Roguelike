@@ -127,7 +127,8 @@ let charsToTiles = {
   '.': TILES.FLOOR,
   '|': TILES.GLASS,
   '-': TILES.NULLTILE,
-  'C': new Tile({name: 'mob_seed', chr: '?', seedData: {mobName: 'chris'}})
+  'C': new Tile({name: 'mob_seed', chr: '?', seedData: {mobName: 'chris'}}),
+  'd': new Tile({name: 'mob_seed', chr: '?', seedData: {mobName: 'jdog'}})
   //0-9 can be loot chests - different
   //a-z mob seeds
 }
@@ -159,7 +160,7 @@ export let BASIC_FLOOR = {
     grid: [
       ['-','#','-'],
       ['#','-','#'],
-      ['-','-','#'],
+      ['-','d','#'],
       ['-','#','-'],
       ['#','#','#']
     ],

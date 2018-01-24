@@ -31,7 +31,21 @@ export let TILE_GRID_POPULATOR = {
     map.attr.mobAmounts['chris'] = 0;
     map.attr.mobAmounts['jdog'] = 0;
 
-
+    //populate through seeds!
+    for(let xi = 0; xi < map.attr.xdim; xi++){
+      for(let yi = 0; yi < map.attr.ydim; yi++){
+        let tile = map.tileGrid[xi][yi];
+        if(tile.isA('mob_seed')){
+          let mobName = tile.seedData.mobName;
+          if(!map.attr.mobAmounts[mobName]){
+            map.attr.mobAmounts[mobName] = 0;
+          }
+          let mob = EntityFactory.create(mobName, true);
+          map.addEntityAt(mob, xi, yi);
+          map.tileGrid[xi][yi] = TILES.FLOOR;
+        }
+      }
+    }
 
     //let chris = EntityFactory.create('chris', true);
     //map.addEntityAtRandomPosition(chris);
