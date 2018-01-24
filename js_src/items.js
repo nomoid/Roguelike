@@ -7,7 +7,7 @@ export let Items = {
     type: "Food",
     effect: {
       mixinEvent: "healed",
-      healAmount: 2
+      healAmount: 3
     },
     description: "A common drop item that jdogs like to eat in his free time. Heals for ${this.effect.healAmount}."
   },
@@ -21,7 +21,7 @@ export let Items = {
     type: "Food",
     effect: {
       mixinEvent: "healed",
-      healAmount: 5
+      healAmount: 20
     },
     description: "A rare drop that only occurs when jdogs defeat each other. Heals for ${this.effect.healAmount}."
   }

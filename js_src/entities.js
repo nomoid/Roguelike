@@ -8,9 +8,10 @@ EntityFactory.learn({
   name: 'avatar',
   chr: '@',
   fg: Color.AVATAR_FG,
-  maxHp: 10,
+  maxHp: 100,
+  meleeDamage: 10,
   radius: 16,
-  mixinNames: ['TimeTracker', 'WalkerCorporeal', 'PlayerMessage', 'HitPoints', 'ActorPlayer', 'MeleeAttacker', 'FOVHandler', 'ItemPile', 'Inventory', 'ItemConsumer']
+  mixinNames: ['TimeTracker', 'WalkerCorporeal', 'PlayerMessage', 'HitPoints', 'ActorPlayer', 'MeleeAttacker', 'FOVHandler', 'ItemPile', 'Inventory', 'ItemConsumer', 'BuffHandler', 'Bloodthirst']
 });
 
 EntityFactory.learn({
@@ -23,7 +24,8 @@ EntityFactory.learn({
   name: 'jdog',
   chr: 'd',
   fg: '#d06',
-  maxHp: 4,
+  maxHp: 40,
+  meleeDamage: 10,
   priorities: {
     'ActorRandomWalker': 1
   },
