@@ -28,8 +28,8 @@ export function getItem(name){
 export let Functionalities = {
   "Item": {
     list: [
-      {binding: "DROP", description: "Drop"},
-      {binding: "TRASH", description: "Trash"}
+      {binding: "DROP", description: "Drop", mixinEvent: "tryDropItem"},
+      {binding: "TRASH", description: "Trash", mixinEvent: "tryTrashItem"}
     ]
   },
   "Key Item": {
@@ -37,19 +37,19 @@ export let Functionalities = {
   },
   "Consumable": {
     list: [
-      {binding: "CONSUME", description: "Consume"}
+      {binding: "CONSUME", description: "Consume", mixinEvent: "tryConsume"}
     ],
     parent: "Item"
   },
   "Food": {
     list: [
-      {binding: "CONSUME", description: "Eat"}
+      {binding: "CONSUME", description: "Eat", mixinEvent: "tryEat"}
     ],
     parent: "Consumable"
   },
   "Equipment": {
     list: [
-      {binding: "EQUIP", description: "Equip"}
+      {binding: "EQUIP", description: "Equip", mixinEvent: "tryEquip"}
     ],
     parent: "Item"
   }
@@ -74,8 +74,10 @@ export function getFunctionality(itemType){
     let key = BINDINGS.INVENTORY[functionality.binding];
     let replaced = false;
     for(let j = 0; j < parentData.length; j++){
-      if(parentData[j].key == key){
-        parentData[j].description = functionality.description;
+      let parentObj = parentData[j];
+      if(parentObj.key == key){
+        parentObj.description = functionality.description;
+        parentObj.mixinEvent = functionality.mixinEvent;
         replaced = true;
         break;
       }
@@ -83,7 +85,8 @@ export function getFunctionality(itemType){
     if(!replaced){
       added.push({
         'key': key,
-        description: functionality.description
+        description: functionality.description,
+        mixinEvent: functionality.mixinEvent
       });
     }
   }

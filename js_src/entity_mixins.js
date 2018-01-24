@@ -564,7 +564,7 @@ export let Inventory = {
   },
   METHODS: {
     pickUpItem: function(){
-      let map = DATASTORE.MAPS[this.getMapId()];
+      let map = this.getMap();
       let items = map.getItemsAt(this.getX(), this.getY());
       if(items){
         //There is at least one item
@@ -638,6 +638,13 @@ export let Inventory = {
     }
   },
   LISTENERS: {
+    tryDropItem: function(evtData){
+      this.getMap().addItemAt(evtData.item, this.getX(), this.getY());
+      evtData.removed = true;
+    },
+    tryTrashItem: function(evtData){
+      evtData.removed = true;
+    }
   }
 };
 
@@ -673,6 +680,5 @@ export let ItemPile = {
     }
   },
   LISTENERS: {
-
   }
 }

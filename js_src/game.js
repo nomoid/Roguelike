@@ -122,12 +122,12 @@ export let Game = {
     }
   },
 
-  popMode: function(){
+  popMode: function(template){
     if (this.modeStack.length > 0) {
       this.curMode().exit();
       this.modeStack.pop();
     }
-    this.curMode().enter();
+    this.curMode().enter(template);
   },
 
   getDisplay: function(displayId){

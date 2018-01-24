@@ -860,10 +860,15 @@ export class InventoryMode extends UIMode{
       if(selectedItem.description){
         description = U.fillTemplate(selectedItem.description, selectedItem);
       }
-      display.drawText(descriptionX, 4, description);
+      let itemType = "Item";
+      if(selectedItem.type){
+        itemType = selectedItem.type;
+      }
+      display.drawText(descriptionX, 4, itemType);
+      display.drawText(descriptionX, 5, description);
       //Render functionality
       let functionalityX = 40;
-      let functionalityList = getFunctionality(selectedItem.type);
+      let functionalityList = getFunctionality(itemType);
       for(let i = 0; i < functionalityList.length; i++){
         let functionality = functionalityList[i];
         let functionalityString = `[${functionality.key}] - ${functionality.description}`;
@@ -898,6 +903,35 @@ export class InventoryMode extends UIMode{
           mode: 'INVENTORY'
         });
         return true;
+      }
+      else{
+        let items = this.getAvatar().getItems();
+        if(this.selected < items.length){
+          let selectedItem = items[this.selected];
+          let itemType = "Item";
+          if(selectedItem.type){
+            itemType = selectedItem.type;
+          }
+          let functionalityList = getFunctionality(itemType);
+          for(let i = 0; i < functionalityList.length; i++){
+            let functionality = functionalityList[i];
+            if(evt.key == functionality.key){
+              //Perform the functionality
+              let functionalityData = {
+                item: selectedItem,
+                removed: false
+              };
+              this.getAvatar().raiseMixinEvent(functionality.mixinEvent, functionalityData);
+              if(functionalityData.removed){
+                this.getAvatar().removeItem(this.selected);
+                if(this.selected >= items.length){
+                  this.selected = Math.max(0, items.length - 1);
+                }
+              }
+              return true;
+            }
+          }
+        }
       }
     }
     return false;
