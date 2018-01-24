@@ -1,6 +1,6 @@
 import ROT from 'rot-js';
 import * as U from './util.js';
-import {StartupMode, PlayMode, WinMode, LoseMode, MessagesMode, PersistenceMode, BindingsMode, InventoryMode} from './ui_mode.js'
+import {StartupMode, PlayMode, WinMode, LoseMode, MessagesMode, PersistenceMode, BindingsMode, InventoryMode, EquipmentMode} from './ui_mode.js'
 import {Message} from './message.js';
 import {MapMaker} from './map.js';
 import {DATASTORE, clearDatastore} from './datastore.js';
@@ -85,6 +85,7 @@ export let Game = {
     this.modes.persistence = new PersistenceMode(this);
     this.modes.bindings = new BindingsMode(this);
     this.modes.inventory = new InventoryMode(this);
+    this.modes.equipment = new EquipmentMode(this);
   },
 
   switchMode: function(newModeName, template){
@@ -93,6 +94,12 @@ export let Game = {
     }
     this.modeStack = Array();
     this.modeStack.push(this.modes[newModeName]);
+    let newTemplate = template;
+    if(!newTemplate){
+      newTemplate = {};
+    }
+    newTemplate.popping = false;
+    newTemplate.swapping = false;
     this.curMode().enter(template);
   },
 
@@ -101,7 +108,13 @@ export let Game = {
       this.curMode().exit();
     }
     this.modeStack.push(this.modes[newModeName]);
-    this.curMode().enter(template);
+    let newTemplate = template;
+    if(!newTemplate){
+      newTemplate = {};
+    }
+    newTemplate.popping = false;
+    newTemplate.swapping = false;
+    this.curMode().enter(newTemplate);
   },
 
   curMode: function(){
@@ -127,7 +140,28 @@ export let Game = {
       this.curMode().exit();
       this.modeStack.pop();
     }
-    this.curMode().enter(template);
+    let newTemplate = template;
+    if(!newTemplate){
+      newTemplate = {};
+    }
+    newTemplate.popping = true;
+    newTemplate.swapping = false;
+    this.curMode().enter(newTemplate);
+  },
+
+  swapMode: function(newModeName, template){
+    if (this.modeStack.length > 0) {
+      this.curMode().exit();
+      this.modeStack.pop();
+    }
+    this.modeStack.push(this.modes[newModeName]);
+    let newTemplate = template;
+    if(!newTemplate){
+      newTemplate = {};
+    }
+    newTemplate.popping = false;
+    newTemplate.swapping = true;
+    this.curMode().enter(newTemplate);
   },
 
   getDisplay: function(displayId){

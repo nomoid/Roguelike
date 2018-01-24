@@ -163,6 +163,12 @@ export class PlayMode extends UIMode{
         });
         return true;
       }
+      else if(evt.key == BINDINGS.GAME.ENTER_EQUIPMENT){
+        this.game.pushMode('equipment', {
+          avatarId: this.attr.avatarId
+        });
+        return true;
+      }
       else if(evt.key == BINDINGS.GAME.PREV_FLOOR){
         let oldId = this.game.getMapId();
         if(this.game.previousFloor()){
@@ -641,7 +647,7 @@ export class BindingsMode extends UIMode{
     console.log("Entering Bindings Mode");
     this.changingBinding = false;
     this.keyToChange = null;
-    if(template){
+    if(template.mode){
       this.mode = template.mode;
     }
     else{
@@ -803,8 +809,11 @@ export class BindingsMode extends UIMode{
       let bindingsPath = this.game._PERSISTENCE_NAMESPACE + '_' + this.game._BINDINGS_NAMESPACE;
       let bindingString = window.localStorage.getItem(bindingsPath);
       let bindings = JSON.parse(bindingString);
-      for(let binding in bindings){
-        BINDINGS[binding] = bindings[binding];
+      for(let bindingGroupIndex in bindings){
+        let bindingGroup = bindings[bindingGroupIndex];
+        for(let bindingIndex in bindingGroup){
+            BINDINGS[bindingGroupIndex][bindingIndex] = bindingGroup[bindingIndex];
+        }
       }
     }
     catch(e) {
@@ -820,9 +829,10 @@ export class InventoryMode extends UIMode{
   }
 
   enter(template){
-    //Otherwise coming from popping
-    if(template){
+    if(template.avatarId){
       this.avatarId = template.avatarId;
+    }
+    if(!template.popping && !template.swapping){
       this.selected = 0;
     }
   }
@@ -899,6 +909,16 @@ export class InventoryMode extends UIMode{
           return true;
         }
       }
+      else if(evt.key == BINDINGS.MASTER.MENU_LEFT){
+        this.game.swapMode('equipment', {
+          avatarId: this.avatarId
+        });
+        return true;
+      }
+      else if(evt.key == BINDINGS.MASTER.MENU_RIGHT){
+        //this.game.swapMode('skills');
+        //return true;
+      }
       else if(evt.key == BINDINGS.INVENTORY.ENTER_BINDINGS){
         this.game.pushMode('bindings', {
           mode: 'INVENTORY'
@@ -933,6 +953,39 @@ export class InventoryMode extends UIMode{
             }
           }
         }
+      }
+    }
+    return false;
+  }
+
+  getAvatar(){
+    return DATASTORE.ENTITIES[this.avatarId];
+  }
+}
+
+export class EquipmentMode extends UIMode{
+  constructor(game){
+    super(game);
+  }
+
+  enter(template){
+    if(template.avatarId){
+      this.avatarId = template.avatarId;
+    }
+    if(!template.popping && !template.swapping){
+      this.selected = 0;
+    }
+  }
+
+  renderMain(display){
+    display.drawText(0, 0, '|' + U.applyBackground(U.applyColor('Equipment', Color.TEXT_HIGHLIGHTED), Color.TEXT_HIGHLIGHTED_BG) + '|Inventory|Skills|');
+  }
+
+  handleInput(eventType, evt){
+    if(eventType == "keyup"){
+      if(evt.key == BINDINGS.MASTER.EXIT_MENU){
+        this.game.popMode();
+        return true;
       }
     }
     return false;
