@@ -42,6 +42,7 @@ export let Game = {
 
   mapIds: Array(),
   currMap: 0,
+  persist: {},
 
   init: function(){
 
@@ -235,6 +236,7 @@ export let Game = {
       playModeState: this.modes.play,
       mapIds: this.mapIds,
       currMap: this.currMap,
+      persist: this.persist,
       rngState: ROT.RNG.getState()
     });
     return json;
@@ -247,6 +249,7 @@ export let Game = {
 
   setupNewGame: function(state){
     if(state){
+      this.persist = state.persist;
       this.setupRng(state.rseed);
       ROT.RNG.setState(state.rngState);
       this.modes.play.restoreFromState(state.playModeState);
@@ -255,6 +258,7 @@ export let Game = {
       this.currMap = state.currMap;
     }
     else{
+      this.resetPersistState();
       this.setupRng(U.getRandomNoStateSeed());
       this.modes.play.reset();
       this._uid = Math.floor(U.getRandomNoStateSeed());
@@ -263,6 +267,13 @@ export let Game = {
 
     }
     initTiming();
+  },
+
+  resetPersistState: function(){
+    this.persist = {
+      inventoryIndex: 0,
+      equipmentIndex: 0
+    };
   },
 
   getMapId: function(){

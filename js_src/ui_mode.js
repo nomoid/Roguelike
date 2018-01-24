@@ -835,16 +835,13 @@ export class InventoryMode extends UIMode{
     }
     if(template.selected){
       let items = this.getAvatar().getItems();
-      this.selected = template.selected;
-      if(this.selected >= items.length){
-        this.selected = items.length - 1;
+      this.game.persist.inventoryIndex = template.selected;
+      if(this.game.persist.inventoryIndex >= items.length){
+        this.game.persist.inventoryIndex = items.length - 1;
       }
-      if(this.selected < 0){
-        this.selected = 0;
+      if(this.game.persist.inventoryIndex < 0){
+        this.game.persist.inventoryIndex = 0;
       }
-    }
-    else if(!this.selected || (!template.popping && !template.swapping)){
-      this.selected = 0;
     }
   }
 
@@ -853,10 +850,10 @@ export class InventoryMode extends UIMode{
     display.drawText(0, 0, '|Equipment|' + U.applyBackground(U.applyColor('Inventory', Color.TEXT_HIGHLIGHTED), Color.TEXT_HIGHLIGHTED_BG) + '|Skills|');
     let items = this.getAvatar().getItems();
     let maxRender = 20;
-    if(items.length - this.selected > maxRender){
+    if(items.length - this.game.persist.inventoryIndex > maxRender){
       display.drawText(0, bottom, Character.DOWN_TRIANGLE);
     }
-    let skip = Math.max(0, Math.min(items.length - maxRender, this.selected));
+    let skip = Math.max(0, Math.min(items.length - maxRender, this.game.persist.inventoryIndex));
     let renderEnd = Math.min(maxRender, items.length - skip);
     if(skip > 0){
       display.drawText(0, 4, Character.UP_TRIANGLE);
@@ -869,14 +866,14 @@ export class InventoryMode extends UIMode{
         name = item.name;
       }
       //Highlight selected item
-      if(skip + i == this.selected){
+      if(skip + i == this.game.persist.inventoryIndex){
         name = U.applyBackground(U.applyColor(name, Color.TEXT_HIGHLIGHTED), Color.TEXT_HIGHLIGHTED_BG)
       }
       display.drawText(2, i + 4, name);
     }
-    if(this.selected < items.length){
+    if(this.game.persist.inventoryIndex < items.length){
       //Render description
-      let selectedItem = items[this.selected];
+      let selectedItem = items[this.game.persist.inventoryIndex];
       let descriptionX = 40;
       let description = "Nobody knows what this item is used for...";
       if(selectedItem.description){
@@ -909,14 +906,14 @@ export class InventoryMode extends UIMode{
       else if(evt.key == BINDINGS.MASTER.MENU_DOWN){
         let maxRender = 20;
         let items = this.getAvatar().getItems();
-        if(this.selected < items.length - 1){
-          this.selected++;
+        if(this.game.persist.inventoryIndex < items.length - 1){
+          this.game.persist.inventoryIndex++;
           return true;
         }
       }
       else if(evt.key == BINDINGS.MASTER.MENU_UP){
-        if(this.selected > 0){
-          this.selected--;
+        if(this.game.persist.inventoryIndex > 0){
+          this.game.persist.inventoryIndex--;
           return true;
         }
       }
@@ -938,8 +935,8 @@ export class InventoryMode extends UIMode{
       }
       else{
         let items = this.getAvatar().getItems();
-        if(this.selected < items.length){
-          let selectedItem = items[this.selected];
+        if(this.game.persist.inventoryIndex < items.length){
+          let selectedItem = items[this.game.persist.inventoryIndex];
           let itemType = "Item";
           if(selectedItem.type){
             itemType = selectedItem.type;
@@ -950,16 +947,16 @@ export class InventoryMode extends UIMode{
             if(evt.key == functionality.key){
               //Perform the functionality
               let functionalityData = {
-                itemIndex: this.selected,
+                itemIndex: this.game.persist.inventoryIndex,
                 item: selectedItem,
                 src: this.getAvatar(),
                 removed: false
               };
               this.getAvatar().raiseMixinEvent(functionality.mixinEvent, functionalityData);
               if(functionalityData.removed){
-                this.getAvatar().removeItem(this.selected);
-                if(this.selected >= items.length){
-                  this.selected = Math.max(0, items.length - 1);
+                this.getAvatar().removeItem(this.game.persist.inventoryIndex);
+                if(this.game.persist.inventoryIndex >= items.length){
+                  this.game.persist.inventoryIndex = Math.max(0, items.length - 1);
                 }
               }
               return true;
@@ -990,13 +987,10 @@ export class EquipmentMode extends UIMode{
       this.itemIndex = template.itemIndex;
       this.item = template.item;
       //Try to find the correct slot
-      this.selectedSlot = this.getPreferredSlotIndex(template.item);
+      this.game.persist.equipmentIndex = this.getPreferredSlotIndex(template.item);
     }
     else{
       this.equipping = false;
-      if(!this.selectedSlot || (!template.popping && !template.swapping)){
-        this.selectedSlot = 0;
-      }
     }
   }
 
@@ -1016,13 +1010,13 @@ export class EquipmentMode extends UIMode{
           }
         }
         let slotText = `${slotName} - ${itemText}`;
-        if(i == this.selectedSlot){
+        if(i == this.game.persist.equipmentIndex){
           slotText = U.applyBackground(U.applyColor(slotText, Color.TEXT_HIGHLIGHTED), Color.TEXT_HIGHLIGHTED_BG)
         }
         display.drawText(2, 4 + i, slotText);
       }
     }
-    let selectedItemSlot = EquipmentOrder[this.selectedSlot];
+    let selectedItemSlot = EquipmentOrder[this.game.persist.equipmentIndex];
     let selectedItem = equipment[selectedItemSlot];
     if(selectedItem){
       let descriptionX = 40;
@@ -1056,14 +1050,14 @@ export class EquipmentMode extends UIMode{
         return true;
       }
       else if(evt.key == BINDINGS.MASTER.MENU_UP){
-        if(this.selectedSlot > 0){
-          this.selectedSlot--;
+        if(this.game.persist.equipmentIndex > 0){
+          this.game.persist.equipmentIndex--;
           return true;
         }
       }
       else if(evt.key == BINDINGS.MASTER.MENU_DOWN){
-        if(this.selectedSlot < EquipmentOrder.length - 1){
-          this.selectedSlot++;
+        if(this.game.persist.equipmentIndex < EquipmentOrder.length - 1){
+          this.game.persist.equipmentIndex++;
           return true;
         }
       }
@@ -1071,7 +1065,7 @@ export class EquipmentMode extends UIMode{
         if(this.equipping){
           if(evt.key == BINDINGS.INVENTORY.EQUIP){
             let oldItemHolder = {};
-            let slot = EquipmentOrder[this.selectedSlot];
+            let slot = EquipmentOrder[this.game.persist.equipmentIndex];
             if(this.getAvatar().canRemoveItem(this.itemIndex)){
               if(this.getAvatar().addEquipment(slot, this.item, oldItemHolder)){
                 //Remove from inventory on success
@@ -1107,7 +1101,7 @@ export class EquipmentMode extends UIMode{
           }
           else if(evt.key == BINDINGS.INVENTORY.UNEQUIP){
             let oldItemHolder = {};
-            let slot = EquipmentOrder[this.selectedSlot];
+            let slot = EquipmentOrder[this.game.persist.equipmentIndex];
             if(this.getAvatar().removeEquipment(slot, oldItemHolder)){
               if(oldItemHolder.item){
                 this.getAvatar().addItem(oldItemHolder.item);
@@ -1117,7 +1111,7 @@ export class EquipmentMode extends UIMode{
           }
           else if(evt.key == BINDINGS.INVENTORY.DROP){
             let oldItemHolder = {};
-            let slot = EquipmentOrder[this.selectedSlot];
+            let slot = EquipmentOrder[this.game.persist.equipmentIndex];
             if(this.getAvatar().removeEquipment(slot, oldItemHolder)){
               if(oldItemHolder.item){
                 let tryDropHolder = {
