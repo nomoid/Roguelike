@@ -29,6 +29,7 @@ EntityFactory.learn({
   maxHp: 4,
   radius: 5,
   team: 'baddies',
+  remember: true,
   enemyTeams: ['avatar'],
   friendlyTeams: ['baddies'],
   //targetName: 'avatar',

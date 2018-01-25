@@ -525,7 +525,6 @@ export let OmniscientEnemyTargeter = {
     mixinGroupName: 'Targeter',
     stateNamespace: '_OmniscientEnemyTargeter',
     stateModel: {
-      targetName: '',
     },
     initialize: function(template){
     }
@@ -573,9 +572,11 @@ export let SightedEnemyTargeter = {
     mixinGroupName: 'Targeter',
     stateNamespace: '_SightedEnemyTargeter',
     stateModel: {
-      targetName: '',
+      remember: false,
+      memoryPos: null
     },
     initialize: function(template){
+      this.attr._SightedEnemyTargeter.remember = template.remember;
     }
   },
   METHODS: {
@@ -605,10 +606,12 @@ export let SightedEnemyTargeter = {
         }
       }
       if(targets.length==0){
-        return null;
+        return this.attr._SightedEnemyTargeter.memoryPos;
       }
       let target = targets[minDIndex];
-      return `${target.getX()},${target.getY()}`;
+      let pos = `${target.getX()},${target.getY()}`;
+      this.attr._SightedEnemyTargeter.memoryPos = pos;
+      return pos;
 
     }
   },
