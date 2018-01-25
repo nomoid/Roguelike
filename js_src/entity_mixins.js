@@ -591,7 +591,7 @@ export let SightedEnemyTargeter = {
         if(visibility_checker.check(ent.getX(), ent.getY())){
           if(this.getEnemyTeams().indexOf(ent.getTeam())!=-1){
             targets.push(ent);
-            console.dir(ent);
+            //console.dir(ent);
           }
         }
       }
@@ -771,7 +771,18 @@ export let OmniscientPathfinder = {
           }
           if(oneAway){
             //Still may result in no path found
-            return map.isPositionOpenOrAvatar(x, y);
+            let isOpen = map.isPositionOpen(x, y);
+            let isEnemy = false;
+            let info = map.getTargetPositionInfo(x, y);
+            let ent = info.entity;
+            if(ent){
+              if(typeof ent.getTeam === 'function' && typeof this.getEnemyTeams === 'function'){
+                if(this.getEnemyTeams(ent.getTeam())!=-1){
+                  isEnemy = true;
+                }
+              }
+            }
+            return isOpen || isEnemy;
           }
           else{
             return map.getTile(x, y).isPassable();
@@ -807,7 +818,18 @@ export let OmniscientPathfinder = {
           }
           if(oneAway){
             //Still may result in no path found
-            return map.isPositionOpenOrAvatar(x, y);
+            let isOpen = map.isPositionOpen(x, y);
+            let isEnemy = false;
+            let info = map.getTargetPositionInfo(x, y);
+            let ent = info.entity;
+            if(ent){
+              if(typeof ent.getTeam === 'function' && typeof this.getEnemyTeams === 'function'){
+                if(this.getEnemyTeams().indexOf(ent.getTeam())!=-1){
+                  isEnemy = true;
+                }
+              }
+            }
+            return isOpen || isEnemy;
           }
           else{
             return map.getTile(x, y).isPassable();
