@@ -24,6 +24,8 @@ export class Map{
     this.attr.mapPosToItemEntityId = attr.mapPosToItemEntityId || {};
     this.attr.mobAmounts = attr.mobAmounts || {};
     this.attr.hasPopulated = attr.hasPopulated || false;
+    //For debug purposes
+    this.attr.mapPosToPaint = {};
   }
 
   setupMap(){
@@ -283,6 +285,14 @@ export class Map{
     return true;
   }
 
+  paintTile(mapx, mapy, color){
+    this.attr.mapPosToPaint[`${mapx},${mapy}`] = color;
+  }
+
+  clearPaint(){
+    this.attr.mapPosToPaint = {};
+  }
+
   render(display, camera_x, camera_y, visibility_checker){
     //console.log('rendering map');
     //console.dir(this);
@@ -305,6 +315,7 @@ export class Map{
     for(let xi = xstart; xi < xend; xi++){
       cy = 0;
       for(let yi = ystart; yi < yend; yi++){
+        let paint = this.attr.mapPosToPaint[`${xi},${yi}`];
         let isVisible = visibility_checker.check(xi, yi);
         if(renderEverything && !isVisible){
           for(let c = 0; c < visibilityCheckerList.length; c++){
@@ -318,20 +329,20 @@ export class Map{
         if(!isVisible){
           let memTile = TILESTORE.getTile(visibility_checker.memoryTile(xi, yi));
           if(memTile){
-            memTile.renderGray(display, cx, cy);
+            memTile.renderGray(display, cx, cy, paint);
           }
           cy++;
           continue;
         }
         let pos = `${xi},${yi}`;
         if(this.attr.mapPosToEntityId[pos]){
-          DATASTORE.ENTITIES[this.attr.mapPosToEntityId[pos]].render(display,cx,cy);
+          DATASTORE.ENTITIES[this.attr.mapPosToEntityId[pos]].render(display,cx,cy,paint);
         }
         else if(this.attr.mapPosToItemEntityId[pos]){
-          DATASTORE.ENTITIES[this.attr.mapPosToItemEntityId[pos]].render(display,cx,cy);
+          DATASTORE.ENTITIES[this.attr.mapPosToItemEntityId[pos]].render(display,cx,cy,paint);
         }
         else{
-          this.getTile(xi, yi).render(display, cx, cy);
+          this.getTile(xi, yi).render(display, cx, cy, paint);
         }
 
         cy++;

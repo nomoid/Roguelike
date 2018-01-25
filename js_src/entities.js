@@ -27,7 +27,7 @@ EntityFactory.learn({
   chr: 'd',
   fg: '#d06',
   maxHp: 4,
-  radius: 5,
+  radius: 8,
   team: 'baddies',
   remember: true,
   enemyTeams: ['avatar'],

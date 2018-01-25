@@ -6,5 +6,6 @@ export let Color = {
   TEXT_ACTIVE: '#ccc',
   TEXT_DISABLED: '#555',
   TEXT_CHANGING_KEY: '#cc4',
-  MEMORY_FG: '#555'
+  MEMORY_FG: '#555',
+  PAINT_BG: '#770'
 }
