@@ -27,6 +27,7 @@ EntityFactory.learn({
   chr: 'd',
   fg: '#d06',
   maxHp: 4,
+  radius: 5,
   team: 'baddies',
   enemyTeams: ['avatar'],
   friendlyTeams: ['baddies'],
@@ -35,7 +36,7 @@ EntityFactory.learn({
     'NearsightedAttacker': 1,
     'OmniscientPathfinder': 2
   },
-  mixinNames: ['HitPoints', 'AIActor', 'ActorRandomWalker', 'WalkerCorporeal', 'TeamMember', 'MeleeAttacker', 'ItemDropper', 'NearsightedAttacker', 'OmniscientEnemyTargeter', 'OmniscientPathfinder']
+  mixinNames: ['HitPoints', 'AIActor', 'ActorRandomWalker', 'WalkerCorporeal', 'TeamMember', 'MeleeAttacker', 'ItemDropper', 'FOVHandler', 'NearsightedAttacker', 'OmniscientEnemyTargeter', 'OmniscientPathfinder']
 });
 
 EntityFactory.learn({

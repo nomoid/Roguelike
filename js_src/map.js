@@ -292,10 +292,30 @@ export class Map{
     let xend = xstart + display.getOptions().width;
     let ystart = camera_y - Math.trunc(display.getOptions().height / 2);
     let yend = ystart + display.getOptions().height;
+    let renderEverything = true;
+    let visibilityCheckerList = [];
+    if(renderEverything){
+      for(let id in this.attr.entityIdToMapPos){
+        let ent = DATASTORE.ENTITIES[id];
+        if(typeof ent.generateVisibilityChecker === 'function' && ent.getName()!=='avatar'){
+          visibilityCheckerList.push(ent.generateVisibilityChecker());
+        }
+      }
+    }
     for(let xi = xstart; xi < xend; xi++){
       cy = 0;
       for(let yi = ystart; yi < yend; yi++){
-        if(!visibility_checker.check(xi,yi)){
+        let isVisible = visibility_checker.check(xi, yi);
+        if(renderEverything && !isVisible){
+          for(let c = 0; c < visibilityCheckerList.length; c++){
+            //console.dir(visibilityCheckerList[c]);
+            if(visibilityCheckerList[c].check(xi, yi)){
+              isVisible = true;
+              break;
+            }
+          }
+        }
+        if(!isVisible){
           let memTile = TILESTORE.getTile(visibility_checker.memoryTile(xi, yi));
           if(memTile){
             memTile.renderGray(display, cx, cy);
