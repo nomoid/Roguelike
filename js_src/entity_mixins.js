@@ -640,26 +640,22 @@ export let ActorRandomWalker = {
       }
       //console.log("walker is acting");
       //Rand number from -1 to 1
-      let dir = Math.floor(ROT.RNG.getUniform() * 5);
+      let dir = Math.floor(ROT.RNG.getUniform() * 10);//the higher this is, the higher the chance of standing still
       let dx, dy;
       switch (dir) {
         case 0:
-          dx = 0;
-          dy = 0;
-          break;
-        case 1:
           dx = -1;
           dy = 0;
           break;
-        case 2:
+        case 1:
           dx = 0;
           dy = -1;
           break;
-        case 3:
+        case 2:
           dx = 1;
           dy = 0;
           break;
-        case 4:
+        case 3:
           dx = 0;
           dy = 1;
           break;
