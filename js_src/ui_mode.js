@@ -12,6 +12,7 @@ import {TIME_ENGINE, loadScheduler, saveScheduler} from './timing.js';
 import {getFunctionality} from './items.js';
 import {EquipmentSlots, EquipmentOrder} from './equipment.js';
 import {renderXp, ExperienceMultiplier, hasPrereqs, prereqString} from './skills.js';
+import {getStatDisplayName} from './stats.js';
 
 class UIMode{
   constructor(game){
@@ -126,7 +127,7 @@ export class PlayMode extends UIMode{
   renderAvatar(display){
     display.drawText(2, 2, "AVATAR, THIS IS");
     display.drawText(2, 3, `Time: ${this.getAvatar().getTime()}`);
-    display.drawText(2, 4, `HP: ${this.getAvatar().getHp()}/${this.getAvatar().getMaxHp()}`);
+    display.drawText(2, 4, `HP: ${this.getAvatar().getHp()}/${this.getAvatar().getStat('maxHp')}`);
     display.drawText(2, 5, `Location: ${this.getAvatar().getX()}, ${this.getAvatar().getY()}`);
     display.drawText(2, 6, `Floor: ${this.game.currMap+1}`);
     display.drawText(2, 7, `${DATASTORE.MAPS[this.game.getMapId()].getMobAmounts('jdog')} jdogs left`);
@@ -1465,6 +1466,13 @@ export class StatsMode extends UIMode{
 
   renderMain(display){
     display.drawText(0, 0, menuTopLine(3));
+    let characterStats = this.getAvatar().getCharacterStats();
+    for(let i = 0; i < characterStats.length; i++){
+      let stat = characterStats[i][0];
+      let statValue = characterStats[i][1];
+      let statName = getStatDisplayName(stat);
+      display.drawText(2, 4 + i, `${statName}: ${statValue}`);
+    }
   }
 
   handleInput(eventType, evt){

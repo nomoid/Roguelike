@@ -261,11 +261,9 @@ export let HitPoints = {
     stateNamespace: '_HitPoints',
     stateModel: {
       hp: 1,
-      maxHp: 1
     },
     initialize: function(template){
-      this.attr._HitPoints.maxHp = template.maxHp;
-      this.attr._HitPoints.hp = template.hp || template.maxHp;
+      this.attr._HitPoints.hp = template.hp || template.stats.maxHp;
     }
   },
   METHODS: {
@@ -284,7 +282,7 @@ export let HitPoints = {
     gainHp: function(amt){
       let curHp = this.attr._HitPoints.hp;
       this.attr._HitPoints.hp += amt;
-      this.attr._HitPoints.hp = Math.min(this.attr._HitPoints.maxHp, this.attr._HitPoints.hp);
+      this.attr._HitPoints.hp = Math.min(this.getStat('maxHp'), this.attr._HitPoints.hp);
       let hpDiff = this.attr._HitPoints.hp-curHp;
       if(hpDiff > 0){
         this.raiseMixinEvent('gainedHealth', {
@@ -298,12 +296,6 @@ export let HitPoints = {
     },
     setHp: function(amt){
       this.attr._HitPoints.hp = amt;
-    },
-    getMaxHp: function(){
-      return this.attr._HitPoints.maxHp;
-    },
-    setMaxHp: function(amt){
-      this.attr._HitPoints.maxHp = amt;
     }
   },
   LISTENERS: {
@@ -1485,5 +1477,36 @@ export let SkillLearner = {
         }
       }
     }
+  }
+}
+
+export let CharacterStats = {
+  META: {
+    mixinName: 'CharacterStats',
+    mixinGroupName: 'StatsGroup',
+    stateNamespace: '_CharacterStats',
+    stateModel: {
+      statNames: []
+    },
+    initialize: function(template){
+      this.attr._CharacterStats.statNames = template.statNames || [];
+    }
+  },
+  METHODS: {
+    getStatNames: function(){
+      return this.attr._CharacterStats.statNames;
+    },
+    getCharacterStats: function(){
+      let output = Array();
+      let statNames = this.getStatNames();
+      for(let i = 0; i < statNames.length; i++){
+        let statName = statNames[i];
+        let statValue = this.getStat(statName);
+        output.push([statName, statValue]);
+      }
+      return output;
+    }
+  },
+  LISTENERS: {
   }
 }

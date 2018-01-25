@@ -16,8 +16,24 @@ export class Entity extends MixableSymbol{
     this.attr.y = 0;
     this.attr.mapId = 0;
     this.attr.id = uniqueId(`entity${this.attr.name ? '-'+this.attr.name : ''}`);
+    this.attr.stats = entityData.stats || {};
   }
 
+  getStats(){
+    return this.attr.stats;
+  }
+  getStat(name){
+    let stat = this.attr.stats[name];
+    if(!stat){
+      return 0;
+    }
+    else{
+      return stat;
+    }
+  }
+  setStat(name, value){
+    this.attr.stats[name] = value;
+  }
   getName(){
     return this.attr.name;
   }
