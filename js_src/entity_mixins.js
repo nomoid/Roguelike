@@ -459,7 +459,7 @@ export let OmniscientEnemyTargeter = {
   },
   METHODS: {
     getTargetPos: function(){
-      console.dir(this);
+      //console.dir(this);
       let map = this.getMap();
       let targets = [];
       for(let entId in map.attr.entityIdToMapPos){
@@ -624,24 +624,46 @@ export let OmniscientPathfinder = {
       let thisx = this.getX();
       let thisy = this.getY();
       let map = this.getMap();
-      let passableCallback = function(x, y){
-        //console.log(`${x},${y}`);
-        return map.getTile(x, y).isPassable();
-      }
-      let dijkstra = new ROT.Path.AStar(thisx, thisy, passableCallback, {topology: 8});
-
-      let dx = 'a';
-      let dy = 'a';
-      //console.log('target pos:');
-      //console.log(`${targetX},${targetY}`);
-      dijkstra.compute(targetX, targetY, function(x, y){
-        if(x!=thisx || y!=thisy){
-          dx = x-thisx;
-          dy = y-thisy;
+      //Randomly decide to use x,y coords or y,x coords
+      let invertCoords = ROT.RNG.getUniform() < 0.5;
+      if(invertCoords){
+        let passableCallback = function(y, x){
+          //console.log(`${x},${y}`);
+          return map.getTile(x, y).isPassable();
         }
-      });
-      return `${dx},${dy}`;
+        let dijkstra = new ROT.Path.AStar(thisy, thisx, passableCallback, {topology: 4});
 
+        let dx = 'a';
+        let dy = 'a';
+        //console.log('target pos:');
+        //console.log(`${targetX},${targetY}`);
+        dijkstra.compute(targetY, targetX, function(y, x){
+          if(x!=thisx || y!=thisy){
+            dx = x-thisx;
+            dy = y-thisy;
+          }
+        });
+        return `${dx},${dy}`;
+      }
+      else{
+        let passableCallback = function(x, y){
+          //console.log(`${x},${y}`);
+          return map.getTile(x, y).isPassable();
+        }
+        let dijkstra = new ROT.Path.AStar(thisx, thisy, passableCallback, {topology: 4});
+
+        let dx = 'a';
+        let dy = 'a';
+        //console.log('target pos:');
+        //console.log(`${targetX},${targetY}`);
+        dijkstra.compute(targetX, targetY, function(x, y){
+          if(x!=thisx || y!=thisy){
+            dx = x-thisx;
+            dy = y-thisy;
+          }
+        });
+        return `${dx},${dy}`;
+      }
     }
   },
   LISTENERS: {
