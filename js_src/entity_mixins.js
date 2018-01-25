@@ -587,6 +587,7 @@ export let SightedEnemyTargeter = {
       let map = this.getMap();
       let visibility_checker = this.generateVisibilityChecker();
       let targets = [];
+      let memoryPos = this.attr._SightedEnemyTargeter.memoryPos;
       for(let entId in map.attr.entityIdToMapPos){
         let ent = DATASTORE.ENTITIES[entId];
         // console.dir(this.getEnemyTeams());
@@ -605,6 +606,12 @@ export let SightedEnemyTargeter = {
         if(d < minD){
           minD = d;
           minDIndex = i;
+        }
+      }
+      if(memoryPos){
+        if(memoryPos.split(',')[0]==this.getX() && memoryPos.split(',')[1]==this.getY()){
+          memoryPos = null;
+          this.attr._SightedEnemyTargeter.memoryPos = null;
         }
       }
       if(targets.length==0){
