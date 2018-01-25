@@ -8,9 +8,12 @@ EntityFactory.learn({
   name: 'avatar',
   chr: '@',
   fg: Color.AVATAR_FG,
-  maxHp: 100,
+  maxHp: 10000,
   radius: 16,
-  mixinNames: ['TimeTracker', 'WalkerCorporeal', 'PlayerMessage', 'HitPoints', 'ActorPlayer', 'MeleeAttacker', 'FOVHandler', 'ItemPile', 'Inventory']
+  team: 'avatar',
+  enemyTeams: ['baddies'],
+  friendlyTeams: ['avatar'],
+  mixinNames: ['TimeTracker', 'WalkerCorporeal', 'PlayerMessage', 'HitPoints', 'ActorPlayer', 'TeamMember', 'MeleeAttacker', 'FOVHandler', 'ItemPile', 'Inventory']
 });
 
 EntityFactory.learn({
@@ -24,12 +27,15 @@ EntityFactory.learn({
   chr: 'd',
   fg: '#d06',
   maxHp: 4,
-  targetName: 'avatar',
+  team: 'baddies',
+  enemyTeams: ['avatar'],
+  friendlyTeams: ['baddies'],
+  //targetName: 'avatar',
   priorities: {
     'NearsightedAttacker': 1,
     'OmniscientPathfinder': 2
   },
-  mixinNames: ['HitPoints', 'AIActor', 'ActorRandomWalker', 'WalkerCorporeal', 'MeleeAttacker', 'ItemDropper', 'NearsightedAttacker', 'OmniscientEnemyTargeter', 'OmniscientPathfinder']
+  mixinNames: ['HitPoints', 'AIActor', 'ActorRandomWalker', 'WalkerCorporeal', 'TeamMember', 'MeleeAttacker', 'ItemDropper', 'NearsightedAttacker', 'OmniscientEnemyTargeter', 'OmniscientPathfinder']
 });
 
 EntityFactory.learn({

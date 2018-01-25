@@ -83,7 +83,19 @@ export let WalkerCorporeal = {
       let targetPositionInfo = this.getMap().getTargetPositionInfo(newX, newY);
       //if entity, bump it
       if(targetPositionInfo.entity){
-        if(targetPositionInfo.entity != this){
+        //if you gotta worry about teams
+        if(typeof this.getTeam === 'function' && typeof targetPositionInfo.entity.getTeam === 'function'){
+          if(this.getFriendlyTeams().indexOf(targetPositionInfo.entity.getTeam())==-1){
+            this.raiseMixinEvent('bumpEntity', {
+              actor:this,
+              target:targetPositionInfo.entity
+            });
+          }
+          else{
+            this.raiseMixinEvent('bumpsFriendly', {target:targetPositionInfo.entity});
+          }
+        }
+        else if(targetPositionInfo.entity != this){//if no teams to worry about
           this.raiseMixinEvent('bumpEntity', {
             actor:this,
             target:targetPositionInfo.entity
@@ -141,6 +153,9 @@ export let PlayerMessage = {
     },
     attacks: function(evtData){
       Message.send(`You attack the ${evtData.target.getName()}!`);
+    },
+    bumpsFriendly: function(evtData){
+      Message.send(`That ${evtData.target.getName()} is friendly! Don't attack.`);
     },
     damages: function(evtData){
       Message.send(`You deal ${evtData.damageAmount} damage to the ${evtData.target.getName()}!`);
@@ -445,6 +460,65 @@ export let AIActor = {
   }
 }
 
+export let TeamMember = {
+  META: {
+    mixinName: 'TeamMember',
+    mixinGroupName: 'TeamMember',
+    stateNamespace: '_TeamMember',
+    stateModel: {
+      friendlyTeams: [],
+      enemyTeams: [],
+      team: ''
+    },
+    initialize: function(template){
+      // console.log('AAAAAAAAAAAAAA');
+      this.attr._TeamMember.friendlyTeams = U.deepCopy(template.friendlyTeams);
+      this.attr._TeamMember.enemyTeams = U.deepCopy(template.enemyTeams);
+      // console.log('assigned enemy teams');
+      //console.dir(this.attr._TeamMember.enemyTeams);
+      this.attr._TeamMember.team = template.team;
+    }
+  },
+  METHODS: {
+    getTeam: function(){
+      return this.attr._TeamMember.team;
+    },
+    setTeam: function(newTeam){
+      this.removeEnemyTeam(newTeam);
+      this.addFriendlyTeam(newTeam);
+      this.attr._TeamMember.team = newTeam;
+    },
+    getEnemyTeams: function(){
+      //console.dir(this.attr._TeamMember.enemyTeams);
+      return this.attr._TeamMember.enemyTeams;
+    },
+    addEnemyTeam: function(enemyName){
+      if(this.attr._TeamMember.enemyTeams.indexOf(enemyName)==-1){
+        this.attr._TeamMember.enemyTeams.push(enemyName);
+      }
+    },
+    removeEnemyTeam: function(enemyName){
+      if(this.attr._TeamMember.enemyTeams.indexOf(enemyName)!=-1){
+        this.attr._TeamMember.enemyTeams.splice(this.attr._TeamMember.enemyTeams.indexOf(enemyName));
+      }
+    },
+    getFriendlyTeams: function(){
+      return this.attr._TeamMember.friendlyTeams;
+    },
+    addFriendlyTeam: function(friendlyName){
+      if(this.attr._TeamMember.friendlyTeams.indexOf(friendlyName)==-1){
+        this.attr._TeamMember.friendlyTeams.push(friendlyName);
+      }
+    },
+    removeFriendlyTeam: function(friendlyName){
+      if(this.attr._TeamMember.friendlyTeams.indexOf(friendlyName)!=-1){
+        this.attr._TeamMember.friendlyTeams.splice(this.attr._TeamMember.friendlyTeams.indexOf(friendlyName));
+      }
+    }
+  }
+}
+
+//requires teammember
 export let OmniscientEnemyTargeter = {
   META: {
     mixinName: 'OmniscientEnemyTargeter',
@@ -459,13 +533,15 @@ export let OmniscientEnemyTargeter = {
   },
   METHODS: {
     getTargetPos: function(){
-      console.dir(this);
+      // console.dir(this);
       let map = this.getMap();
       let targets = [];
       for(let entId in map.attr.entityIdToMapPos){
         let ent = DATASTORE.ENTITIES[entId];
-        if(ent.getName()===this.attr._OmniscientEnemyTargeter.targetName){
+        // console.dir(this.getEnemyTeams());
+        if(this.getEnemyTeams().indexOf(ent.getTeam())!=-1){
           targets.push(ent);
+          // console.dir(ent);
         }
       }
       let minD = 100000
@@ -628,7 +704,7 @@ export let OmniscientPathfinder = {
         //console.log(`${x},${y}`);
         return map.getTile(x, y).isPassable();
       }
-      let dijkstra = new ROT.Path.AStar(thisx, thisy, passableCallback, {topology: 8});
+      let dijkstra = new ROT.Path.AStar(thisx, thisy, passableCallback, {topology: 4});
 
       let dx = 'a';
       let dy = 'a';
