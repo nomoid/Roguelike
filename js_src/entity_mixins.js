@@ -1214,7 +1214,8 @@ export let Skills = {
       let skillInfo = {
         name: skill.name,
         level: lvl,
-        xp: skill.xp
+        xp: skill.xp,
+        seen: skill.seen,
       };
       if(xpNeeded > 0){
         skillInfo.xpNeeded = xpNeeded;
@@ -1281,7 +1282,7 @@ export let Skills = {
     },
     initAvatar: function(evtData){
       for(let i = 0; i < S.PlayerSkills.length; i++){
-        this.addSkill(S.PlayerSkills[i]);
+        this.addSkill(S.PlayerSkills[i], 200 * i);
       }
       for(let i = 0; i < S.PlayerSeenSkills.length; i++){
         this.raiseMixinEvent('seeSkill', {

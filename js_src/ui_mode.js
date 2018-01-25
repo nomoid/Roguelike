@@ -1204,13 +1204,39 @@ export class SkillsMode extends UIMode{
     let skillArray = Array();
     for(let skillName in skills){
       if(skills[skillName].seen){
-        skillArray.push(skillName);
+        skillArray.push([-skills[skillName].xp,skillName]);
       }
     }
-    skillArray.sort();
+    //Sort by xp then name
+    skillArray.sort(function(a, b){
+      if(a[0] > b[0]){
+        return 1;
+      }
+      else if(a[0] < b[0]){
+        return -1;
+      }
+      else if(a[1] > b[1]){
+        return 1;
+      }
+      else if(a[1] < b[1]){
+        return -1;
+      }
+      else{
+        return 0;
+      }
+    });
     for(let i = 0; i < skillArray.length; i++){
-      let skillName = skillArray[i];
-      display.drawText(2, 4 + i, skillName);
+      let skillName = skillArray[i][1];
+      let skillInfo = this.getAvatar().getSkillInfo(skillName);
+      let nextLevelInfo = '';
+      if(skillInfo.xpNeeded){
+        nextLevelInfo = `/${skillInfo.xp+skillInfo.xpNeeded}`;
+      }
+      let skillString = `${skillName} ${U.romanNumeral(skillInfo.level)} - ${skillInfo.xp}${nextLevelInfo}`;
+      if(skillInfo.level === 0){
+        skillString = U.applyColor(skillString, Color.TEXT_HALF_DISABLED);
+      }
+      display.drawText(2, 4 + i, skillString);
     }
   }
 
