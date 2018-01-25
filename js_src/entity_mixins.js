@@ -247,7 +247,10 @@ export let PlayerMessage = {
     },
     skillSeen: function(evtData){
       Message.send(`You discovered the ${evtData.name} skill.`);
-    }
+    },
+    //addSkillFailed: function(evtData){
+    //  Message.send(`You failed to improve the ${evtData.name} skill.${evtData.message ? ' ' + evtData.message : ''}`)
+    //}
   }
 };
 
@@ -318,7 +321,8 @@ export let HitPoints = {
           src: evtData.src
         });
         evtData.src.raiseMixinEvent('kills', {
-          target: this
+          target: this,
+          weapon: evtData.weapon
         });
         this.destroy();
         console.dir(this);
@@ -373,9 +377,14 @@ export let MeleeAttacker = {
         actor: this,
         target: evtData.target
       });
+      let bumpWeapon = null;
+      if(typeof this.getWeapon === 'function'){
+        bumpWeapon = this.getWeapon();
+      }
       evtData.target.raiseMixinEvent('damaged', {
         src: this,
-        damageAmount: this.getMeleeDamage()
+        damageAmount: this.getMeleeDamage(),
+        weapon: bumpWeapon
       });
     }
   }
@@ -755,6 +764,7 @@ export let Inventory = {
     },
     initAvatar: function(evtData){
       let startingEquipment = [
+        "dagger_1",
         "boots_1",
         "boots_2",
         "cursed_boots_1",
@@ -799,6 +809,10 @@ export let Equipment = {
   METHODS: {
     getEquipment: function(){
       return this.attr._Equipment.equipment;
+    },
+    //Temp method
+    getWeapon: function(){
+      return this.getEquipment().primaryHand;
     },
     addEquipment: function(slot, item, oldItemHolder){
       let primarySlot = "primaryHand";
@@ -1217,6 +1231,16 @@ export let Skills = {
     getSkills: function(){
       return this.attr._Skills.skills;
     },
+    //Alphabetical order
+    getSkillNames: function(){
+      let skillArray = Array();
+      let skills = this.getSkills();
+      for(let skillName in skills){
+        skillArray.push(skillName);
+      }
+      skillArray.sort();
+      return skillArray;
+    },
     getSkillInfo: function(name){
       let skill = this.getSkills()[name];
       let lvl = S.getLevelForSkill(skill.name, skill.xp);
@@ -1235,6 +1259,7 @@ export let Skills = {
       return skillInfo;
     },
     addSkill: function(name, xp, seen){
+      let success = true;
       let skills = this.getSkills();
       let skill = skills[name];
       let oldLevel = 0;
@@ -1243,8 +1268,10 @@ export let Skills = {
         this.raiseMixinEvent('addSkillFailed', {
           'name': name,
           'xp': xp,
-          'reason': 'You do not have the proper prerequisites.'
+          'message': 'You do not have the proper prerequisites.'
         });
+        success = false;
+        xp = 0;
       }
       if(skill){
         oldLevel = S.getLevelForSkill(skill.name, skill.xp);
@@ -1286,6 +1313,7 @@ export let Skills = {
           'level': newLevel
         });
       }
+      return success;
     }
   },
   LISTENERS: {
@@ -1334,6 +1362,7 @@ export let Skills = {
   }
 }
 
+//Requires Skills
 export let SkillLearner = {
   META: {
     mixinName: 'SkillLearner',
@@ -1344,14 +1373,74 @@ export let SkillLearner = {
     }
   },
   METHODS: {
+    gainXpFromEvent: function(skillName, xpGainInfo, evtData){
+      //Check to see if it meets requirements
+      let requirements = xpGainInfo.requirements;
+      if(requirements){
+        //Check if there's more than one requirement to be or'ed
+        if(Array.isArray(requirements)){
+          let passOverall = false;
+          for(let i = 0; i < requirements.length; i++){
+            let singleRequirement = requirements[i];
+            if(this.checkSingleRequirement(singleRequirement, evtData)){
+              passOverall = true;
+              break;
+            }
+          }
+          if(!passOverall){
+            return false;
+          }
+        }
+        else{
+          if(!this.checkSingleRequirement(requirements, evtData)){
+            return false;
+          }
+        }
+      }
+      this.raiseMixinEvent('addSkillXp', {
+        name: skillName,
+        xp: xpGainInfo.amount
+      });
+      return true;
+    },
+    checkSingleRequirement: function(requirement, evtData){
+      for(let req in requirement){
+        let currentRequirement = requirement[req];
+        if(typeof currentRequirement === "object"){
+          let subreq = evtData[req];
+          if(!subreq){
+            return false;
+          }
+          if(!this.checkSingleRequirement(currentRequirement, subreq)){
+            return false;
+          }
+        }
+        else{
+          let evtReq = evtData[req];
+          let pass = false;
+          if(evtReq){
+            if(evtReq == currentRequirement){
+              pass = true;
+            }
+          }
+          if(!pass){
+            return false;
+          }
+        }
+      }
+      return true;
+    }
   },
   LISTENERS: {
-    //0.1 xp per step
-    walkSuccess: function(evtData){
-      this.raiseMixinEvent('addSkillXp', {
-        name: 'Athletics',
-        xp: 10
-      });
+    _wildCard: function(evtName, evtData){
+      let skillNames = this.getSkillNames();
+      for(let i = 0; i < skillNames.length; i++){
+        let skillName = skillNames[i];
+        let xpGain = S.getXpGain(skillName);
+        if(xpGain && xpGain[evtName]){
+          this.gainXpFromEvent(skillName, xpGain[evtName], evtData);
+        }
+      }
     }
   }
 }

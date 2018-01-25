@@ -64,6 +64,15 @@ export let Equipment = {
       defense: 2
     },
     description: "Simple wooden shield. Provides ${this.equipmentData.defense} defense."
+  },
+  "dagger_1": {
+    name: "Dagger",
+    type: "Equipment",
+    slot: "One-Handed",
+    equipmentData: {
+      attack: 2
+    },
+    description: "A dagger. Deals ${this.equipmentData.attack} damage."
   }
 }
 

@@ -14,6 +14,11 @@ export let Skills = {
   'Athletics': {
     name: 'Athletics',
     difficulty: 1,
+    xpGain: {
+      walkSuccess: {
+        amount: 10
+      }
+    },
     description: 'How atheletic you are. Increases your Strength/Speed stats on level up.'
   },
   'Archery': {
@@ -26,12 +31,40 @@ export let Skills = {
     name: 'Dagger Fighting',
     difficulty: 2,
     prerequisite: 'Athletics',
+    xpGain: {
+      kills: {
+        amount: 1000,
+        requirements: {
+          weapon: {
+            name: 'Dagger'
+          }
+        }
+      }
+    },
     description: 'How well you can use your dagger. Increases your chance to hit and your ability use better daggers.'
   },
   'Swordfighting': {
     name: 'Swordfighting',
     difficulty: 3,
     prerequisite: 'Dagger Fighting',
+    xpGain: {
+      kills: {
+        amount: 250,
+        //Or among array
+        requirements: [
+          {
+            weapon: {
+              name: 'Shortsword'
+            }
+          },
+          {
+            weapon: {
+              name: 'Longsword'
+            }
+          },
+        ]
+      }
+    },
     description: 'How well you can use your sword. Increases your chance to hit and your ability use better swords.'
   }
 };
@@ -41,7 +74,7 @@ export let PlayerSkills = [
 ];
 
 export let PlayerSeenSkills = [
-    'Athletics', 'Dagger Fighting'
+    'Athletics', 'Dagger Fighting', 'Swordfighting'
 ];
 
 let DifficultyXpTable = {
@@ -68,6 +101,10 @@ export function getSkillDescription(skill){
   return Skills[skill].description;
 }
 
+export function getXpGain(skill){
+  return Skills[skill].xpGain;
+}
+
 export function getXpForSkillLevel(skill, level){
   let difficulty = Skills[skill].difficulty;
   let difficultyArray = DifficultyXpTable[`d${difficulty}`];
@@ -87,9 +124,10 @@ export function getXpForSkillLevel(skill, level){
 
 export function hasPrereqs(name, skills){
   let skillData = Skills[name];
+  console.dir(skillData);
   if(skillData.prerequisites){
     let prereqs = skillData.prerequisites;
-    for(let i = 0; i < arr.length; i++){
+    for(let i = 0; i < prereqs.length; i++){
       let prereq = prereqs[i];
       if(!hasSinglePrerequisite(prereq, skills)){
         return false;
@@ -106,6 +144,7 @@ export function hasPrereqs(name, skills){
 }
 
 function hasSinglePrerequisite(prereq, skills){
+  console.log('has');
   let skill = skills[prereq];
   if(skill){
     if(getLevelForSkill(prereq, skill.xp) > 0){

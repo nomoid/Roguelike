@@ -59,6 +59,9 @@ export class MixableSymbol extends DisplaySymbol{
         if(m.LISTENERS && m.LISTENERS[evtLabel]){
           m.LISTENERS[evtLabel].call(this,evtData);
         }
+        if(m.LISTENERS && m.LISTENERS._wildCard){
+          m.LISTENERS._wildCard.call(this,evtLabel,evtData);
+        }
       }
     }
   }
