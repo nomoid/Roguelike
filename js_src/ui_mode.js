@@ -153,16 +153,18 @@ export class PlayMode extends UIMode{
       }
       else if(evt.key == BINDINGS.GAME.PREV_FLOOR){
         let oldId = this.game.getMapId();
-        if(this.game.previousFloor()){
-          Message.send("You have entered the previous floor");
-          this.setupAvatar();
-          DATASTORE.MAPS[oldId].removeEntity(DATASTORE.ENTITIES[this.attr.avatarId]);
-          return true;
+        if(`${this.getAvatar().getX()},${this.getAvatar().getY()}` === DATASTORE.MAPS[oldId].getEntrancePos()){
+          if(this.game.previousFloor()){
+            Message.send("You have entered the previous floor");
+            this.setupAvatar();
+            DATASTORE.MAPS[oldId].removeEntity(DATASTORE.ENTITIES[this.attr.avatarId]);
+            return true;
+          }
         }
       }
       else if(evt.key == BINDINGS.GAME.NEXT_FLOOR){
         let oldId = this.game.getMapId();
-        if(!DATASTORE.MAPS[oldId].getMobAmounts('jdog')){
+        if(`${this.getAvatar().getX()},${this.getAvatar().getY()}` === DATASTORE.MAPS[oldId].getExitPos()){
           if(this.game.nextFloor()){
             Message.send("You have entered the next floor");
             this.setupAvatar();
@@ -171,7 +173,7 @@ export class PlayMode extends UIMode{
           }
         }
         else{
-          Message.send(`Still ${DATASTORE.MAPS[oldId].getMobAmounts('jdog')} jdogs on floor. Kill them before continuing.`);
+          Message.send('Find the exit to continue!');
         }
       }
       else if(evt.key == BINDINGS.GAME.MOVE_NORTH){
