@@ -11,7 +11,7 @@ export let Game = {
   _SAVE_LIST_NAMESPACE: 'savelist',
   _BINDINGS_NAMESPACE: 'bindings',
   _DISPLAY_SPACING: 1.1,
-  _MAX_FLOORS: 4,
+  _MAX_FLOORS: 20,
   _display: {
     main: {
       w: 80,

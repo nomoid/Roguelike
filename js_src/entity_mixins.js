@@ -309,12 +309,14 @@ export let HitPoints = {
   LISTENERS: {
     // src(entity): the source of the damage
     // damageAmount(int): the amount of damage taken
+    // weapon(weapon): the weapon used to attack
     damaged: function(evtData){
       let amt = evtData.damageAmount;
       this.loseHp(amt);
       evtData.src.raiseMixinEvent('damages', {
         target: this,
-        damageAmount: amt
+        damageAmount: amt,
+        weapon: evtData.weapon
       });
       if(this.getHp() == 0){
         this.raiseMixinEvent('killed',{
@@ -1209,6 +1211,7 @@ export let Skills = {
     stateNamespace: '_Skills',
     stateModel: {
       skillPoints: 0,
+      skillPointParts: 0,
       skills: {
 
       }
@@ -1227,6 +1230,12 @@ export let Skills = {
     },
     setSkillPoints: function(s){
       this.attr._Skills.skillPoints = s;
+    },
+    getSkillPointParts: function(){
+      return this.attr._Skills.skillPointParts;
+    },
+    setSkillPointParts: function(s){
+      this.attr._Skills.skillPointParts = s;
     },
     getSkills: function(){
       return this.attr._Skills.skills;
@@ -1295,6 +1304,12 @@ export let Skills = {
         };
       }
       let newSkill = skills[name];
+      //If skill is previously at max level, get some skill point parts
+      if(oldLevel == S.getMaxLevel(name)){
+        this.raiseMixinEvent('addSkillPointParts', {
+          parts: xp
+        });
+      }
       let newLevel = S.getLevelForSkill(newSkill.name, newSkill.xp);
       //If skill reaches level 1, set seen flag to true
       if(newLevel > 0){
@@ -1317,12 +1332,10 @@ export let Skills = {
     }
   },
   LISTENERS: {
-    //Also learns skills
-    addSkillXp: function(evtData){
-      this.addSkill(evtData.name, evtData.xp ? evtData.xp : 0);
-    },
     initAvatar: function(evtData){
-      this.setSkillPoints(100);
+      this.raiseMixinEvent('addSkillPoints', {
+        points: 100
+      });
       for(let i = 0; i < S.PlayerSkills.length; i++){
         this.addSkill(S.PlayerSkills[i], 0);
       }
@@ -1331,6 +1344,28 @@ export let Skills = {
           name: S.PlayerSeenSkills[i]
         });
       }
+      for(let i = 0; i < S.PlayerStartSkills.length; i++){
+        this.raiseMixinEvent('addSkillXp', {
+          name: S.PlayerStartSkills[i],
+          xp: S.getXpForSkillLevel(S.PlayerStartSkills[i], 1)
+        })
+      }
+    },
+    addSkillPoints: function(evtData){
+      this.setSkillPoints(this.getSkillPoints() + evtData.points);
+    },
+    addSkillPointParts: function(evtData){
+      let total = this.getSkillPointParts() + evtData.parts;
+      let addPoints = Math.trunc(total / S.PartsMultiplier);
+      let removeParts = addPoints * S.PartsMultiplier;
+      this.setSkillPointParts(total - removeParts);
+      this.raiseMixinEvent('addSkillPoints', {
+        points: addPoints
+      });
+    },
+    //Also learns skills
+    addSkillXp: function(evtData){
+      this.addSkill(evtData.name, evtData.xp ? evtData.xp : 0);
     },
     seeSkill: function(evtData){
       this.addSkill(evtData.name, 0, true);
@@ -1341,9 +1376,17 @@ export let Skills = {
       if(xpNeeded){
         let skillPoints = this.getSkillPoints();
         if(skillPoints * S.ExperienceMultiplier >= xpNeeded){
-          let newSkillPoints = Math.trunc((skillPoints * S.ExperienceMultiplier - xpNeeded) / S.ExperienceMultiplier);
-          this.setSkillPoints(newSkillPoints);
-          this.addSkill(evtData.name, xpNeeded);
+          if(S.hasPrereqs(evtData.name, this.getSkills())){
+            let newSkillPoints = Math.trunc((skillPoints * S.ExperienceMultiplier - xpNeeded) / S.ExperienceMultiplier);
+            this.setSkillPoints(newSkillPoints);
+            this.addSkill(evtData.name, xpNeeded);
+          }
+          else{
+            this.raiseMixinEvent('skillLevelUpFailed', {
+              message: 'You do not have the prerequisites!',
+              name: evtData.name
+            });
+          }
         }
         else{
           this.raiseMixinEvent('skillLevelUpFailed', {

@@ -6,6 +6,8 @@ export let Color = {
   TEXT_ACTIVE: '#ccc',
   TEXT_DISABLED: '#555',
   TEXT_HALF_DISABLED: '#888',
+  TEXT_ALLOWED: '#7f7',
+  TEXT_PROHIBITED: '#f77',
   TEXT_SELECTED: '#cc4',
   TEXT_HIGHLIGHTED: '#000',
   TEXT_HIGHLIGHTED_BG: '#cc4',

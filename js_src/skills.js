@@ -1,5 +1,8 @@
 //Divide game experience by this number when rendering
 export let ExperienceMultiplier = 100;
+//When you accumulate this many parts, convert it to a single skill point
+//Base conversion rate: 1 excess xp after max level = 1 skill point part
+export let PartsMultiplier = 1000;
 
 export function renderXp(xp, ceil){
   if(ceil){
@@ -24,7 +27,7 @@ export let Skills = {
   'Archery': {
     name: 'Archery',
     difficulty: 3,
-    prerequisite: 'Athletics',
+    prerequisite: 'Swordfighting',
     description: 'How well you can use your bow. Increases your chance to hit and your ability use better bows.'
   },
   'Dagger Fighting': {
@@ -32,8 +35,16 @@ export let Skills = {
     difficulty: 2,
     prerequisite: 'Athletics',
     xpGain: {
+      damages: {
+        amount: 100,
+        requirements: {
+          weapon: {
+            name: 'Dagger'
+          }
+        }
+      },
       kills: {
-        amount: 1000,
+        amount: 500,
         requirements: {
           weapon: {
             name: 'Dagger'
@@ -48,8 +59,24 @@ export let Skills = {
     difficulty: 3,
     prerequisite: 'Dagger Fighting',
     xpGain: {
+      damages: {
+        amount: 100,
+        //Or among array
+        requirements: [
+          {
+            weapon: {
+              name: 'Shortsword'
+            }
+          },
+          {
+            weapon: {
+              name: 'Longsword'
+            }
+          },
+        ]
+      },
       kills: {
-        amount: 250,
+        amount: 500,
         //Or among array
         requirements: [
           {
@@ -70,11 +97,15 @@ export let Skills = {
 };
 
 export let PlayerSkills = [
-    'Athletics', 'Archery', 'Dagger Fighting', 'Swordfighting'
+  'Athletics', 'Archery', 'Dagger Fighting', 'Swordfighting'
 ];
 
 export let PlayerSeenSkills = [
-    'Athletics', 'Dagger Fighting', 'Swordfighting'
+  'Athletics', 'Dagger Fighting', 'Swordfighting'
+];
+
+export let PlayerStartSkills = [
+  'Athletics'
 ];
 
 let DifficultyXpTable = {
@@ -122,9 +153,14 @@ export function getXpForSkillLevel(skill, level){
   }
 }
 
+export function getMaxLevel(skill){
+  let difficulty = Skills[skill].difficulty;
+  let difficultyArray = DifficultyXpTable[`d${difficulty}`];
+  return difficultyArray.length;
+}
+
 export function hasPrereqs(name, skills){
   let skillData = Skills[name];
-  console.dir(skillData);
   if(skillData.prerequisites){
     let prereqs = skillData.prerequisites;
     for(let i = 0; i < prereqs.length; i++){
@@ -144,7 +180,6 @@ export function hasPrereqs(name, skills){
 }
 
 function hasSinglePrerequisite(prereq, skills){
-  console.log('has');
   let skill = skills[prereq];
   if(skill){
     if(getLevelForSkill(prereq, skill.xp) > 0){
@@ -152,4 +187,25 @@ function hasSinglePrerequisite(prereq, skills){
     }
   }
   return false;
+}
+
+export function prereqString(name){
+  let skillData = Skills[name];
+  if(skillData.prerequisites){
+    let prereqs = skillData.prerequisites;
+    let prereqStr = '';
+    for(let i = 0; i < prereqs.length; i++){
+      if(i != 0){
+        prereqStr += ', ';
+      }
+      prereqStr += prereqs[i];
+    }
+    return `Prerequisites: ${prereqStr}`;
+  }
+  else if(skillData.prerequisite){
+    return `Prerequisite: ${skillData.prerequisite}`;
+  }
+  else{
+    return 'Prerequisites: None';
+  }
 }

@@ -11,7 +11,7 @@ import {BINDINGS, BINDING_DESCRIPTIONS, setKeybindingsArrowKeys, setKeybindingsW
 import {TIME_ENGINE, loadScheduler, saveScheduler} from './timing.js';
 import {getFunctionality} from './items.js';
 import {EquipmentSlots, EquipmentOrder} from './equipment.js';
-import {renderXp, ExperienceMultiplier} from './skills.js';
+import {renderXp, ExperienceMultiplier, hasPrereqs, prereqString} from './skills.js';
 
 class UIMode{
   constructor(game){
@@ -876,6 +876,7 @@ export class InventoryMode extends UIMode{
       //Render description
       let selectedItem = items[this.game.persist.inventoryIndex];
       let descriptionX = 40;
+      let descriptionY = 4;
       let description = "Nobody knows what this item is used for...";
       if(selectedItem.description){
         description = U.fillTemplate(selectedItem.description, selectedItem);
@@ -888,15 +889,16 @@ export class InventoryMode extends UIMode{
       if(itemTypeString == "Equipment" && selectedItem.slot){
         itemTypeString = `${itemType} - ${selectedItem.slot}`;
       }
-      display.drawText(descriptionX, 4, itemTypeString);
-      display.drawText(descriptionX, 5, description);
+      display.drawText(descriptionX, descriptionY, itemTypeString);
+      display.drawText(descriptionX, descriptionY + 1, description);
       //Render functionality
       let functionalityX = 40;
+      let functionalityY = 12;
       let functionalityList = getFunctionality(itemType);
       for(let i = 0; i < functionalityList.length; i++){
         let functionality = functionalityList[i];
         let functionalityString = `[${functionality.key}] - ${functionality.description}`;
-        display.drawText(functionalityX, 8 + i, functionalityString);
+        display.drawText(functionalityX, functionalityY + i, functionalityString);
       }
     }
 
@@ -1033,6 +1035,7 @@ export class EquipmentMode extends UIMode{
     let selectedItem = equipment[selectedItemSlot];
     if(selectedItem){
       let descriptionX = 40;
+      let descriptionY = 4;
       let description = "Nobody knows what this item is used for...";
       if(selectedItem.description){
         description = U.fillTemplate(selectedItem.description, selectedItem);
@@ -1041,18 +1044,19 @@ export class EquipmentMode extends UIMode{
       if(selectedItem.slot){
         slotType = selectedItem.slot;
       }
-      display.drawText(descriptionX, 4, slotType);
-      display.drawText(descriptionX, 5, description);
+      display.drawText(descriptionX, descriptionY, slotType);
+      display.drawText(descriptionX, descriptionY + 1, description);
     }
     //Render functionality
     let functionalityX = 40;
+    let functionalityY = 12;
     if(this.equipping){
-      display.drawText(functionalityX, 8, `[${BINDINGS.INVENTORY.EQUIP}] - Equip here`);
-      display.drawText(functionalityX, 9, `[${BINDINGS.MASTER.EXIT_MENU}] - Cancel`);
+      display.drawText(functionalityX, functionalityY, `[${BINDINGS.INVENTORY.EQUIP}] - Equip here`);
+      display.drawText(functionalityX, functionalityY + 1, `[${BINDINGS.MASTER.EXIT_MENU}] - Cancel`);
     }
     else if(selectedItem){
-      display.drawText(functionalityX, 8, `[${BINDINGS.INVENTORY.UNEQUIP}] - Unequip`);
-      display.drawText(functionalityX, 9, `[${BINDINGS.INVENTORY.DROP}] - Drop`);
+      display.drawText(functionalityX, functionalityY, `[${BINDINGS.INVENTORY.UNEQUIP}] - Unequip`);
+      display.drawText(functionalityX, functionalityY, `[${BINDINGS.INVENTORY.DROP}] - Drop`);
     }
   }
 
@@ -1215,7 +1219,8 @@ export class SkillsMode extends UIMode{
   renderMain(display){
     display.drawText(0, 0, '|Equipment|Inventory|' + U.applyBackground(U.applyColor('Skills', Color.TEXT_HIGHLIGHTED), Color.TEXT_HIGHLIGHTED_BG) + '|');
     let skillPoints = this.getAvatar().getSkillPoints();
-    display.drawText(2, 1, `Skill points: ${skillPoints}`);
+    display.drawText(2, 2, `Skill points: ${skillPoints}`);
+    let skills = this.getAvatar().getSkills();
     //Sort skill names in xp/alphabetical order
     let skillArray = this.getSkillArray();
     for(let i = 0; i < skillArray.length; i++){
@@ -1229,6 +1234,12 @@ export class SkillsMode extends UIMode{
       if(i == this.game.persist.skillIndex){
         skillString = U.applyBackground(U.applyColor(skillString, Color.TEXT_HIGHLIGHTED), Color.TEXT_HIGHLIGHTED_BG);
       }
+      else if(!hasPrereqs(skillName, skills)){
+        skillString = U.applyColor(skillString, Color.TEXT_PROHIBITED);
+      }
+      else if(skillInfo.xpNeeded && skillPoints * ExperienceMultiplier >= skillInfo.xpNeeded){
+        skillString = U.applyColor(skillString, Color.TEXT_ALLOWED);
+      }
       else if(skillInfo.level === 0){
         skillString = U.applyColor(skillString, Color.TEXT_HALF_DISABLED);
       }
@@ -1238,9 +1249,13 @@ export class SkillsMode extends UIMode{
       let selectedSkillName = skillArray[this.game.persist.skillIndex];
       let selectedSkillInfo = this.getAvatar().getSkillInfo(selectedSkillName);
       let descriptionX = 40;
-      display.drawText(descriptionX, 4, U.fillTemplate(selectedSkillInfo.description, selectedSkillInfo));
+      let descriptionY = 4;
+      let prereqstr = prereqString(selectedSkillName);
+      display.drawText(descriptionX, descriptionY, prereqstr);
+      display.drawText(descriptionX, descriptionY + 2, U.fillTemplate(selectedSkillInfo.description, selectedSkillInfo));
       //Print functionality
       let functionalityX = 40;
+      let functionalityY = 12;
       //Check if can upgrade
       let xpNeeded = selectedSkillInfo.xpNeeded;
       if(xpNeeded){
@@ -1248,7 +1263,10 @@ export class SkillsMode extends UIMode{
         if(skillPoints * ExperienceMultiplier < xpNeeded){
           upgradeString = U.applyColor(upgradeString, Color.TEXT_HALF_DISABLED);
         }
-        display.drawText(functionalityX, 8, upgradeString);
+        else if(!hasPrereqs(selectedSkillName, skills)){
+          upgradeString = U.applyColor(upgradeString, Color.TEXT_PROHIBITED);
+        }
+        display.drawText(functionalityX, functionalityY, upgradeString);
       }
 
     }
@@ -1259,30 +1277,27 @@ export class SkillsMode extends UIMode{
     let skills = this.getAvatar().getSkills();
     for(let skillName in skills){
       if(skills[skillName].seen){
-        skillArray.push([-skills[skillName].xp,skillName]);
+        let prereqNum = hasPrereqs(skillName, skills) ? 0 : 1;
+        skillArray.push([-skills[skillName].xp,prereqNum,skillName]);
       }
     }
-    //Sort by xp then name
-    skillArray.sort(function(a, b){
-      if(a[0] > b[0]){
-        return 1;
-      }
-      else if(a[0] < b[0]){
-        return -1;
-      }
-      else if(a[1] > b[1]){
-        return 1;
-      }
-      else if(a[1] < b[1]){
-        return -1;
-      }
-      else{
-        return 0;
-      }
-    });
+    //Sort by xp then prereq then namme
+    for(let i = 2; i >= 0; i --){
+      skillArray.sort(function(a, b){
+        if(a[i] > b[i]){
+          return 1;
+        }
+        else if(a[i] < b[i]){
+          return -1;
+        }
+        else{
+          return 0;
+        }
+      });
+    }
     //Get only the names and return them
     return skillArray.map(function(value, index){
-      return value[1];
+      return value[2];
     });
   }
 
@@ -1330,6 +1345,14 @@ export class SkillsMode extends UIMode{
           this.getAvatar().raiseMixinEvent('levelUpSkill', {
             name: selectedSkillName
           });
+          //Find the index of the array after upgrading
+          let newSkillArray = this.getSkillArray();
+          for(let i = 0; i < newSkillArray.length; i++){
+            if(newSkillArray[i] == selectedSkillName){
+              this.game.persist.skillIndex = i;
+              break;
+            }
+          }
           return true;
         }
       }
