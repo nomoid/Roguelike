@@ -528,7 +528,6 @@ export let OmniscientEnemyTargeter = {
       targetName: '',
     },
     initialize: function(template){
-      this.attr._OmniscientEnemyTargeter.targetName = template.targetName;
     }
   },
   METHODS: {
@@ -567,6 +566,56 @@ export let OmniscientEnemyTargeter = {
   }
 }
 
+//requires teammember and FOVHandler
+export let SightedEnemyTargeter = {
+  META: {
+    mixinName: 'SightedEnemyTargeter',
+    mixinGroupName: 'Targeter',
+    stateNamespace: '_SightedEnemyTargeter',
+    stateModel: {
+      targetName: '',
+    },
+    initialize: function(template){
+    }
+  },
+  METHODS: {
+    getTargetPos: function(){
+      // console.dir(this);
+      let map = this.getMap();
+      let visibility_checker = this.generateVisibilityChecker();
+      let targets = [];
+      for(let entId in map.attr.entityIdToMapPos){
+        let ent = DATASTORE.ENTITIES[entId];
+        // console.dir(this.getEnemyTeams());
+        if(visibility_checker.check(ent.getX(), ent.getY())){
+          if(this.getEnemyTeams().indexOf(ent.getTeam())!=-1){
+            targets.push(ent);
+            console.dir(ent);
+          }
+        }
+      }
+      let minD = 100000
+      let minDIndex = 0;
+      for(let i = 0; i < targets.length; i++){
+        let enemy = targets[i];
+        let d = U.distance2D(this.getX(), this.getY(), enemy.getX(), enemy.getY());
+        if(d < minD){
+          minD = d;
+          minDIndex = i;
+        }
+      }
+      if(targets.length==0){
+        return null;
+      }
+      let target = targets[minDIndex];
+      return `${target.getX()},${target.getY()}`;
+
+    }
+  },
+  LISTENERS: {
+
+  }
+}
 //Requires AIActor mixin
 export let ActorRandomWalker = {
   META: {
@@ -642,11 +691,12 @@ export let NearsightedAttacker = {
       if(actorData.target && actorData.target !== 'NearsightedAttacker'){
         return;
       }
-      let targetPos = this.getTargetPos().split(',');
-      if(targetPos===null){
+      let targetPos = this.getTargetPos();
+      if(targetPos==null){
         actorData.terminate = false;
         return;
       }
+      targetPos = targetPos.split(',');
       let targetX = targetPos[0]*1;
       let targetY = targetPos[1]*1;
       let x = this.getX();
@@ -694,7 +744,11 @@ export let OmniscientPathfinder = {
   },
   METHODS: {
     getNextMoveDijkstra: function(){
-      let targetPos = this.getTargetPos().split(',');
+      let targetPos = this.getTargetPos();
+      if(targetPos==null){
+        return null;
+      }
+      targetPos = targetPos.split(',');
       let targetX = targetPos[0]*1;
       let targetY = targetPos[1]*1;
       let thisx = this.getX();
@@ -725,7 +779,12 @@ export let OmniscientPathfinder = {
       if(actorData.target && actorData.target !== 'OmniscientPathfinder'){
         return;
       }
-      let move = this.getNextMoveDijkstra().split(',');
+      let move = this.getNextMoveDijkstra();
+      if(move==null){
+        actorData.terminate = false;
+        return;
+      }
+      move = move.split(',');
       //console.log(move);
       if(move[0]==='a' || move[1]==='a'){
         actorData.terminate = false;

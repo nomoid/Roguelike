@@ -292,7 +292,7 @@ export class Map{
     let xend = xstart + display.getOptions().width;
     let ystart = camera_y - Math.trunc(display.getOptions().height / 2);
     let yend = ystart + display.getOptions().height;
-    let renderEverything = true;
+    let renderEverything = false;
     let visibilityCheckerList = [];
     if(renderEverything){
       for(let id in this.attr.entityIdToMapPos){

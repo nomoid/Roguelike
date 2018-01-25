@@ -36,7 +36,7 @@ EntityFactory.learn({
     'NearsightedAttacker': 1,
     'OmniscientPathfinder': 2
   },
-  mixinNames: ['HitPoints', 'AIActor', 'ActorRandomWalker', 'WalkerCorporeal', 'TeamMember', 'MeleeAttacker', 'ItemDropper', 'FOVHandler', 'NearsightedAttacker', 'OmniscientEnemyTargeter', 'OmniscientPathfinder']
+  mixinNames: ['HitPoints', 'AIActor', 'ActorRandomWalker', 'WalkerCorporeal', 'TeamMember', 'MeleeAttacker', 'ItemDropper', 'FOVHandler', 'NearsightedAttacker', 'SightedEnemyTargeter', 'OmniscientPathfinder']
 });
 
 EntityFactory.learn({
