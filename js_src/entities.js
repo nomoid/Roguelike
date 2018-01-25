@@ -35,10 +35,10 @@ EntityFactory.learn({
   //targetName: 'avatar',
   priorities: {
     'NearsightedAttacker': 1,
-    'OmniscientPathfinder': 2,
+    'SightedPathfinder': 2,
     'ActorRandomWalker': 3
   },
-  mixinNames: ['HitPoints', 'AIActor', 'ActorRandomWalker', 'WalkerCorporeal', 'TeamMember', 'MeleeAttacker', 'ItemDropper', 'FOVHandler', 'NearsightedAttacker', 'SightedEnemyTargeter', 'OmniscientPathfinder']
+  mixinNames: ['HitPoints', 'AIActor', 'ActorRandomWalker', 'WalkerCorporeal', 'TeamMember', 'MeleeAttacker', 'ItemDropper', 'FOVHandler', 'NearsightedAttacker', 'SightedEnemyTargeter', 'SightedPathfinder']
 });
 
 EntityFactory.learn({
