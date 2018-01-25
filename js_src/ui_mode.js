@@ -11,6 +11,7 @@ import {BINDINGS, BINDING_DESCRIPTIONS, setKeybindingsArrowKeys, setKeybindingsW
 import {TIME_ENGINE, loadScheduler, saveScheduler} from './timing.js';
 import {getFunctionality} from './items.js';
 import {EquipmentSlots, EquipmentOrder} from './equipment.js';
+import {renderXp} from './skills.js';
 
 class UIMode{
   constructor(game){
@@ -833,15 +834,15 @@ export class InventoryMode extends UIMode{
     if(template.avatarId){
       this.avatarId = template.avatarId;
     }
+    let items = this.getAvatar().getItems();
     if(template.selected){
-      let items = this.getAvatar().getItems();
       this.game.persist.inventoryIndex = template.selected;
-      if(this.game.persist.inventoryIndex >= items.length){
-        this.game.persist.inventoryIndex = items.length - 1;
-      }
-      if(this.game.persist.inventoryIndex < 0){
-        this.game.persist.inventoryIndex = 0;
-      }
+    }
+    if(this.game.persist.inventoryIndex >= items.length){
+      this.game.persist.inventoryIndex = items.length - 1;
+    }
+    if(this.game.persist.inventoryIndex < 0){
+      this.game.persist.inventoryIndex = 0;
     }
   }
 
@@ -883,10 +884,11 @@ export class InventoryMode extends UIMode{
       if(selectedItem.type){
         itemType = selectedItem.type;
       }
-      if(itemType == "Equipment" && selectedItem.slot){
-        itemType = `${itemType} - ${selectedItem.slot}`;
+      let itemTypeString = itemType;
+      if(itemTypeString == "Equipment" && selectedItem.slot){
+        itemTypeString = `${itemType} - ${selectedItem.slot}`;
       }
-      display.drawText(descriptionX, 4, itemType);
+      display.drawText(descriptionX, 4, itemTypeString);
       display.drawText(descriptionX, 5, description);
       //Render functionality
       let functionalityX = 40;
@@ -996,6 +998,12 @@ export class EquipmentMode extends UIMode{
     }
     else{
       this.equipping = false;
+    }
+    if(this.game.persist.equipmentIndex >= EquipmentOrder.length){
+      this.game.persist.equipmentIndex = EquipmentOrder.length - 1;
+    }
+    if(this.game.persist.equipmentIndex < 0){
+      this.game.persist.equipmentIndex = 0;
     }
   }
 
@@ -1195,13 +1203,60 @@ export class SkillsMode extends UIMode{
     if(template.avatarId){
       this.avatarId = template.avatarId;
     }
+    let skillArray = this.getSkillArray();
+    if(this.game.persist.skillIndex >= skillArray.length){
+      this.game.persist.skillIndex = skillArray.length - 1;
+    }
+    if(this.game.persist.skillIndex < 0){
+      this.game.persist.skillIndex = 0;
+    }
   }
 
   renderMain(display){
     display.drawText(0, 0, '|Equipment|Inventory|' + U.applyBackground(U.applyColor('Skills', Color.TEXT_HIGHLIGHTED), Color.TEXT_HIGHLIGHTED_BG) + '|');
-    let skills = this.getAvatar().getSkills();
-    //Sort skill names in alphabetical order
+    let skillPoints = this.getAvatar().getSkillPoints();
+    display.drawText(2, 1, `Skill points: ${renderXp(skillPoints)}`);
+    //Sort skill names in xp/alphabetical order
+    let skillArray = this.getSkillArray();
+    for(let i = 0; i < skillArray.length; i++){
+      let skillName = skillArray[i];
+      let skillInfo = this.getAvatar().getSkillInfo(skillName);
+      let nextLevelInfo = '';
+      if(skillInfo.xpNeeded){
+        nextLevelInfo = `/${renderXp(skillInfo.xp+skillInfo.xpNeeded)}`;
+      }
+      let skillString = `${skillName} ${U.romanNumeral(skillInfo.level)} - ${renderXp(skillInfo.xp)}${nextLevelInfo}`;
+      if(i == this.game.persist.skillIndex){
+        skillString = U.applyBackground(U.applyColor(skillString, Color.TEXT_HIGHLIGHTED), Color.TEXT_HIGHLIGHTED_BG);
+      }
+      else if(skillInfo.level === 0){
+        skillString = U.applyColor(skillString, Color.TEXT_HALF_DISABLED);
+      }
+      display.drawText(2, 4 + i, skillString);
+    }
+    if(this.game.persist.skillIndex < skillArray.length){
+      let selectedSkillName = skillArray[this.game.persist.skillIndex];
+      let selectedSkillInfo = this.getAvatar().getSkillInfo(selectedSkillName);
+      let descriptionX = 40;
+      display.drawText(descriptionX, 4, U.fillTemplate(selectedSkillInfo.description, selectedSkillInfo));
+      //Print functionality
+      let functionalityX = 40;
+      //Check if can upgrade
+      let xpNeeded = selectedSkillInfo.xpNeeded;
+      if(xpNeeded){
+        let upgradeString = `[${BINDINGS.INVENTORY.UPGRADE}] - Level up (${renderXp(xpNeeded)} skill points)`;
+        if(skillPoints < xpNeeded){
+          upgradeString = U.applyColor(upgradeString, Color.TEXT_HALF_DISABLED);
+        }
+        display.drawText(functionalityX, 8, upgradeString);
+      }
+
+    }
+  }
+
+  getSkillArray(){
     let skillArray = Array();
+    let skills = this.getAvatar().getSkills();
     for(let skillName in skills){
       if(skills[skillName].seen){
         skillArray.push([-skills[skillName].xp,skillName]);
@@ -1225,19 +1280,10 @@ export class SkillsMode extends UIMode{
         return 0;
       }
     });
-    for(let i = 0; i < skillArray.length; i++){
-      let skillName = skillArray[i][1];
-      let skillInfo = this.getAvatar().getSkillInfo(skillName);
-      let nextLevelInfo = '';
-      if(skillInfo.xpNeeded){
-        nextLevelInfo = `/${skillInfo.xp+skillInfo.xpNeeded}`;
-      }
-      let skillString = `${skillName} ${U.romanNumeral(skillInfo.level)} - ${skillInfo.xp}${nextLevelInfo}`;
-      if(skillInfo.level === 0){
-        skillString = U.applyColor(skillString, Color.TEXT_HALF_DISABLED);
-      }
-      display.drawText(2, 4 + i, skillString);
-    }
+    //Get only the names and return them
+    return skillArray.map(function(value, index){
+      return value[1];
+    });
   }
 
   handleInput(eventType, evt){
@@ -1245,6 +1291,19 @@ export class SkillsMode extends UIMode{
       if(evt.key == BINDINGS.MASTER.EXIT_MENU){
         this.game.popMode();
         return true;
+      }
+      else if(evt.key == BINDINGS.MASTER.MENU_UP){
+        if(this.game.persist.skillIndex > 0){
+          this.game.persist.skillIndex--;
+          return true;
+        }
+      }
+      else if(evt.key == BINDINGS.MASTER.MENU_DOWN){
+        let skillArray = this.getSkillArray();
+        if(this.game.persist.skillIndex < skillArray.length - 1){
+          this.game.persist.skillIndex++;
+          return true;
+        }
       }
       else if(evt.key == BINDINGS.MASTER.MENU_LEFT){
         this.game.swapMode('inventory', {
@@ -1263,6 +1322,16 @@ export class SkillsMode extends UIMode{
           mode: 'INVENTORY'
         });
         return true;
+      }
+      else if(evt.key == BINDINGS.INVENTORY.UPGRADE){
+        let skillArray = this.getSkillArray();
+        if(this.game.persist.skillIndex < skillArray.length){
+          let selectedSkillName = skillArray[this.game.persist.skillIndex];
+          this.getAvatar().raiseMixinEvent('levelUpSkill', {
+            name: selectedSkillName
+          });
+          return true;
+        }
       }
     }
     return false;

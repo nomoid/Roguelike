@@ -234,6 +234,15 @@ export let PlayerMessage = {
     },
     itemTrashed: function(evtData){
       Message.send(`You trashed ${evtData.item.name}.`);
+    },
+    skillLevelUp: function(evtData){
+      Message.send(`${evtData.name} leveled up to level ${evtData.level}`);
+    },
+    skillLevelUpFailed: function(evtData){
+      Message.send(`${evtData.name} failed to level up.${evtData.message ? ' ' + evtData.message : ''}`);
+    },
+    skillSeen: function(evtData){
+      Message.send(`You discovered the ${evtData.name} skill.`);
     }
   }
 };
@@ -1190,6 +1199,7 @@ export let Skills = {
     mixinGroupName: 'SkillsGroup',
     stateNamespace: '_Skills',
     stateModel: {
+      skillPoints: 0,
       skills: {
 
       }
@@ -1203,6 +1213,12 @@ export let Skills = {
     }
   },
   METHODS: {
+    getSkillPoints: function(){
+      return this.attr._Skills.skillPoints;
+    },
+    setSkillPoints: function(s){
+      this.attr._Skills.skillPoints = s;
+    },
     getSkills: function(){
       return this.attr._Skills.skills;
     },
@@ -1216,6 +1232,7 @@ export let Skills = {
         level: lvl,
         xp: skill.xp,
         seen: skill.seen,
+        description: S.getSkillDescription(skill.name)
       };
       if(xpNeeded > 0){
         skillInfo.xpNeeded = xpNeeded;
@@ -1257,12 +1274,6 @@ export let Skills = {
       }
       let newSkill = skills[name];
       let newLevel = S.getLevelForSkill(newSkill.name, newSkill.xp);
-        if(newLevel > oldLevel){
-        //If level up, fire an event
-        this.raiseMixinEvent('skillLevelUp', {
-          'name': newSkill.name
-        });
-      }
       //If skill reaches level 1, set seen flag to true
       if(newLevel > 0){
         if(!newSkill.seen){
@@ -1273,6 +1284,13 @@ export let Skills = {
           newSkill.seen = true;
         }
       }
+      if(newLevel > oldLevel){
+        //If level up, fire an event
+        this.raiseMixinEvent('skillLevelUp', {
+          'name': newSkill.name,
+          'level': newLevel
+        });
+      }
     }
   },
   LISTENERS: {
@@ -1281,8 +1299,9 @@ export let Skills = {
       this.addSkill(evtData.name, evtData.xp ? evtData.xp : 0);
     },
     initAvatar: function(evtData){
+      this.setSkillPoints(10000);
       for(let i = 0; i < S.PlayerSkills.length; i++){
-        this.addSkill(S.PlayerSkills[i], 200 * i);
+        this.addSkill(S.PlayerSkills[i], 5000);
       }
       for(let i = 0; i < S.PlayerSeenSkills.length; i++){
         this.raiseMixinEvent('seeSkill', {
@@ -1292,6 +1311,29 @@ export let Skills = {
     },
     seeSkill: function(evtData){
       this.addSkill(evtData.name, 0, true);
+    },
+    levelUpSkill: function(evtData){
+      let skillInfo = this.getSkillInfo(evtData.name);
+      let xpNeeded = skillInfo.xpNeeded;
+      if(xpNeeded){
+        let skillPoints = this.getSkillPoints();
+        if(skillPoints >= xpNeeded){
+          this.setSkillPoints(skillPoints - xpNeeded);
+          this.addSkill(evtData.name, xpNeeded);
+        }
+        else{
+          this.raiseMixinEvent('skillLevelUpFailed', {
+            message: 'Not enough skill points!',
+            name: evtData.name
+          });
+        }
+      }
+      else{
+        this.raiseMixinEvent('skillLevelUpFailed', {
+          message: 'Skill already at max level!',
+          name: evtData.name
+        });
+      }
     }
   }
 }

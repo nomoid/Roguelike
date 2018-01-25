@@ -273,7 +273,8 @@ export let Game = {
   resetPersistState: function(){
     this.persist = {
       inventoryIndex: 0,
-      equipmentIndex: 0
+      equipmentIndex: 0,
+      skillIndex: 0
     };
   },
 

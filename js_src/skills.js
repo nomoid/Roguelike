@@ -1,23 +1,34 @@
+//Divide game experience by this number when rendering
+export let ExperienceMultiplier = 100;
+
+export function renderXp(xp){
+  return Math.trunc(xp / ExperienceMultiplier);
+}
+
 export let Skills = {
-    'Athletics': {
-      name: 'Athletics',
-      difficulty: 1,
-    },
-    'Archery': {
-      name: 'Archery',
-      difficulty: 3,
-      prerequisite: 'Athletics'
-    },
-    'Dagger Fighting': {
-      name: 'Dagger Fighting',
-      difficulty: 2,
-      prerequisite: 'Athletics'
-    },
-    'Swordfighting': {
-      name: 'Swordfighting',
-      difficulty: 3,
-      prerequisite: 'Dagger Fighting'
-    }
+  'Athletics': {
+    name: 'Athletics',
+    difficulty: 1,
+    description: 'How atheletic you are. Increases your Strength/Speed stats on level up.'
+  },
+  'Archery': {
+    name: 'Archery',
+    difficulty: 3,
+    prerequisite: 'Athletics',
+    description: 'How well you can use your bow. Increases your chance to hit and your ability use better bows.'
+  },
+  'Dagger Fighting': {
+    name: 'Dagger Fighting',
+    difficulty: 2,
+    prerequisite: 'Athletics',
+    description: 'How well you can use your dagger. Increases your chance to hit and your ability use better daggers.'
+  },
+  'Swordfighting': {
+    name: 'Swordfighting',
+    difficulty: 3,
+    prerequisite: 'Dagger Fighting',
+    description: 'How well you can use your sword. Increases your chance to hit and your ability use better swords.'
+  }
 };
 
 export let PlayerSkills = [
@@ -29,9 +40,9 @@ export let PlayerSeenSkills = [
 ];
 
 let DifficultyXpTable = {
-  'd1': [100, 200, 300, 400, 500],
-  'd2': [200, 400, 800, 1400, 2200],
-  'd3': [300, 600, 1200, 2400, 4800]
+  'd1': [10000, 20000, 30000, 40000, 50000],
+  'd2': [20000, 40000, 80000, 140000, 220000],
+  'd3': [30000, 60000, 120000, 240000, 480000]
 }
 
 export function getLevelForSkill(skill, xp){
@@ -46,6 +57,10 @@ export function getLevelForSkill(skill, xp){
     }
   }
   return difficultyArray.length;
+}
+
+export function getSkillDescription(skill){
+  return Skills[skill].description;
 }
 
 export function getXpForSkillLevel(skill, level){

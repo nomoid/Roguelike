@@ -31,6 +31,7 @@ export let BINDING_DESCRIPTIONS = {
     EQUIP: "Equip an item",
     UNEQUIP: "Unequip an item",
     CONSUME: "Consume an item",
+    UPGRADE: "Level up a skill",
     TRASH: "Trash an item permanently",
     ENTER_BINDINGS: "Show/switch key bindings"
   },
@@ -108,6 +109,7 @@ export function setInventoryBindings(){
     EQUIP: "e",
     UNEQUIP: "x",
     CONSUME: "c",
+    UPGRADE: "V",
     TRASH: "T",
     ENTER_BINDINGS: "?"
   }
