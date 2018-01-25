@@ -7,7 +7,7 @@ export let Color = {
   TEXT_DISABLED: '#555',
   TEXT_CHANGING_KEY: '#cc4',
   MEMORY_FG: '#555',
-  PAINT_BG: '#770'
+  PAINT_BG: '#770',
   TEXT_HALF_DISABLED: '#888',
   TEXT_ALLOWED: '#7f7',
   TEXT_PROHIBITED: '#f77',
