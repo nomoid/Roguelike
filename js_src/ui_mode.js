@@ -927,8 +927,10 @@ export class InventoryMode extends UIMode{
         return true;
       }
       else if(evt.key == BINDINGS.MASTER.MENU_RIGHT){
-        //this.game.swapMode('skills');
-        //return true;
+        this.game.swapMode('skills', {
+          avatarId: this.avatarId
+        });
+        return true;
       }
       else if(evt.key == BINDINGS.INVENTORY.ENTER_BINDINGS){
         this.game.pushMode('bindings', {
@@ -1095,8 +1097,10 @@ export class EquipmentMode extends UIMode{
           }
           //Disallow L/R when equipping
           else if(evt.key == BINDINGS.MASTER.MENU_LEFT){
-            //this.game.swapMode('skills');
-            //return true;
+            this.game.swapMode('skills', {
+              avatarId: this.avatarId
+            });
+            return true;
           }
           else if(evt.key == BINDINGS.MASTER.MENU_RIGHT){
             this.game.swapMode('inventory', {
@@ -1188,14 +1192,57 @@ export class SkillsMode extends UIMode{
   }
 
   enter(template){
-    
+    if(template.avatarId){
+      this.avatarId = template.avatarId;
+    }
   }
 
   renderMain(display){
-
+    display.drawText(0, 0, '|Equipment|Inventory|' + U.applyBackground(U.applyColor('Skills', Color.TEXT_HIGHLIGHTED), Color.TEXT_HIGHLIGHTED_BG) + '|');
+    let skills = this.getAvatar().getSkills();
+    //Sort skill names in alphabetical order
+    let skillArray = Array();
+    for(let skillName in skills){
+      if(skills[skillName].seen){
+        skillArray.push(skillName);
+      }
+    }
+    skillArray.sort();
+    for(let i = 0; i < skillArray.length; i++){
+      let skillName = skillArray[i];
+      display.drawText(2, 4 + i, skillName);
+    }
   }
 
   handleInput(eventType, evt){
+    if(eventType == "keyup"){
+      if(evt.key == BINDINGS.MASTER.EXIT_MENU){
+        this.game.popMode();
+        return true;
+      }
+      else if(evt.key == BINDINGS.MASTER.MENU_LEFT){
+        this.game.swapMode('inventory', {
+          avatarId: this.avatarId
+        });
+        return true;
+      }
+      else if(evt.key == BINDINGS.MASTER.MENU_RIGHT){
+        this.game.swapMode('equipment', {
+          avatarId: this.avatarId
+        });
+        return true;
+      }
+      else if(evt.key == BINDINGS.INVENTORY.ENTER_BINDINGS){
+        this.game.pushMode('bindings', {
+          mode: 'INVENTORY'
+        });
+        return true;
+      }
+    }
+    return false;
+  }
 
+  getAvatar(){
+    return DATASTORE.ENTITIES[this.avatarId];
   }
 }

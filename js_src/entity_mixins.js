@@ -9,7 +9,7 @@ import {generateItem} from './items.js';
 import {generateEquipment, EquipmentSlots} from './equipment.js';
 import {generateBuff} from './buffs.js';
 import * as U from './util.js';
-import * as S './skills.js';
+import * as S from './skills.js';
 
 let _exampleMixin = {
   META: {
@@ -1221,7 +1221,7 @@ export let Skills = {
       }
       return skillInfo;
     },
-    addSkill: function(name, xp){
+    addSkill: function(name, xp, seen){
       let skills = this.getSkills();
       let skill = skills[name];
       let oldLevel = 0;
@@ -1239,12 +1239,19 @@ export let Skills = {
         if(xp){
           skill.xp += xp;
         }
+        if(seen){
+          skill.seen = true;
+        }
       }
       else{
+        let seenTruth = false;
+        if(seen){
+          seenTruth = true;
+        }
         skills[name] = {
           'name': name,
           'xp': xp ? xp : 0,
-          seen: false
+          'seen': seenTruth
         };
       }
       let newSkill = skills[name];
@@ -1273,9 +1280,17 @@ export let Skills = {
       this.addSkill(evtData.name, evtData.xp ? evtData.xp : 0);
     },
     initAvatar: function(evtData){
-      for(let i = 0; i < PlayerSkills.length; i++){
+      for(let i = 0; i < S.PlayerSkills.length; i++){
         this.addSkill(S.PlayerSkills[i]);
       }
+      for(let i = 0; i < S.PlayerSeenSkills.length; i++){
+        this.raiseMixinEvent('seeSkill', {
+          name: S.PlayerSeenSkills[i]
+        });
+      }
+    },
+    seeSkill: function(evtData){
+      this.addSkill(evtData.name, 0, true);
     }
   }
 }
