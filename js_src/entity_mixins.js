@@ -92,7 +92,9 @@ export let WalkerCorporeal = {
             });
           }
           else{
-            this.raiseMixinEvent('bumpsFriendly', {target:targetPositionInfo.entity});
+            if(targetPositionInfo.entity != this){
+              this.raiseMixinEvent('bumpsFriendly', {target:targetPositionInfo.entity});
+            }
           }
         }
         else if(targetPositionInfo.entity != this){//if no teams to worry about
