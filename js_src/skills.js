@@ -1,8 +1,13 @@
 //Divide game experience by this number when rendering
 export let ExperienceMultiplier = 100;
 
-export function renderXp(xp){
-  return Math.trunc(xp / ExperienceMultiplier);
+export function renderXp(xp, ceil){
+  if(ceil){
+    return Math.trunc((xp + ExperienceMultiplier - 1) / ExperienceMultiplier);
+  }
+  else{
+    return Math.trunc(xp / ExperienceMultiplier);
+  }
 }
 
 export let Skills = {

@@ -11,7 +11,7 @@ EntityFactory.learn({
   maxHp: 100,
   meleeDamage: 10,
   radius: 16,
-  mixinNames: ['TimeTracker', 'WalkerCorporeal', 'PlayerMessage', 'HitPoints', 'ActorPlayer', 'MeleeAttacker', 'FOVHandler', 'ItemPile', 'Inventory', 'Equipment', 'Skills', 'ItemConsumer', 'BuffHandler', 'Bloodthirst']
+  mixinNames: ['TimeTracker', 'WalkerCorporeal', 'PlayerMessage', 'HitPoints', 'ActorPlayer', 'MeleeAttacker', 'FOVHandler', 'ItemPile', 'Inventory', 'Equipment', 'Skills', 'SkillLearner', 'ItemConsumer', 'BuffHandler', 'Bloodthirst']
 });
 
 EntityFactory.learn({

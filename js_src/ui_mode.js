@@ -11,7 +11,7 @@ import {BINDINGS, BINDING_DESCRIPTIONS, setKeybindingsArrowKeys, setKeybindingsW
 import {TIME_ENGINE, loadScheduler, saveScheduler} from './timing.js';
 import {getFunctionality} from './items.js';
 import {EquipmentSlots, EquipmentOrder} from './equipment.js';
-import {renderXp} from './skills.js';
+import {renderXp, ExperienceMultiplier} from './skills.js';
 
 class UIMode{
   constructor(game){
@@ -1215,7 +1215,7 @@ export class SkillsMode extends UIMode{
   renderMain(display){
     display.drawText(0, 0, '|Equipment|Inventory|' + U.applyBackground(U.applyColor('Skills', Color.TEXT_HIGHLIGHTED), Color.TEXT_HIGHLIGHTED_BG) + '|');
     let skillPoints = this.getAvatar().getSkillPoints();
-    display.drawText(2, 1, `Skill points: ${renderXp(skillPoints)}`);
+    display.drawText(2, 1, `Skill points: ${skillPoints}`);
     //Sort skill names in xp/alphabetical order
     let skillArray = this.getSkillArray();
     for(let i = 0; i < skillArray.length; i++){
@@ -1244,8 +1244,8 @@ export class SkillsMode extends UIMode{
       //Check if can upgrade
       let xpNeeded = selectedSkillInfo.xpNeeded;
       if(xpNeeded){
-        let upgradeString = `[${BINDINGS.INVENTORY.UPGRADE}] - Level up (${renderXp(xpNeeded)} skill points)`;
-        if(skillPoints < xpNeeded){
+        let upgradeString = `[${BINDINGS.INVENTORY.UPGRADE}] - Level up (${renderXp(xpNeeded, true)} skill points)`;
+        if(skillPoints * ExperienceMultiplier < xpNeeded){
           upgradeString = U.applyColor(upgradeString, Color.TEXT_HALF_DISABLED);
         }
         display.drawText(functionalityX, 8, upgradeString);

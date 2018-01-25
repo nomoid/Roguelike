@@ -121,6 +121,10 @@ export let WalkerCorporeal = {
         this.attr.x = newX;
         this.attr.y = newY;
         this.getMap().updateEntityPosition(this, this.attr.x, this.attr.y);
+        this.raiseMixinEvent('walkSuccess', {
+          x: newX,
+          y: newY
+        });
         this.raiseMixinEvent('actionDone');
         return true;
       }
@@ -616,8 +620,6 @@ export let ItemDropper = {
     mixinName: 'ItemDropper',
     mixinGroupName: 'ItemGroup',
     stateNamespace: '_ItemDropper',
-    stateModel: {
-    },
     initialize: function(){
     }
   },
@@ -654,9 +656,6 @@ export let Inventory = {
     mixinName: 'Inventory',
     mixinGroupName: 'ItemGroup',
     stateNamespace: '_Inventory',
-    stateModel: {
-      // Item data stored in ItemPile
-    },
     initialize: function(){
       // do any initialization
     }
@@ -981,8 +980,6 @@ export let ItemConsumer = {
     mixinName: 'ItemConsumer',
     mixinGroupName: 'ItemGroup',
     stateNamespace: '_ItemConsumer',
-    stateModel: {
-    },
     initialize: function(){
       // do any initialization
     }
@@ -1165,8 +1162,6 @@ export let Bloodthirst = {
     mixinName: 'Bloodthirst',
     mixinGroupName: 'BuffGroup',
     stateNamespace: '_Bloodthirst',
-    stateModel: {
-    },
     initialize: function(){
       // do any initialization
     }
@@ -1299,9 +1294,9 @@ export let Skills = {
       this.addSkill(evtData.name, evtData.xp ? evtData.xp : 0);
     },
     initAvatar: function(evtData){
-      this.setSkillPoints(10000);
+      this.setSkillPoints(100);
       for(let i = 0; i < S.PlayerSkills.length; i++){
-        this.addSkill(S.PlayerSkills[i], 5000);
+        this.addSkill(S.PlayerSkills[i], 0);
       }
       for(let i = 0; i < S.PlayerSeenSkills.length; i++){
         this.raiseMixinEvent('seeSkill', {
@@ -1317,8 +1312,9 @@ export let Skills = {
       let xpNeeded = skillInfo.xpNeeded;
       if(xpNeeded){
         let skillPoints = this.getSkillPoints();
-        if(skillPoints >= xpNeeded){
-          this.setSkillPoints(skillPoints - xpNeeded);
+        if(skillPoints * S.ExperienceMultiplier >= xpNeeded){
+          let newSkillPoints = Math.trunc((skillPoints * S.ExperienceMultiplier - xpNeeded) / S.ExperienceMultiplier);
+          this.setSkillPoints(newSkillPoints);
           this.addSkill(evtData.name, xpNeeded);
         }
         else{
@@ -1334,6 +1330,28 @@ export let Skills = {
           name: evtData.name
         });
       }
+    }
+  }
+}
+
+export let SkillLearner = {
+  META: {
+    mixinName: 'SkillLearner',
+    mixinGroupName: 'SkillsGroup',
+    stateNamespace: '_SkillLearner',
+    initialize: function(){
+      // do any initialization
+    }
+  },
+  METHODS: {
+  },
+  LISTENERS: {
+    //0.1 xp per step
+    walkSuccess: function(evtData){
+      this.raiseMixinEvent('addSkillXp', {
+        name: 'Athletics',
+        xp: 10
+      });
     }
   }
 }
