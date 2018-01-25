@@ -1,6 +1,6 @@
 import ROT from 'rot-js';
 import * as U from './util.js';
-import {StartupMode, PlayMode, WinMode, LoseMode, MessagesMode, PersistenceMode, BindingsMode, InventoryMode, EquipmentMode, SkillsMode} from './ui_mode.js'
+import {StartupMode, PlayMode, WinMode, LoseMode, MessagesMode, PersistenceMode, BindingsMode, InventoryMode, EquipmentMode, SkillsMode, StatsMode} from './ui_mode.js'
 import {Message} from './message.js';
 import {MapMaker} from './map.js';
 import {DATASTORE, clearDatastore} from './datastore.js';
@@ -88,6 +88,7 @@ export let Game = {
     this.modes.inventory = new InventoryMode(this);
     this.modes.equipment = new EquipmentMode(this);
     this.modes.skills = new SkillsMode(this);
+    this.modes.stats = new StatsMode(this);
   },
 
   switchMode: function(newModeName, template){
