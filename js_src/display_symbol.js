@@ -7,11 +7,11 @@ export class DisplaySymbol{
     this.bg = data.bg || Color.ENTITY_BG;
   }
 
-  render(display, x, y){
-    display.draw(x, y, this.chr, this.fg, this.bg);
+  render(display, x, y, paintBg){
+    display.draw(x, y, this.chr, this.fg, paintBg ? paintBg : this.bg);
   }
 
-  renderGray(display, x, y){
-    display.draw(x, y, this.chr, Color.MEMORY_FG, Color.ENTITY_BG);
+  renderGray(display, x, y, paintBg){
+    display.draw(x, y, this.chr, Color.MEMORY_FG, paintBg ? paintBg : Color.ENTITY_BG);
   }
 }

@@ -6,6 +6,7 @@ import {Map} from './map.js';
 import {TIME_ENGINE, SCHEDULER, setTimedUnlocker} from './timing.js';
 import {DATASTORE} from './datastore.js';
 import * as U from './util.js';
+import {Color} from './color.js';
 
 let _exampleMixin = {
   META: {
@@ -354,6 +355,7 @@ export let ActorPlayer = {
   },
   LISTENERS: {
     actionDone: function(evtData){
+      this.getMap().clearPaint();
       this.isActing(false);
       SCHEDULER.setDuration(this.getBaseActionDuration());
       setTimeout(function(){
@@ -753,40 +755,43 @@ export let OmniscientPathfinder = {
       let thisx = this.getX();
       let thisy = this.getY();
       let map = this.getMap();
+      let passableFunction = function(x, y){
+        //console.log(`${x},${y}`);
+        let oneAway = false;
+        if(y == thisy){
+          if(x == thisx + 1 || x == thisx - 1){
+            oneAway = true;
+          }
+        }
+        if(x == thisx){
+          if(y == thisy + 1 || y == thisy - 1){
+            oneAway = true;
+          }
+        }
+        if(oneAway){
+          //Still may result in no path found
+          let isOpen = map.isPositionOpen(x, y);
+          let isEnemy = false;
+          let info = map.getTargetPositionInfo(x, y);
+          let ent = info.entity;
+          if(ent){
+            if(typeof ent.getTeam === 'function' && typeof thisEnt.getEnemyTeams === 'function'){
+              if(thisEnt.getEnemyTeams(ent.getTeam())!=-1){
+                isEnemy = true;
+              }
+            }
+          }
+          return isOpen || isEnemy;
+        }
+        else{
+          return map.getTile(x, y).isPassable();
+        }
+      }
       //Randomly decide to use x,y coords or y,x coords
       let invertCoords = ROT.RNG.getUniform() < 0.5;
       if(invertCoords){
         let passableCallback = function(y, x){
-          //console.log(`${x},${y}`);
-          let oneAway = false;
-          if(y == thisy){
-            if(x == thisx + 1 || x == thisx - 1){
-              oneAway = true;
-            }
-          }
-          if(x == thisx){
-            if(y == thisy + 1 || y == thisy - 1){
-              oneAway = true;
-            }
-          }
-          if(oneAway){
-            //Still may result in no path found
-            let isOpen = map.isPositionOpen(x, y);
-            let isEnemy = false;
-            let info = map.getTargetPositionInfo(x, y);
-            let ent = info.entity;
-            if(ent){
-              if(typeof ent.getTeam === 'function' && typeof thisEnt.getEnemyTeams === 'function'){
-                if(thisEnt.getEnemyTeams(ent.getTeam())!=-1){
-                  isEnemy = true;
-                }
-              }
-            }
-            return isOpen || isEnemy;
-          }
-          else{
-            return map.getTile(x, y).isPassable();
-          }
+          return passableFunction(x, y);
         }
         let dijkstra = new ROT.Path.AStar(thisy, thisx, passableCallback, {topology: 4});
 
@@ -804,36 +809,7 @@ export let OmniscientPathfinder = {
       }
       else{
         let passableCallback = function(x, y){
-          //console.log(`${x},${y}`);
-          let oneAway = false;
-          if(y == thisy){
-            if(x == thisx + 1 || x == thisx - 1){
-              oneAway = true;
-            }
-          }
-          if(x == thisx){
-            if(y == thisy + 1 || y == thisy - 1){
-              oneAway = true;
-            }
-          }
-          if(oneAway){
-            //Still may result in no path found
-            let isOpen = map.isPositionOpen(x, y);
-            let isEnemy = false;
-            let info = map.getTargetPositionInfo(x, y);
-            let ent = info.entity;
-            if(ent){
-              if(typeof ent.getTeam === 'function' && typeof thisEnt.getEnemyTeams === 'function'){
-                if(thisEnt.getEnemyTeams().indexOf(ent.getTeam())!=-1){
-                  isEnemy = true;
-                }
-              }
-            }
-            return isOpen || isEnemy;
-          }
-          else{
-            return map.getTile(x, y).isPassable();
-          }
+          return passableFunction(x, y);
         }
         let dijkstra = new ROT.Path.AStar(thisx, thisy, passableCallback, {topology: 4});
 
@@ -910,49 +886,51 @@ export let SightedPathfinder = {
       let map = this.getMap();
 
       let pathfindingMaxDistance = Math.max(this.attr._SightedPathfinder.darknessRadius, Math.floor(U.distance2D(this.getX(), this.getY(), targetX, targetY)));
-
+      let passableFunction = function(x, y){
+        //console.log(`${x},${y}`);
+        if(U.distance2D(thisEnt.getX(), thisEnt.getY(), x, y)>pathfindingMaxDistance){
+          if(!checker.memoryTile(x, y)){
+            return false;
+          }
+        }
+        else if(!checker.memoryTile(x, y)){
+          return true;
+        }
+        let oneAway = false;
+        if(y == thisy){
+          if(x == thisx + 1 || x == thisx - 1){
+            oneAway = true;
+          }
+        }
+        if(x == thisx){
+          if(y == thisy + 1 || y == thisy - 1){
+            oneAway = true;
+          }
+        }
+        if(oneAway){
+          //Still may result in no path found
+          let isOpen = map.isPositionOpen(x, y);
+          let isEnemy = false;
+          let info = map.getTargetPositionInfo(x, y);
+          let ent = info.entity;
+          if(ent){
+            if(typeof ent.getTeam === 'function' && typeof thisEnt.getEnemyTeams === 'function'){
+              if(thisEnt.getEnemyTeams().indexOf(ent.getTeam())!=-1){
+                isEnemy = true;
+              }
+            }
+          }
+          return isOpen || isEnemy;
+        }
+        else{
+          return map.getTile(x, y).isPassable();
+        }
+      };
       //Randomly decide to use x,y coords or y,x coords
       let invertCoords = ROT.RNG.getUniform() < 0.5;
       if(invertCoords){
         let passableCallback = function(y, x){
-          if(U.distance2D(thisEnt.getX(), thisEnt.getY(), x, y)>pathfindingMaxDistance){
-            if(!checker.memoryTile(x, y)){
-              return false;
-            }
-          }
-          else if(!checker.memoryTile(x, y)){
-            return true;
-          }
-          //console.log(`${x},${y}`);
-          let oneAway = false;
-          if(y == thisy){
-            if(x == thisx + 1 || x == thisx - 1){
-              oneAway = true;
-            }
-          }
-          if(x == thisx){
-            if(y == thisy + 1 || y == thisy - 1){
-              oneAway = true;
-            }
-          }
-          if(oneAway){
-            //Still may result in no path found
-            let isOpen = map.isPositionOpen(x, y);
-            let isEnemy = false;
-            let info = map.getTargetPositionInfo(x, y);
-            let ent = info.entity;
-            if(ent){
-              if(typeof ent.getTeam === 'function' && typeof thisEnt.getEnemyTeams === 'function'){
-                if(thisEnt.getEnemyTeams(ent.getTeam())!=-1){
-                  isEnemy = true;
-                }
-              }
-            }
-            return isOpen || isEnemy;
-          }
-          else{
-            return map.getTile(x, y).isPassable();
-          }
+          return passableFunction(x, y);
         }
         let dijkstra = new ROT.Path.AStar(thisy, thisx, passableCallback, {topology: 4});
 
@@ -965,49 +943,13 @@ export let SightedPathfinder = {
             dx = x-thisx;
             dy = y-thisy;
           }
+          //thisEnt.getMap().paintTile(x, y, Color.PAINT_BG);
         });
         return `${dx},${dy}`;
       }
       else{
         let passableCallback = function(x, y){
-          //console.log(`${x},${y}`);
-          if(U.distance2D(thisEnt.getX(), thisEnt.getY(), x, y)>pathfindingMaxDistance){
-            if(!checker.memoryTile(x, y)){
-              return false;
-            }
-          }
-          else if(!checker.memoryTile(x, y)){
-            return true;
-          }
-          let oneAway = false;
-          if(y == thisy){
-            if(x == thisx + 1 || x == thisx - 1){
-              oneAway = true;
-            }
-          }
-          if(x == thisx){
-            if(y == thisy + 1 || y == thisy - 1){
-              oneAway = true;
-            }
-          }
-          if(oneAway){
-            //Still may result in no path found
-            let isOpen = map.isPositionOpen(x, y);
-            let isEnemy = false;
-            let info = map.getTargetPositionInfo(x, y);
-            let ent = info.entity;
-            if(ent){
-              if(typeof ent.getTeam === 'function' && typeof thisEnt.getEnemyTeams === 'function'){
-                if(thisEnt.getEnemyTeams().indexOf(ent.getTeam())!=-1){
-                  isEnemy = true;
-                }
-              }
-            }
-            return isOpen || isEnemy;
-          }
-          else{
-            return map.getTile(x, y).isPassable();
-          }
+          return passableFunction(x, y);
         }
         let dijkstra = new ROT.Path.AStar(thisx, thisy, passableCallback, {topology: 4});
 
@@ -1020,6 +962,7 @@ export let SightedPathfinder = {
             dx = x-thisx;
             dy = y-thisy;
           }
+          //thisEnt.getMap().paintTile(x, y, Color.PAINT_BG);
         });
         return `${dx},${dy}`;
       }
