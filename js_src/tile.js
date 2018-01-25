@@ -48,5 +48,5 @@ export let TILES = {
   WALL: new Tile({name:'wall', chr:'#', transparent: false, passable: false}),
   OUTER_WALL: new Tile({name:'outer_wall', chr:'#', fg: '#a61', transparent: false, passable: false}),
   FLOOR: new Tile({name:'floor', chr:'.', transparent: true, passable: true}),
-  GLASS: new Tile({name: 'GLASS', chr:'0', transparent: true, passable: false})
+  GLASS: new Tile({name: 'GLASS', chr:'\u25a1', transparent: true, passable: false})
 }

@@ -1,6 +1,6 @@
 import ROT from 'rot-js';
 import * as U from './util.js';
-import {StartupMode, PlayMode, WinMode, LoseMode, MessagesMode, PersistenceMode, BindingsMode} from './ui_mode.js'
+import {StartupMode, PlayMode, WinMode, LoseMode, MessagesMode, PersistenceMode, BindingsMode, InventoryMode, EquipmentMode, SkillsMode} from './ui_mode.js'
 import {Message} from './message.js';
 import {MapMaker} from './map.js';
 import {DATASTORE, clearDatastore} from './datastore.js';
@@ -45,6 +45,7 @@ export let Game = {
 
   mapIds: Array(),
   currMap: 0,
+  persist: {},
 
   init: function(){
 
@@ -93,23 +94,38 @@ export let Game = {
     this.modes.messages = new MessagesMode(this);
     this.modes.persistence = new PersistenceMode(this);
     this.modes.bindings = new BindingsMode(this);
+    this.modes.inventory = new InventoryMode(this);
+    this.modes.equipment = new EquipmentMode(this);
+    this.modes.skills = new SkillsMode(this);
   },
 
-  switchMode: function(newModeName){
+  switchMode: function(newModeName, template){
     if (this.modeStack.length > 0) {
       this.curMode().exit();
     }
     this.modeStack = Array();
     this.modeStack.push(this.modes[newModeName]);
-    this.curMode().enter();
+    let newTemplate = template;
+    if(!newTemplate){
+      newTemplate = {};
+    }
+    newTemplate.popping = false;
+    newTemplate.swapping = false;
+    this.curMode().enter(template);
   },
 
-  pushMode: function(newModeName){
+  pushMode: function(newModeName, template){
     if (this.modeStack.length > 0) {
       this.curMode().exit();
     }
     this.modeStack.push(this.modes[newModeName]);
-    this.curMode().enter();
+    let newTemplate = template;
+    if(!newTemplate){
+      newTemplate = {};
+    }
+    newTemplate.popping = false;
+    newTemplate.swapping = false;
+    this.curMode().enter(newTemplate);
   },
 
   curMode: function(){
@@ -130,12 +146,33 @@ export let Game = {
     }
   },
 
-  popMode: function(){
+  popMode: function(template){
     if (this.modeStack.length > 0) {
       this.curMode().exit();
       this.modeStack.pop();
     }
-    this.curMode().enter();
+    let newTemplate = template;
+    if(!newTemplate){
+      newTemplate = {};
+    }
+    newTemplate.popping = true;
+    newTemplate.swapping = false;
+    this.curMode().enter(newTemplate);
+  },
+
+  swapMode: function(newModeName, template){
+    if (this.modeStack.length > 0) {
+      this.curMode().exit();
+      this.modeStack.pop();
+    }
+    this.modeStack.push(this.modes[newModeName]);
+    let newTemplate = template;
+    if(!newTemplate){
+      newTemplate = {};
+    }
+    newTemplate.popping = false;
+    newTemplate.swapping = true;
+    this.curMode().enter(newTemplate);
   },
 
   getDisplay: function(displayId){
@@ -209,6 +246,7 @@ export let Game = {
       playModeState: this.modes.play,
       mapIds: this.mapIds,
       currMap: this.currMap,
+      persist: this.persist,
       rngState: ROT.RNG.getState()
     });
     return json;
@@ -221,6 +259,7 @@ export let Game = {
 
   setupNewGame: function(state){
     if(state){
+      this.persist = state.persist;
       this.setupRng(state.rseed);
       ROT.RNG.setState(state.rngState);
       this.modes.play.restoreFromState(state.playModeState);
@@ -229,6 +268,7 @@ export let Game = {
       this.currMap = state.currMap;
     }
     else{
+      this.resetPersistState();
       this.setupRng(U.getRandomNoStateSeed());
       this.modes.play.reset();
       this._uid = Math.floor(U.getRandomNoStateSeed());
@@ -237,6 +277,14 @@ export let Game = {
 
     }
     initTiming();
+  },
+
+  resetPersistState: function(){
+    this.persist = {
+      inventoryIndex: 0,
+      equipmentIndex: 0,
+      skillIndex: 0
+    };
   },
 
   getMapId: function(){
@@ -285,9 +333,11 @@ export let Game = {
 
   //For 17 JDOGS use seed 26555 on 50x40
   //For 28 JDOGS use seed 501628887 (2nd floor) on 50x40
+  //For consistent starting room use seed 328343077 on 20x20
+  //For 24 JDOGS use seed 1731033993
   setupRng: function(rseed){
     console.log(rseed);
-    this._randomSeed = rseed;//328343077;
+    this._randomSeed = rseed;
     console.log("using random seed" + this._randomSeed);
     ROT.RNG.setSeed(this._randomSeed);
     let initSeedValue = U.getRandomSeed();
@@ -299,7 +349,7 @@ export let Game = {
     if(evtLabel == "renderMain"){
       this.renderDisplayMain();
     }
-    if(evtLabel == "killed"){
+    else if(evtLabel == "killed"){
       if(src == this.modes.play.getAvatar()){//lose condition
         this.switchMode('lose');
         this.renderDisplayMain();
@@ -318,8 +368,25 @@ export let Game = {
         }
       }
     }
-    if(evtLabel == "addItemToMap"){
+    else if(evtLabel == "addItemToMap"){
       DATASTORE.MAPS[this.getMapId()].addItemAt(evtData.item, evtData.x, evtData.y);
+    }
+    else if(evtLabel == "switchMode"){
+      let template = evtData.template;
+      let type = evtData.type;
+      let mode = evtData.mode;
+      if(type == "push"){
+        this.pushMode(mode, template);
+      }
+      else if(type == "pop"){
+        this.popMode(mode, template);
+      }
+      else if(type == "switch"){
+        this.switchMode(mode, template);
+      }
+      else if(type == "swap"){
+        this.swapMode(mode, template);
+      }
     }
     return true;
   }

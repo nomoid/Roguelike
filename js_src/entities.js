@@ -8,9 +8,13 @@ EntityFactory.learn({
   name: 'avatar',
   chr: '@',
   fg: Color.AVATAR_FG,
-  maxHp: 10,
+  maxHp: 10000,
   radius: 16,
-  mixinNames: ['TimeTracker', 'WalkerCorporeal', 'PlayerMessage', 'HitPoints', 'ActorPlayer', 'MeleeAttacker', 'FOVHandler', 'ItemPile', 'Inventory']
+  team: 'avatar',
+  enemyTeams: ['baddies'],
+  friendlyTeams: ['avatar'],
+  meleeDamage: 10,
+  mixinNames: ['TimeTracker', 'WalkerCorporeal', 'PlayerMessage', 'HitPoints', 'TeamMember', 'ActorPlayer', 'MeleeAttacker', 'FOVHandler', 'ItemPile', 'Inventory', 'Equipment', 'Skills', 'SkillLearner', 'ItemConsumer', 'BuffHandler', 'Bloodthirst']
 });
 
 EntityFactory.learn({
@@ -23,11 +27,20 @@ EntityFactory.learn({
   name: 'jdog',
   chr: 'd',
   fg: '#d06',
-  maxHp: 4,
+  radius: 8,
+  team: 'baddies',
+  remember: true,
+  enemyTeams: ['avatar'],
+  friendlyTeams: ['baddies'],
+  //targetName: 'avatar',
+  maxHp: 40,
+  meleeDamage: 10,
   priorities: {
-    'ActorRandomWalker': 1
+    'NearsightedAttacker': 1,
+    'SightedPathfinder': 2,
+    'ActorRandomWalker': 3
   },
-  mixinNames: ['HitPoints', 'AIActor', 'ActorRandomWalker', 'WalkerCorporeal', 'MeleeAttacker', 'ItemDropper']
+  mixinNames: ['HitPoints', 'AIActor', 'ActorRandomWalker', 'WalkerCorporeal', 'TeamMember', 'MeleeAttacker', 'ItemDropper', 'FOVHandler', 'NearsightedAttacker', 'SightedEnemyTargeter', 'SightedPathfinder']
 });
 
 EntityFactory.learn({

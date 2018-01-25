@@ -24,6 +24,8 @@ export class Map{
     this.attr.mapPosToItemEntityId = attr.mapPosToItemEntityId || {};
     this.attr.mobAmounts = attr.mobAmounts || {};
     this.attr.hasPopulated = attr.hasPopulated || false;
+    //For debug purposes
+    this.attr.mapPosToPaint = {};
   }
 
   setupMap(){
@@ -34,10 +36,16 @@ export class Map{
       if(generated.exitPos){
         this.attr.exitPos = generated.exitPos;
       }
+      if(generated.entrancePos){
+        this.attr.entrancePos = generated.entrancePos;
+      }
     }
     if(!this.attr.hasPopulated){
       this.attr.hasPopulated = true;
       TILE_GRID_POPULATOR[this.attr.mapType](this);
+    }
+    else{
+      this.clearMobSeeds();
     }
   }
 
@@ -202,7 +210,8 @@ export class Map{
     ent.setMapId(this.getId());
     ent.setX(mapx);
     ent.setY(mapy);
-    if(this.attr.mobAmounts[ent.getName()]>=0){
+    if(typeof this.attr.mobAmounts[ent.getName()]!=='undefined'){
+      console.log(this.attr.mobAmounts[ent.getName()]);
       this.attr.mobAmounts[ent.getName()]++;
     }
   }
@@ -221,6 +230,17 @@ export class Map{
     return `${x},${y}`;
   }
 
+  clearMobSeeds(){
+    for(let xi = 0; xi < this.attr.xdim; xi++){
+      for(let yi = 0; yi < this.attr.ydim; yi++){
+        let tile = this.tileGrid[xi][yi];
+        if(tile.isA('mob_seed')){
+          this.tileGrid[xi][yi] = TILES.FLOOR;
+        }
+      }
+    }
+  }
+
   isPositionOpen(mapx, mapy){
     //this is going to be more complicated in the future
     if(!this.getTile(mapx, mapy).isPassable()){
@@ -232,6 +252,17 @@ export class Map{
     }
     return true;
   }
+
+  isPositionOpenOrAvatar(mapx, mapy){
+    let check = this.attr.mapPosToEntityId[`${mapx},${mapy}`];
+    if(check){
+      if(DATASTORE.ENTITIES[check].getName()==='avatar'){
+        return true;
+      }
+    }
+    return this.isPositionOpen(mapx, mapy);
+  }
+
   getTargetPositionInfo(mapx, mapy){
     let entityId = this.attr.mapPosToEntityId[`${mapx},${mapy}`];
     let itemEntityId = this.attr.mapPosToItemEntityId[`${mapx},${mapy}`];
@@ -254,6 +285,14 @@ export class Map{
     return true;
   }
 
+  paintTile(mapx, mapy, color){
+    this.attr.mapPosToPaint[`${mapx},${mapy}`] = color;
+  }
+
+  clearPaint(){
+    this.attr.mapPosToPaint = {};
+  }
+
   render(display, camera_x, camera_y, visibility_checker){
     //console.log('rendering map');
     //console.dir(this);
@@ -263,26 +302,47 @@ export class Map{
     let xend = xstart + display.getOptions().width;
     let ystart = camera_y - Math.trunc(display.getOptions().height / 2);
     let yend = ystart + display.getOptions().height;
+    let renderEverything = false;
+    let visibilityCheckerList = [];
+    if(renderEverything){
+      for(let id in this.attr.entityIdToMapPos){
+        let ent = DATASTORE.ENTITIES[id];
+        if(typeof ent.generateVisibilityChecker === 'function' && ent.getName()!=='avatar'){
+          visibilityCheckerList.push(ent.generateVisibilityChecker());
+        }
+      }
+    }
     for(let xi = xstart; xi < xend; xi++){
       cy = 0;
       for(let yi = ystart; yi < yend; yi++){
-        if(!visibility_checker.check(xi,yi)){
+        let paint = this.attr.mapPosToPaint[`${xi},${yi}`];
+        let isVisible = visibility_checker.check(xi, yi);
+        if(renderEverything && !isVisible){
+          for(let c = 0; c < visibilityCheckerList.length; c++){
+            //console.dir(visibilityCheckerList[c]);
+            if(visibilityCheckerList[c].check(xi, yi)){
+              isVisible = true;
+              break;
+            }
+          }
+        }
+        if(!isVisible){
           let memTile = TILESTORE.getTile(visibility_checker.memoryTile(xi, yi));
           if(memTile){
-            memTile.renderGray(display, cx, cy);
+            memTile.renderGray(display, cx, cy, paint);
           }
           cy++;
           continue;
         }
         let pos = `${xi},${yi}`;
         if(this.attr.mapPosToEntityId[pos]){
-          DATASTORE.ENTITIES[this.attr.mapPosToEntityId[pos]].render(display,cx,cy);
+          DATASTORE.ENTITIES[this.attr.mapPosToEntityId[pos]].render(display,cx,cy,paint);
         }
         else if(this.attr.mapPosToItemEntityId[pos]){
-          DATASTORE.ENTITIES[this.attr.mapPosToItemEntityId[pos]].render(display,cx,cy);
+          DATASTORE.ENTITIES[this.attr.mapPosToItemEntityId[pos]].render(display,cx,cy,paint);
         }
         else{
-          this.getTile(xi, yi).render(display, cx, cy);
+          this.getTile(xi, yi).render(display, cx, cy, paint);
         }
 
         cy++;

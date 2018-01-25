@@ -4,10 +4,14 @@ import {Map, MapMaker} from './map.js';
 import {DisplaySymbol} from './display_symbol.js';
 import {DATASTORE, clearDatastore} from './datastore.js';
 import {Color} from './color.js';
+import {Character} from './character.js';
 import {Entity} from './entity.js';
 import {EntityFactory} from './entities.js';
 import {BINDINGS, BINDING_DESCRIPTIONS, setKeybindingsArrowKeys, setKeybindingsWASD, setInventoryBindings} from './keybindings.js';
 import {TIME_ENGINE, loadScheduler, saveScheduler} from './timing.js';
+import {getFunctionality} from './items.js';
+import {EquipmentSlots, EquipmentOrder} from './equipment.js';
+import {renderXp, ExperienceMultiplier, hasPrereqs, prereqString} from './skills.js';
 
 class UIMode{
   constructor(game){
@@ -79,12 +83,15 @@ export class PlayMode extends UIMode{
   }
 
   enter(){
+    let first = false;
     if(!this.attr.avatarId){
       let a = EntityFactory.create('avatar', true);
       this.attr.avatarId = a.getId();
+      first = true;
+      a.raiseMixinEvent('initAvatar');
     }
     this.game.isPlaying = true;
-    this.setupAvatar();
+    this.setupAvatar(first);
     TIME_ENGINE.unlock();
   }
 
@@ -128,6 +135,9 @@ export class PlayMode extends UIMode{
   }
 
   handleInput(eventType, evt){
+    if(!this.getAvatar().isActing()){
+      return false;
+    }
     if(eventType == "keyup"){
       // if(evt.key == BINDINGS.GAME.WIN){//real win condition now!
       //   this.game.switchMode('win');
@@ -146,21 +156,37 @@ export class PlayMode extends UIMode{
         return true;
       }
       else if(evt.key == BINDINGS.GAME.ENTER_BINDINGS){
-        this.game.pushMode('bindings');
+        this.game.pushMode('bindings', {
+          mode: 'GAME'
+        });
+        return true;
+      }
+      else if(evt.key == BINDINGS.GAME.ENTER_INVENTORY){
+        this.game.pushMode('inventory', {
+          avatarId: this.attr.avatarId
+        });
+        return true;
+      }
+      else if(evt.key == BINDINGS.GAME.ENTER_EQUIPMENT){
+        this.game.pushMode('equipment', {
+          avatarId: this.attr.avatarId
+        });
         return true;
       }
       else if(evt.key == BINDINGS.GAME.PREV_FLOOR){
         let oldId = this.game.getMapId();
-        if(this.game.previousFloor()){
-          Message.send("You have entered the previous floor");
-          this.setupAvatar();
-          DATASTORE.MAPS[oldId].removeEntity(DATASTORE.ENTITIES[this.attr.avatarId]);
-          return true;
+        if(`${this.getAvatar().getX()},${this.getAvatar().getY()}` === DATASTORE.MAPS[oldId].getEntrancePos()){
+          if(this.game.previousFloor()){
+            Message.send("You have entered the previous floor");
+            this.setupAvatar();
+            DATASTORE.MAPS[oldId].removeEntity(DATASTORE.ENTITIES[this.attr.avatarId]);
+            return true;
+          }
         }
       }
       else if(evt.key == BINDINGS.GAME.NEXT_FLOOR){
         let oldId = this.game.getMapId();
-        if(DATASTORE.MAPS[oldId].getMobAmounts('jdog')==0){
+        if(`${this.getAvatar().getX()},${this.getAvatar().getY()}` === DATASTORE.MAPS[oldId].getExitPos()){
           if(this.game.nextFloor()){
             Message.send("You have entered the next floor");
             this.setupAvatar();
@@ -169,7 +195,7 @@ export class PlayMode extends UIMode{
           }
         }
         else{
-          Message.send(`Still ${DATASTORE.MAPS[oldId].getMobAmounts('jdog')} jdogs on floor. Kill them before continuing.`);
+          Message.send('Find the exit to continue!');
         }
       }
       else if(evt.key == BINDINGS.GAME.MOVE_NORTH){
@@ -222,18 +248,20 @@ export class PlayMode extends UIMode{
           return true;
         }
       }
-      else if(evt.key == BINDINGS.GAME.ENTER_INVENTORY){
-        console.dir(this.getAvatar().getItems());
-      }
     }
     return false;
   }
 
-  setupAvatar(){
+  setupAvatar(first){
     let m = DATASTORE.MAPS[this.game.getMapId()];
     if(!m.attr.entityIdToMapPos[this.attr.avatarId]){
       let a = DATASTORE.ENTITIES[this.attr.avatarId];
-      m.addEntityAtRandomPosition(a);
+      if(first){
+        m.addEntityAt(a, m.getEntrancePos().split(',')[0]*1, m.getEntrancePos().split(',')[1]*1);
+      }
+      else{
+        m.addEntityAt(a, a.getX(), a.getY());
+      }
     }
     this.moveCameraToAvatar();
   }
@@ -626,17 +654,16 @@ export class BindingsMode extends UIMode{
     super(game);
   }
 
-  enter(){
+  enter(template){
     console.log("Entering Bindings Mode");
     this.changingBinding = false;
     this.keyToChange = null;
-    let prevMode = this.game.prevMode();
-    // if(prevMode == this.game.modes.inventory){
-    //   this.mode = "INVENTORY";
-    // }
-    // else{
-    this.mode = "GAME";
-    //}
+    if(template.mode){
+      this.mode = template.mode;
+    }
+    else{
+      this.mode = 'GAME';
+    }
   }
 
   renderMain(display){
@@ -664,7 +691,7 @@ export class BindingsMode extends UIMode{
     for(let binding in BINDINGS[this.mode]){
       let text = `${BINDING_DESCRIPTIONS[this.mode][binding]} - [${BINDINGS[this.mode][binding]}]`;
       if(binding == this.keyToChange){
-        text = U.applyColor(text, Color.TEXT_CHANGING_KEY);
+        text = U.applyColor(text, Color.TEXT_SELECTED);
       }
       display.drawText(2, 4+i, text);
       i++;
@@ -793,8 +820,11 @@ export class BindingsMode extends UIMode{
       let bindingsPath = this.game._PERSISTENCE_NAMESPACE + '_' + this.game._BINDINGS_NAMESPACE;
       let bindingString = window.localStorage.getItem(bindingsPath);
       let bindings = JSON.parse(bindingString);
-      for(let binding in bindings){
-        BINDINGS[binding] = bindings[binding];
+      for(let bindingGroupIndex in bindings){
+        let bindingGroup = bindings[bindingGroupIndex];
+        for(let bindingIndex in bindingGroup){
+            BINDINGS[bindingGroupIndex][bindingIndex] = bindingGroup[bindingIndex];
+        }
       }
     }
     catch(e) {
@@ -802,8 +832,544 @@ export class BindingsMode extends UIMode{
       return;
     }
   }
+}
 
+export class InventoryMode extends UIMode{
+  constructor(game){
+    super(game);
+  }
 
+  enter(template){
+    if(template.avatarId){
+      this.avatarId = template.avatarId;
+    }
+    let items = this.getAvatar().getItems();
+    if(template.selected){
+      this.game.persist.inventoryIndex = template.selected;
+    }
+    if(this.game.persist.inventoryIndex >= items.length){
+      this.game.persist.inventoryIndex = items.length - 1;
+    }
+    if(this.game.persist.inventoryIndex < 0){
+      this.game.persist.inventoryIndex = 0;
+    }
+  }
 
+  renderMain(display){
+    let bottom = 23;
+    display.drawText(0, 0, '|Equipment|' + U.applyBackground(U.applyColor('Inventory', Color.TEXT_HIGHLIGHTED), Color.TEXT_HIGHLIGHTED_BG) + '|Skills|');
+    let items = this.getAvatar().getItems();
+    let maxRender = 20;
+    if(items.length - this.game.persist.inventoryIndex > maxRender){
+      display.drawText(0, bottom, Character.DOWN_TRIANGLE);
+    }
+    let skip = Math.max(0, Math.min(items.length - maxRender, this.game.persist.inventoryIndex));
+    let renderEnd = Math.min(maxRender, items.length - skip);
+    if(skip > 0){
+      display.drawText(0, 4, Character.UP_TRIANGLE);
+    }
+    //Render items
+    for(let i = 0; i < renderEnd; i++){
+      let item = items[skip + i];
+      let name = "Unidentified item";
+      if(item.name){
+        name = item.name;
+      }
+      //Highlight selected item
+      if(skip + i == this.game.persist.inventoryIndex){
+        name = U.applyBackground(U.applyColor(name, Color.TEXT_HIGHLIGHTED), Color.TEXT_HIGHLIGHTED_BG)
+      }
+      display.drawText(2, i + 4, name);
+    }
+    if(this.game.persist.inventoryIndex < items.length){
+      //Render description
+      let selectedItem = items[this.game.persist.inventoryIndex];
+      let descriptionX = 40;
+      let descriptionY = 4;
+      let description = "Nobody knows what this item is used for...";
+      if(selectedItem.description){
+        description = U.fillTemplate(selectedItem.description, selectedItem);
+      }
+      let itemType = "Item";
+      if(selectedItem.type){
+        itemType = selectedItem.type;
+      }
+      let itemTypeString = itemType;
+      if(itemTypeString == "Equipment" && selectedItem.slot){
+        itemTypeString = `${itemType} - ${selectedItem.slot}`;
+      }
+      display.drawText(descriptionX, descriptionY, itemTypeString);
+      display.drawText(descriptionX, descriptionY + 1, description);
+      //Render functionality
+      let functionalityX = 40;
+      let functionalityY = 12;
+      let functionalityList = getFunctionality(itemType);
+      for(let i = 0; i < functionalityList.length; i++){
+        let functionality = functionalityList[i];
+        let functionalityString = `[${functionality.key}] - ${functionality.description}`;
+        display.drawText(functionalityX, functionalityY + i, functionalityString);
+      }
+    }
 
+  }
+
+  handleInput(eventType, evt){
+    if(eventType == "keyup"){
+      if(evt.key == BINDINGS.MASTER.EXIT_MENU){
+        this.game.popMode();
+        return true;
+      }
+      else if(evt.key == BINDINGS.MASTER.MENU_DOWN){
+        let maxRender = 20;
+        let items = this.getAvatar().getItems();
+        if(this.game.persist.inventoryIndex < items.length - 1){
+          this.game.persist.inventoryIndex++;
+          return true;
+        }
+      }
+      else if(evt.key == BINDINGS.MASTER.MENU_UP){
+        if(this.game.persist.inventoryIndex > 0){
+          this.game.persist.inventoryIndex--;
+          return true;
+        }
+      }
+      else if(evt.key == BINDINGS.MASTER.MENU_LEFT){
+        this.game.swapMode('equipment', {
+          avatarId: this.avatarId
+        });
+        return true;
+      }
+      else if(evt.key == BINDINGS.MASTER.MENU_RIGHT){
+        this.game.swapMode('skills', {
+          avatarId: this.avatarId
+        });
+        return true;
+      }
+      else if(evt.key == BINDINGS.INVENTORY.ENTER_BINDINGS){
+        this.game.pushMode('bindings', {
+          mode: 'INVENTORY'
+        });
+        return true;
+      }
+      else{
+        let items = this.getAvatar().getItems();
+        if(this.game.persist.inventoryIndex < items.length){
+          let selectedItem = items[this.game.persist.inventoryIndex];
+          let itemType = "Item";
+          if(selectedItem.type){
+            itemType = selectedItem.type;
+          }
+          let functionalityList = getFunctionality(itemType);
+          for(let i = 0; i < functionalityList.length; i++){
+            let functionality = functionalityList[i];
+            if(evt.key == functionality.key){
+              //Perform the functionality
+              let functionalityData = {
+                itemIndex: this.game.persist.inventoryIndex,
+                item: selectedItem,
+                src: this.getAvatar(),
+                removed: false
+              };
+              this.getAvatar().raiseMixinEvent(functionality.mixinEvent, functionalityData);
+              if(functionalityData.removed){
+                this.getAvatar().removeItem(this.game.persist.inventoryIndex);
+                if(this.game.persist.inventoryIndex >= items.length){
+                  this.game.persist.inventoryIndex = Math.max(0, items.length - 1);
+                }
+              }
+              return true;
+            }
+          }
+        }
+      }
+    }
+    return false;
+  }
+
+  getAvatar(){
+    return DATASTORE.ENTITIES[this.avatarId];
+  }
+}
+
+export class EquipmentMode extends UIMode{
+  constructor(game){
+    super(game);
+  }
+
+  enter(template){
+    if(template.avatarId){
+      this.avatarId = template.avatarId;
+    }
+    if(template.equipping){
+      this.equipping = true;
+      this.itemIndex = template.itemIndex;
+      this.item = template.item;
+      //Try to find the correct slot
+      this.game.persist.equipmentIndex = this.getPreferredSlotIndex(template.item);
+    }
+    else{
+      this.equipping = false;
+    }
+    if(this.game.persist.equipmentIndex >= EquipmentOrder.length){
+      this.game.persist.equipmentIndex = EquipmentOrder.length - 1;
+    }
+    if(this.game.persist.equipmentIndex < 0){
+      this.game.persist.equipmentIndex = 0;
+    }
+  }
+
+  renderMain(display){
+    display.drawText(0, 0, '|' + U.applyBackground(U.applyColor('Equipment', Color.TEXT_HIGHLIGHTED), Color.TEXT_HIGHLIGHTED_BG) + '|Inventory|Skills|');
+    let equipment = this.getAvatar().getEquipment();
+    for(let i = 0; i < EquipmentOrder.length; i++){
+      let slot = EquipmentOrder[i];
+      let slotName = EquipmentSlots[slot];
+      if(slotName){
+        let item = equipment[slot];
+        let itemText = "Empty";
+        if(item){
+          itemText = "Unidentified item";
+          if(item.name){
+            itemText = item.name;
+          }
+        }
+        let slotText = `${slotName} - ${itemText}`;
+        if(i == this.game.persist.equipmentIndex){
+          slotText = U.applyBackground(U.applyColor(slotText, Color.TEXT_HIGHLIGHTED), Color.TEXT_HIGHLIGHTED_BG)
+        }
+        display.drawText(2, 4 + i, slotText);
+      }
+    }
+    let selectedItemSlot = EquipmentOrder[this.game.persist.equipmentIndex];
+    let selectedItem = equipment[selectedItemSlot];
+    if(selectedItem){
+      let descriptionX = 40;
+      let descriptionY = 4;
+      let description = "Nobody knows what this item is used for...";
+      if(selectedItem.description){
+        description = U.fillTemplate(selectedItem.description, selectedItem);
+      }
+      let slotType = "Equipment";
+      if(selectedItem.slot){
+        slotType = selectedItem.slot;
+      }
+      display.drawText(descriptionX, descriptionY, slotType);
+      display.drawText(descriptionX, descriptionY + 1, description);
+    }
+    //Render functionality
+    let functionalityX = 40;
+    let functionalityY = 12;
+    if(this.equipping){
+      display.drawText(functionalityX, functionalityY, `[${BINDINGS.INVENTORY.EQUIP}] - Equip here`);
+      display.drawText(functionalityX, functionalityY + 1, `[${BINDINGS.MASTER.EXIT_MENU}] - Cancel`);
+    }
+    else if(selectedItem){
+      display.drawText(functionalityX, functionalityY, `[${BINDINGS.INVENTORY.UNEQUIP}] - Unequip`);
+      display.drawText(functionalityX, functionalityY, `[${BINDINGS.INVENTORY.DROP}] - Drop`);
+    }
+  }
+
+  handleInput(eventType, evt){
+    if(eventType == "keyup"){
+      if(evt.key == BINDINGS.MASTER.EXIT_MENU){
+        this.game.popMode();
+        return true;
+      }
+      else if(evt.key == BINDINGS.MASTER.MENU_UP){
+        if(this.game.persist.equipmentIndex > 0){
+          this.game.persist.equipmentIndex--;
+          return true;
+        }
+      }
+      else if(evt.key == BINDINGS.MASTER.MENU_DOWN){
+        if(this.game.persist.equipmentIndex < EquipmentOrder.length - 1){
+          this.game.persist.equipmentIndex++;
+          return true;
+        }
+      }
+      else{
+        if(this.equipping){
+          if(evt.key == BINDINGS.INVENTORY.EQUIP){
+            let oldItemHolder = {};
+            let slot = EquipmentOrder[this.game.persist.equipmentIndex];
+            if(this.getAvatar().canRemoveItem(this.itemIndex)){
+              if(this.getAvatar().addEquipment(slot, this.item, oldItemHolder)){
+                //Remove from inventory on success
+                this.getAvatar().removeItem(this.itemIndex);
+                if(oldItemHolder.items){
+                  for(let i = 0; i < oldItemHolder.items.length; i++){
+                    this.getAvatar().addItem(oldItemHolder.items[i]);
+                  }
+                }
+                this.game.popMode({
+                  selected: this.itemIndex
+                });
+              }
+            }
+            return true;
+          }
+        }
+        else{
+          if(evt.key == BINDINGS.INVENTORY.ENTER_BINDINGS){
+            this.game.pushMode('bindings', {
+              mode: 'INVENTORY'
+            });
+            return true;
+          }
+          //Disallow L/R when equipping
+          else if(evt.key == BINDINGS.MASTER.MENU_LEFT){
+            this.game.swapMode('skills', {
+              avatarId: this.avatarId
+            });
+            return true;
+          }
+          else if(evt.key == BINDINGS.MASTER.MENU_RIGHT){
+            this.game.swapMode('inventory', {
+              avatarId: this.avatarId
+            });
+            return true;
+          }
+          else if(evt.key == BINDINGS.INVENTORY.UNEQUIP){
+            let oldItemHolder = {};
+            let slot = EquipmentOrder[this.game.persist.equipmentIndex];
+            if(this.getAvatar().removeEquipment(slot, oldItemHolder)){
+              if(oldItemHolder.item){
+                this.getAvatar().addItem(oldItemHolder.item);
+              }
+            }
+            return true;
+          }
+          else if(evt.key == BINDINGS.INVENTORY.DROP){
+            let oldItemHolder = {};
+            let slot = EquipmentOrder[this.game.persist.equipmentIndex];
+            if(this.getAvatar().removeEquipment(slot, oldItemHolder)){
+              if(oldItemHolder.item){
+                let tryDropHolder = {
+                  item: oldItemHolder.item,
+                  removed: false
+                };
+                this.getAvatar().raiseMixinEvent('tryDropItem', tryDropHolder);
+                if(!tryDropHolder.removed){
+                  this.getAvatar().addItem(oldItemHolder.item);
+                }
+              }
+            }
+            return true;
+          }
+          //For a safety measure, you can't trash things equipped on yourself
+        }
+      }
+    }
+    return false;
+  }
+
+  getPreferredSlotIndex(item){
+    //Try finding an empty one
+    let allowedClosed = Array();
+    let allowedOpen = Array();
+    let equipment = this.getAvatar().getEquipment();
+    for(let i = 0; i < EquipmentOrder.length; i++){
+      let slot = EquipmentOrder[i];
+      if(this.allowedSlot(slot, item)){
+        if(equipment[slot] == null){
+          allowedOpen.push(i);
+        }
+        else{
+          allowedClosed.push(i);
+        }
+      }
+    }
+    if(allowedOpen.length > 0){
+      return allowedOpen[0];
+    }
+    else if(allowedClosed.length > 0){
+      return allowedClosed[0];
+    }
+    else{
+      return 0;
+    }
+  }
+
+  allowedSlot(slot, item){
+    if(item.slot == EquipmentSlots[slot]){
+      return true;
+    }
+    if(item.slot == "One-Handed"){
+      return slot == "primaryHand" || slot == "secondaryHand";
+    }
+    if(item.slot == "Two-Handed"){
+      return slot == "primaryHand";
+    }
+  }
+
+  getAvatar(){
+    return DATASTORE.ENTITIES[this.avatarId];
+  }
+}
+
+export class SkillsMode extends UIMode{
+  constructor(game){
+    super(game);
+  }
+
+  enter(template){
+    if(template.avatarId){
+      this.avatarId = template.avatarId;
+    }
+    let skillArray = this.getSkillArray();
+    if(this.game.persist.skillIndex >= skillArray.length){
+      this.game.persist.skillIndex = skillArray.length - 1;
+    }
+    if(this.game.persist.skillIndex < 0){
+      this.game.persist.skillIndex = 0;
+    }
+  }
+
+  renderMain(display){
+    display.drawText(0, 0, '|Equipment|Inventory|' + U.applyBackground(U.applyColor('Skills', Color.TEXT_HIGHLIGHTED), Color.TEXT_HIGHLIGHTED_BG) + '|');
+    let skillPoints = this.getAvatar().getSkillPoints();
+    display.drawText(2, 2, `Skill points: ${skillPoints}`);
+    let skills = this.getAvatar().getSkills();
+    //Sort skill names in xp/alphabetical order
+    let skillArray = this.getSkillArray();
+    for(let i = 0; i < skillArray.length; i++){
+      let skillName = skillArray[i];
+      let skillInfo = this.getAvatar().getSkillInfo(skillName);
+      let nextLevelInfo = '';
+      if(skillInfo.xpNeeded){
+        nextLevelInfo = `/${renderXp(skillInfo.xp+skillInfo.xpNeeded)}`;
+      }
+      let skillString = `${skillName} ${U.romanNumeral(skillInfo.level)} - ${renderXp(skillInfo.xp)}${nextLevelInfo}`;
+      if(i == this.game.persist.skillIndex){
+        skillString = U.applyBackground(U.applyColor(skillString, Color.TEXT_HIGHLIGHTED), Color.TEXT_HIGHLIGHTED_BG);
+      }
+      else if(!hasPrereqs(skillName, skills)){
+        skillString = U.applyColor(skillString, Color.TEXT_PROHIBITED);
+      }
+      else if(skillInfo.xpNeeded && skillPoints * ExperienceMultiplier >= skillInfo.xpNeeded){
+        skillString = U.applyColor(skillString, Color.TEXT_ALLOWED);
+      }
+      else if(skillInfo.level === 0){
+        skillString = U.applyColor(skillString, Color.TEXT_HALF_DISABLED);
+      }
+      display.drawText(2, 4 + i, skillString);
+    }
+    if(this.game.persist.skillIndex < skillArray.length){
+      let selectedSkillName = skillArray[this.game.persist.skillIndex];
+      let selectedSkillInfo = this.getAvatar().getSkillInfo(selectedSkillName);
+      let descriptionX = 40;
+      let descriptionY = 4;
+      let prereqstr = prereqString(selectedSkillName);
+      display.drawText(descriptionX, descriptionY, prereqstr);
+      display.drawText(descriptionX, descriptionY + 2, U.fillTemplate(selectedSkillInfo.description, selectedSkillInfo));
+      //Print functionality
+      let functionalityX = 40;
+      let functionalityY = 12;
+      //Check if can upgrade
+      let xpNeeded = selectedSkillInfo.xpNeeded;
+      if(xpNeeded){
+        let upgradeString = `[${BINDINGS.INVENTORY.UPGRADE}] - Level up (${renderXp(xpNeeded, true)} skill points)`;
+        if(skillPoints * ExperienceMultiplier < xpNeeded){
+          upgradeString = U.applyColor(upgradeString, Color.TEXT_HALF_DISABLED);
+        }
+        else if(!hasPrereqs(selectedSkillName, skills)){
+          upgradeString = U.applyColor(upgradeString, Color.TEXT_PROHIBITED);
+        }
+        display.drawText(functionalityX, functionalityY, upgradeString);
+      }
+
+    }
+  }
+
+  getSkillArray(){
+    let skillArray = Array();
+    let skills = this.getAvatar().getSkills();
+    for(let skillName in skills){
+      if(skills[skillName].seen){
+        let prereqNum = hasPrereqs(skillName, skills) ? 0 : 1;
+        skillArray.push([-skills[skillName].xp,prereqNum,skillName]);
+      }
+    }
+    //Sort by xp then prereq then namme
+    for(let i = 2; i >= 0; i --){
+      skillArray.sort(function(a, b){
+        if(a[i] > b[i]){
+          return 1;
+        }
+        else if(a[i] < b[i]){
+          return -1;
+        }
+        else{
+          return 0;
+        }
+      });
+    }
+    //Get only the names and return them
+    return skillArray.map(function(value, index){
+      return value[2];
+    });
+  }
+
+  handleInput(eventType, evt){
+    if(eventType == "keyup"){
+      if(evt.key == BINDINGS.MASTER.EXIT_MENU){
+        this.game.popMode();
+        return true;
+      }
+      else if(evt.key == BINDINGS.MASTER.MENU_UP){
+        if(this.game.persist.skillIndex > 0){
+          this.game.persist.skillIndex--;
+          return true;
+        }
+      }
+      else if(evt.key == BINDINGS.MASTER.MENU_DOWN){
+        let skillArray = this.getSkillArray();
+        if(this.game.persist.skillIndex < skillArray.length - 1){
+          this.game.persist.skillIndex++;
+          return true;
+        }
+      }
+      else if(evt.key == BINDINGS.MASTER.MENU_LEFT){
+        this.game.swapMode('inventory', {
+          avatarId: this.avatarId
+        });
+        return true;
+      }
+      else if(evt.key == BINDINGS.MASTER.MENU_RIGHT){
+        this.game.swapMode('equipment', {
+          avatarId: this.avatarId
+        });
+        return true;
+      }
+      else if(evt.key == BINDINGS.INVENTORY.ENTER_BINDINGS){
+        this.game.pushMode('bindings', {
+          mode: 'INVENTORY'
+        });
+        return true;
+      }
+      else if(evt.key == BINDINGS.INVENTORY.UPGRADE){
+        let skillArray = this.getSkillArray();
+        if(this.game.persist.skillIndex < skillArray.length){
+          let selectedSkillName = skillArray[this.game.persist.skillIndex];
+          this.getAvatar().raiseMixinEvent('levelUpSkill', {
+            name: selectedSkillName
+          });
+          //Find the index of the array after upgrading
+          let newSkillArray = this.getSkillArray();
+          for(let i = 0; i < newSkillArray.length; i++){
+            if(newSkillArray[i] == selectedSkillName){
+              this.game.persist.skillIndex = i;
+              break;
+            }
+          }
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  getAvatar(){
+    return DATASTORE.ENTITIES[this.avatarId];
+  }
 }

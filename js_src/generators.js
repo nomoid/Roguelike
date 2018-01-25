@@ -51,9 +51,22 @@ export let TILE_GRID_GENERATOR = {
     let entrancePos, entranceX, entranceY;
     if(data.entrancePos){
       entrancePos = data.entrancePos.split(',');
-      entranceX = entrancePos[0]*1;
-      entranceY = entrancePos[1]*1;
     }
+    else{
+      entrancePos = mapExitFromSeed({
+        'xdim': data.xdim,
+        'ydim': data.ydim,
+        'mapSeed': data.mapSeed,
+        'floor': data.floor-1,
+      }).split(',');
+    }
+    entranceX = entrancePos[0]*1;
+    entranceY = entrancePos[1]*1;
+    let borderDepth = 3;
+    let wideBorderDepth = 10;
+    let quadrantWidth = Math.floor(xdim/2)-wideBorderDepth;
+    let quadrantHeight = Math.floor(ydim/2)-wideBorderDepth;
+
 
     let exitPos = mapExitFromSeed(data).split(',');
     let exitX = exitPos[0]*1;
@@ -62,10 +75,6 @@ export let TILE_GRID_GENERATOR = {
     // let structs = [];//constains positions in string form
     // let structFreq = 0.2;
 
-    let borderDepth = 3;
-    let wideBorderDepth = 3;
-    let quadrantWidth = Math.floor(xdim/2)-wideBorderDepth;
-    let quadrantHeight = Math.floor(ydim/2)-wideBorderDepth;
 
     let origRngState = ROT.RNG.getState();//*** IMPORTANT
     ROT.RNG.setSeed(mapSeed);
@@ -76,7 +85,7 @@ export let TILE_GRID_GENERATOR = {
     for(let xi = 0; xi < xdim; xi++){//first loop
       for(let yi = 0; yi < ydim; yi++){
         let tile = null;
-        if(data.entrancePos && xi == entranceX && yi == entranceY){
+        if(floor>0 && xi == entranceX && yi == entranceY){
           //place the entrance
           tile = TILES.STAIRS_UP;
 
@@ -114,11 +123,11 @@ export let TILE_GRID_GENERATOR = {
     //place stairs structures first so other structures respect them
     let stairs = STRUCT.parseCharsToTiles(STRUCT.BASIC_FLOOR.STAIRS.grid);
     let rotation = Math.floor(ROT.RNG.getUniform()*4)-1;
-    STRUCT.mergeGrids(tg, stairs, exitX, exitY, rotation);
-    if(data.entrancePos){
-      let rotation = Math.floor(ROT.RNG.getUniform()*4)-1;
-      STRUCT.mergeGrids(tg, stairs, entranceX, entranceY, rotation);
-    }
+    console.log(`exit rotation ${rotation}`);
+    STRUCT.tryPlaceStructure(tg, stairs, exitX, exitY, rotation);
+    rotation = Math.floor(ROT.RNG.getUniform()*4)-1;
+    console.log(`entrance rotation ${rotation}`);
+    STRUCT.tryPlaceStructure(tg, stairs, entranceX, entranceY, rotation);
 
     //place some structures in each quadrant
     //quadrants: (i think)
@@ -147,7 +156,7 @@ export let TILE_GRID_GENERATOR = {
           TLX = wideBorderDepth;
           TLY = wideBorderDepth;
       }
-      for(let i = 0; i < 30; i++){
+      for(let i = 0; i < 10; i++){
         let randomX = Math.floor(ROT.RNG.getUniform()*(quadrantWidth)+TLX);
         let randomY = Math.floor(ROT.RNG.getUniform()*(quadrantHeight)+TLY);
         let rotation = Math.floor(ROT.RNG.getUniform()*4)-1;
@@ -161,7 +170,7 @@ export let TILE_GRID_GENERATOR = {
 
     ROT.RNG.setState(origRngState);//*** ALSO IMPORTANT
 
-    return {map: tg, exitPos: `${exitX},${exitY}`};
+    return {map: tg, 'exitPos': `${exitX},${exitY}`, 'entrancePos': `${entranceX},${entranceY}`};
     //return {map: tg};
   }
 }
