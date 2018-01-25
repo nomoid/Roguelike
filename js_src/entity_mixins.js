@@ -629,7 +629,24 @@ export let OmniscientPathfinder = {
       if(invertCoords){
         let passableCallback = function(y, x){
           //console.log(`${x},${y}`);
-          return map.getTile(x, y).isPassable();
+          let oneAway = false;
+          if(y == thisy){
+            if(x == thisx + 1 || x == thisx - 1){
+              oneAway = true;
+            }
+          }
+          if(x == thisx){
+            if(y == thisy + 1 || y == thisy - 1){
+              oneAway = true;
+            }
+          }
+          if(oneAway){
+            //Still may result in no path found
+            return map.isPositionOpenOrAvatar(x, y);
+          }
+          else{
+            return map.getTile(x, y).isPassable();
+          }
         }
         let dijkstra = new ROT.Path.AStar(thisy, thisx, passableCallback, {topology: 4});
 
@@ -648,7 +665,24 @@ export let OmniscientPathfinder = {
       else{
         let passableCallback = function(x, y){
           //console.log(`${x},${y}`);
-          return map.getTile(x, y).isPassable();
+          let oneAway = false;
+          if(y == thisy){
+            if(x == thisx + 1 || x == thisx - 1){
+              oneAway = true;
+            }
+          }
+          if(x == thisx){
+            if(y == thisy + 1 || y == thisy - 1){
+              oneAway = true;
+            }
+          }
+          if(oneAway){
+            //Still may result in no path found
+            return map.isPositionOpenOrAvatar(x, y);
+          }
+          else{
+            return map.getTile(x, y).isPassable();
+          }
         }
         let dijkstra = new ROT.Path.AStar(thisx, thisy, passableCallback, {topology: 4});
 

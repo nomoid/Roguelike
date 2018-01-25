@@ -8,7 +8,7 @@ EntityFactory.learn({
   name: 'avatar',
   chr: '@',
   fg: Color.AVATAR_FG,
-  maxHp: 100,
+  maxHp: 10000,
   radius: 16,
   mixinNames: ['TimeTracker', 'WalkerCorporeal', 'PlayerMessage', 'HitPoints', 'ActorPlayer', 'MeleeAttacker', 'FOVHandler', 'ItemPile', 'Inventory']
 });
