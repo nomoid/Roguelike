@@ -27,6 +27,13 @@ export let BINDINGS = {
 
 export let BINDING_DESCRIPTIONS = {
   INVENTORY: {
+    DROP: "Drop an item",
+    EQUIP: "Equip an item",
+    UNEQUIP: "Unequip an item",
+    CONSUME: "Consume an item",
+    UPGRADE: "Level up a skill",
+    TRASH: "Trash an item permanently",
+    ENTER_BINDINGS: "Show/switch key bindings"
   },
   GAME: {
     MOVE_NORTH: "Move north",
@@ -37,6 +44,8 @@ export let BINDING_DESCRIPTIONS = {
     PICK_UP_ITEM: "Pick up an item",
     PICK_UP_ALL_ITEMS: "Pick up all items in pile",
     ENTER_INVENTORY: "Inventory",
+    ENTER_EQUIPMENT: "Equipment",
+    ENTER_SKILLS: "Skills",
     ENTER_PERSISTENCE: "Save/load/new game",
     ENTER_MESSAGES: "Show all messages",
     ENTER_BINDINGS: "Show/switch key bindings",
@@ -60,6 +69,8 @@ export function setKeybindingsWASD(){
     PICK_UP_ITEM: "q",
     PICK_UP_ALL_ITEMS: "Q",
     ENTER_INVENTORY: "I",
+    ENTER_EQUIPMENT: "E",
+    ENTER_SKILLS: "K",
     ENTER_PERSISTENCE: "S",
     ENTER_MESSAGES: "M",
     ENTER_BINDINGS: "?",
@@ -80,6 +91,8 @@ export function setKeybindingsArrowKeys(){
     PICK_UP_ITEM: "q",
     PICK_UP_ALL_ITEMS: "Q",
     ENTER_INVENTORY: "I",
+    ENTER_EQUIPMENT: "E",
+    ENTER_SKILLS: "K",
     ENTER_PERSISTENCE: "S",
     ENTER_MESSAGES: "M",
     ENTER_BINDINGS: "?",
@@ -92,6 +105,12 @@ export function setKeybindingsArrowKeys(){
 
 export function setInventoryBindings(){
   BINDINGS.INVENTORY = {
-
+    DROP: "r",
+    EQUIP: "e",
+    UNEQUIP: "x",
+    CONSUME: "c",
+    UPGRADE: "V",
+    TRASH: "T",
+    ENTER_BINDINGS: "?"
   }
 }

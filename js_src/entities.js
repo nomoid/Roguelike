@@ -13,7 +13,8 @@ EntityFactory.learn({
   team: 'avatar',
   enemyTeams: ['baddies'],
   friendlyTeams: ['avatar'],
-  mixinNames: ['TimeTracker', 'WalkerCorporeal', 'PlayerMessage', 'HitPoints', 'ActorPlayer', 'TeamMember', 'MeleeAttacker', 'FOVHandler', 'ItemPile', 'Inventory']
+  meleeDamage: 10,
+  mixinNames: ['TimeTracker', 'WalkerCorporeal', 'PlayerMessage', 'HitPoints', 'TeamMember', 'ActorPlayer', 'MeleeAttacker', 'FOVHandler', 'ItemPile', 'Inventory', 'Equipment', 'Skills', 'SkillLearner', 'ItemConsumer', 'BuffHandler', 'Bloodthirst']
 });
 
 EntityFactory.learn({
@@ -26,13 +27,14 @@ EntityFactory.learn({
   name: 'jdog',
   chr: 'd',
   fg: '#d06',
-  maxHp: 4,
   radius: 8,
   team: 'baddies',
   remember: true,
   enemyTeams: ['avatar'],
   friendlyTeams: ['baddies'],
   //targetName: 'avatar',
+  maxHp: 40,
+  meleeDamage: 10,
   priorities: {
     'NearsightedAttacker': 1,
     'SightedPathfinder': 2,

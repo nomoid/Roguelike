@@ -27,6 +27,10 @@ export function applyColor(text, color){
   return '%c{' + color + '}' + text + '%c{}';
 }
 
+export function applyBackground(text, color){
+  return '%b{' + color + '}' + text + '%b{}';
+}
+
 export function removeByValue(array, element){
   const index = array.indexOf(element);
 
@@ -152,4 +156,27 @@ export function localStorageAvailable() {
 //Maybe implement a better version some other time
 export function deepCopy(obj){
   return JSON.parse(JSON.stringify(obj));
+}
+
+//Code from https://stackoverflow.com/questions/30003353/can-es6-template-literals-be-substituted-at-runtime-or-reused
+//Retrieved 2018-01-23
+export function fillTemplate(templateString, templateVars){
+    return new Function("return `"+templateString +"`;").call(templateVars);
+}
+
+//Code adapted from https://stackoverflow.com/questions/9083037/convert-a-number-into-a-roman-numeral-in-javascript
+//Retrieved 2018-01-24
+export function romanNumeral(num) {
+  if(num === 0){
+    return '0';
+  }
+  let lookup = [['M',1000],['CM',900],['D',500],['CD',400],['C',100],['XC',90],['L',50],['XL',40],['X',10],['IX',9],['V',5],['IV',4],['I',1]];
+  let roman = '';
+  for (let i = 0; i < lookup.length; i++) {
+    while ( num >= lookup[i][1] ) {
+      roman += lookup[i][0];
+      num -= lookup[i][1];
+    }
+  }
+  return roman;
 }

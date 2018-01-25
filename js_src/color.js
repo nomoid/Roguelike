@@ -8,4 +8,10 @@ export let Color = {
   TEXT_CHANGING_KEY: '#cc4',
   MEMORY_FG: '#555',
   PAINT_BG: '#770'
+  TEXT_HALF_DISABLED: '#888',
+  TEXT_ALLOWED: '#7f7',
+  TEXT_PROHIBITED: '#f77',
+  TEXT_SELECTED: '#cc4',
+  TEXT_HIGHLIGHTED: '#000',
+  TEXT_HIGHLIGHTED_BG: '#cc4',
 }
