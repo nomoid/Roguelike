@@ -1,3 +1,6 @@
+import * as U from './util.js';
+import {Color} from './color.js';
+
 export let BINDINGS = {
   //Master bindings cannot be reassinged EXCEPT in play mode
   MASTER: {
@@ -46,6 +49,7 @@ export let BINDING_DESCRIPTIONS = {
     ENTER_INVENTORY: "Inventory",
     ENTER_EQUIPMENT: "Equipment",
     ENTER_SKILLS: "Skills",
+    ENTER_STATS: "Character stats",
     ENTER_PERSISTENCE: "Save/load/new game",
     ENTER_MESSAGES: "Show all messages",
     ENTER_BINDINGS: "Show/switch key bindings",
@@ -70,8 +74,9 @@ export function setKeybindingsWASD(){
     PICK_UP_ALL_ITEMS: "Q",
     ENTER_INVENTORY: "I",
     ENTER_EQUIPMENT: "E",
-    ENTER_SKILLS: "K",
-    ENTER_PERSISTENCE: "S",
+    ENTER_SKILLS: "S",
+    ENTER_STATS: "C",
+    ENTER_PERSISTENCE: "P",
     ENTER_MESSAGES: "M",
     ENTER_BINDINGS: "?",
     NEXT_FLOOR: ">",
@@ -92,8 +97,9 @@ export function setKeybindingsArrowKeys(){
     PICK_UP_ALL_ITEMS: "Q",
     ENTER_INVENTORY: "I",
     ENTER_EQUIPMENT: "E",
-    ENTER_SKILLS: "K",
-    ENTER_PERSISTENCE: "S",
+    ENTER_SKILLS: "S",
+    ENTER_STATS: "C",
+    ENTER_PERSISTENCE: "P",
     ENTER_MESSAGES: "M",
     ENTER_BINDINGS: "?",
     NEXT_FLOOR: ">",
@@ -113,4 +119,25 @@ export function setInventoryBindings(){
     TRASH: "T",
     ENTER_BINDINGS: "?"
   }
+}
+
+export function menuTopLine(highLighted){
+  let topLineStrings = ['Equipment', 'Inventory', 'Skills', 'Character stats'];
+  let topLineBindings = [BINDINGS.GAME.ENTER_EQUIPMENT, BINDINGS.GAME.ENTER_INVENTORY, BINDINGS.GAME.ENTER_SKILLS, BINDINGS.GAME.ENTER_STATS];
+  let start = '|';
+  for(let i = 0; i < topLineStrings.length; i++){
+    let currString = topLineStrings[i];
+    let firstChar = currString.charAt(0);
+    if(firstChar == topLineBindings[i]){
+      currString = `[${firstChar}]${currString.substring(1)}`;
+    }
+    else{
+      currString = `[${topLineBindings[i]}] - ${currString}`;
+    }
+    if(i == highLighted){
+      currString = U.applyBackground(U.applyColor(currString, Color.TEXT_HIGHLIGHTED), Color.TEXT_HIGHLIGHTED_BG);
+    }
+    start += currString + '|';
+  }
+  return start;
 }

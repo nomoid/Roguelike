@@ -8,13 +8,23 @@ EntityFactory.learn({
   name: 'avatar',
   chr: '@',
   fg: Color.AVATAR_FG,
-  maxHp: 10000,
+  meleeDamage: 10,
   radius: 16,
   team: 'avatar',
   enemyTeams: ['baddies'],
   friendlyTeams: ['avatar'],
-  meleeDamage: 10,
-  mixinNames: ['TimeTracker', 'WalkerCorporeal', 'PlayerMessage', 'HitPoints', 'TeamMember', 'ActorPlayer', 'MeleeAttacker', 'FOVHandler', 'ItemPile', 'Inventory', 'Equipment', 'Skills', 'SkillLearner', 'ItemConsumer', 'BuffHandler', 'Bloodthirst']
+  race: 'human',
+  stats: {
+    maxHp: 10000,
+    strength: 10,
+    agility: 10,
+    endurance: 10,
+    charisma: 10,
+    magic: 10,
+    knowledge: 10
+  },
+  statNames: ['maxHp', 'strength', 'agility', 'endurance', 'charisma', 'magic', 'knowledge'],
+  mixinNames: ['TimeTracker', 'WalkerCorporeal', 'PlayerMessage', 'HitPoints', 'TeamMember', 'ActorPlayer', 'MeleeAttacker', 'FOVHandler', 'ItemPile', 'Inventory', 'Equipment', 'Skills', 'SkillLearner', 'LevelProgress', 'CharacterStats', 'ItemConsumer', 'BuffHandler', 'Bloodthirst']
 });
 
 EntityFactory.learn({
@@ -33,7 +43,9 @@ EntityFactory.learn({
   enemyTeams: ['avatar'],
   friendlyTeams: ['baddies'],
   //targetName: 'avatar',
-  maxHp: 40,
+  stats: {
+    maxHp: 40,
+  },
   meleeDamage: 10,
   priorities: {
     'NearsightedAttacker': 1,
