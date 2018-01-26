@@ -371,6 +371,14 @@ export let Game = {
     else if(evtLabel == "addItemToMap"){
       DATASTORE.MAPS[this.getMapId()].addItemAt(evtData.item, evtData.x, evtData.y);
     }
+    else if(evtLabel == "updateContext"){
+      //Loop through contexts, find highest priority for map/player
+      let contexts = evtData.contextHolder;
+      let playerContextMessage = this.findBestForContext(contexts.playerContext)[1];
+      let mapContextMessage = this.findBestForContext(contexts.mapContext)[1];
+      this.modes.play.attr.playerContextMessage = playerContextMessage;
+      this.modes.play.attr.mapContextMessage = mapContextMessage;
+    }
     else if(evtLabel == "switchMode"){
       let template = evtData.template;
       let type = evtData.type;
@@ -389,5 +397,29 @@ export let Game = {
       }
     }
     return true;
+  },
+
+  //High priority wins
+  findBestForContext: function(context){
+    if(context.length == 0){
+      return [null, null];
+    }
+    return context.reduce(function(a, b){
+      //Sort by priority
+      if(a[0] > b[0]){
+        return a;
+      }
+      else if(a[0] < b[0]){
+        return b;
+      }
+      //Sort alphabetically
+      else if(a[1] > b[1]){
+        return a;
+      }
+      else if(a[1] < b[1]){
+        return b;
+      }
+      return a;
+    });
   }
 };

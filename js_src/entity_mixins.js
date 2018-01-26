@@ -12,6 +12,7 @@ import {generateBuff} from './buffs.js';
 import * as U from './util.js';
 import * as S from './skills.js';
 import {getLevelUpInfo} from './stats.js';
+import {BINDINGS} from './keybindings.js';
 
 let _exampleMixin = {
   META: {
@@ -144,11 +145,69 @@ export let WalkerCorporeal = {
         this.raiseMixinEvent('actionDone');
         return true;
       }
+    },
+    checkAdjacentContextTile: function(contextHolder, dx, dy){
+      let dirKey = '';
+      if(dx == 0){
+        if(dy < 0){
+          dirKey = BINDINGS.GAME.MOVE_NORTH;
+        }
+        if(dy > 0){
+          dirKey = BINDINGS.GAME.MOVE_SOUTH;
+        }
+      }
+      if(dy == 0){
+        if(dx < 0){
+          dirKey = BINDINGS.GAME.MOVE_WEST;
+        }
+        if(dx > 0){
+          dirKey = BINDINGS.GAME.MOVE_EAST;
+        }
+      }
+      let messageStart = `[${dirKey}] - `;
+      let positionInfo = this.getMap().getTargetPositionInfo(this.getX() + dx, this.getY() + dy);
+      if(positionInfo.entity){
+        if(positionInfo.entity.getName() == "Chest"){
+          let message = messageStart + 'Open chest';
+          contextHolder.mapContext.push([50, message]);
+        }
+        else if(positionInfo.entity.getName() == "jdog"){
+          let message = messageStart + 'Attack';
+          contextHolder.mapContext.push([30, message]);
+        }
+      }
+    },
+    checkCurrentContextTile: function(contextHolder){
+      let positionInfo = this.getMap().getTargetPositionInfo(this.getX(), this.getY());
+      if(positionInfo.tile){
+        if(positionInfo.tile.isA('stairs_down')){
+          let message =  `[${BINDINGS.GAME.NEXT_FLOOR}] - Go down to the next floor`;
+          contextHolder.mapContext.push([120, message]);
+        }
+        if(positionInfo.tile.isA('stairs_up')){
+          let message =  `[${BINDINGS.GAME.PREV_FLOOR}] - Go up from the previous floor`;
+          contextHolder.mapContext.push([110, message]);
+        }
+      }
     }
   },
   LISTENERS: {
     walkAttempt: function(evtData){
       this.tryWalk(evtData.dx, evtData.dy);
+    },
+    requestContextText: function(evtData){
+      //Check 4 tiles around you
+      this.checkAdjacentContextTile(evtData.contextHolder, -1, 0);
+      this.checkAdjacentContextTile(evtData.contextHolder, 1, 0);
+      this.checkAdjacentContextTile(evtData.contextHolder, 0, -1);
+      this.checkAdjacentContextTile(evtData.contextHolder, 0, 1);
+      this.checkCurrentContextTile(evtData.contextHolder);
+    },
+    nextFloor: function(evtData){
+      this.raiseMixinEvent('actionDone');
+    },
+    previousFloor: function(evtData){
+      this.raiseMixinEvent('actionDone');
     }
   }
 };
@@ -450,6 +509,18 @@ export let ActorPlayer = {
       if(this.isActing()){
         return;
       }
+      //Find context text
+      //Pass in arrays of [priority, text]
+      let contextHolder = {
+        playerContext: [],
+        mapContext: []
+      };
+      this.raiseMixinEvent('requestContextText', {
+        'contextHolder': contextHolder
+      });
+      this.raiseMixinEvent('updateContext', {
+        'contextHolder': contextHolder
+      });
       this.isActing(true);
       TIME_ENGINE.lock();
       DATASTORE.GAME.render();

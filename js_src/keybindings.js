@@ -102,9 +102,7 @@ export let BINDING_DESCRIPTIONS_SHORT = {
     ENTER_MESSAGES: "Messages",
     ENTER_BINDINGS: "Bindings",
     NEXT_FLOOR: "Next floor",
-    PREV_FLOOR: "Prev floor",
-    WIN: "Win",
-    LOSE: "Lose"
+    PREV_FLOOR: "Prev floor"
   },
 };
 
@@ -128,9 +126,7 @@ export function setKeybindingsWASD(){
     ENTER_MESSAGES: "M",
     ENTER_BINDINGS: "?",
     NEXT_FLOOR: ">",
-    PREV_FLOOR: "<",
-    WIN: "ArrowUp",
-    LOSE: "ArrowDown"
+    PREV_FLOOR: "<"
   }
 }
 
@@ -151,9 +147,7 @@ export function setKeybindingsArrowKeys(){
     ENTER_MESSAGES: "M",
     ENTER_BINDINGS: "?",
     NEXT_FLOOR: ">",
-    PREV_FLOOR: "<",
-    WIN: "w",
-    LOSE: "l"
+    PREV_FLOOR: "<"
   }
 }
 

@@ -146,10 +146,21 @@ export class PlayMode extends UIMode{
     //console.log(this.attr.cameramapx);
     DATASTORE.MAPS[this.game.getMapId()].render(display, this.attr.cameramapx, this.attr.cameramapy, this.getAvatar().generateVisibilityChecker());
     //this.cameraSymbol.render(display, Math.trunc(display.getOptions().width/2), Math.trunc(display.getOptions().height/2));
+    this.renderContext(display);
   }
 
   renderAvatar(display){
     A.renderAvatar(display, this.getAvatar(), this.game, 'play');
+  }
+
+  renderContext(display){
+    let bottom = 23;
+    if(this.attr.mapContextMessage){
+      display.drawText(0, bottom, this.attr.mapContextMessage);
+    }
+    else if(this.attr.playerContextMessage){
+      display.drawText(0, bottom - 1, this.attr.playerContextMessage);
+    }
   }
 
   handleInput(eventType, evt){
@@ -207,10 +218,10 @@ export class PlayMode extends UIMode{
         let oldId = this.game.getMapId();
         if(`${this.getAvatar().getX()},${this.getAvatar().getY()}` === DATASTORE.MAPS[oldId].getEntrancePos()){
           if(this.game.previousFloor()){
+            this.setupAvatar();
             this.getAvatar().raiseMixinEvent("previousFloor",{
               floor: this.game.currMap
             });
-            this.setupAvatar();
             DATASTORE.MAPS[oldId].removeEntity(DATASTORE.ENTITIES[this.attr.avatarId]);
             return true;
           }
@@ -220,10 +231,10 @@ export class PlayMode extends UIMode{
         let oldId = this.game.getMapId();
         if(`${this.getAvatar().getX()},${this.getAvatar().getY()}` === DATASTORE.MAPS[oldId].getExitPos()){
           if(this.game.nextFloor()){
+            this.setupAvatar();
             this.getAvatar().raiseMixinEvent("nextFloor",{
               floor: this.game.currMap
             });
-            this.setupAvatar();
             DATASTORE.MAPS[oldId].removeEntity(DATASTORE.ENTITIES[this.attr.avatarId]);
             return true;
           }
