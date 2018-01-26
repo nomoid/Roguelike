@@ -11,6 +11,17 @@ export let Buffs = {
       healAmount: 1
     }
   },
+  "hp_regen_2": {
+    name: 'Strong HP Regeneration',
+    duration: 100,
+    frequency: 10,
+    description: 'Regenerates ${this.effect.healAmount} HP every ${this.frequency} turns.',
+    effect: {
+      mixinEvent: "healed",
+      healAmount: 8
+    }
+  },
+
   "lifelink_1": {
     name: 'Lifelink',
     duration: 50,
@@ -26,6 +37,16 @@ export let Buffs = {
     description: 'Multiplies action duration by ${this.effect.durationMultiplier}.',
     effect: {
       durationMultiplier: 0.5
+    }
+  },
+  "poisioning_1": {
+    name: 'Poisoned',
+    duration: 100,
+    frequency: 10,
+    description: 'Takes ${this.effect.damageAmount} damage every ${this.frequency} turns.',
+    effect: {
+      mixinEvent: "damaged",
+      damageAmount: 1
     }
   }
 }

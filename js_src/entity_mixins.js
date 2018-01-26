@@ -7,10 +7,14 @@ import {TIME_ENGINE, SCHEDULER, setTimedUnlocker} from './timing.js';
 import {DATASTORE} from './datastore.js';
 import {Color} from './color.js';
 import {generateItem} from './items.js';
-import {generateEquipment, EquipmentSlots} from './equipment.js';
+import {generateEquipment, EquipmentSlots, getHit, getDamage} from './equipment.js';
 import {generateBuff} from './buffs.js';
 import * as U from './util.js';
 import * as S from './skills.js';
+import {getLevelUpInfo} from './stats.js';
+import {BINDINGS} from './keybindings.js';
+import {generateLoot} from './populators.js';
+import {EntityFactory} from './entities.js';
 
 let _exampleMixin = {
   META: {
@@ -74,6 +78,12 @@ export let TimeTracker = {
         timeCounter: this.getTime()
       });
       this.raiseMixinEvent('turnDone');
+    },
+    requestContextText: function(evtData){
+      if(this.getTime() < 50){
+        let message = `Check here for useful tips/info!`;
+        evtData.contextHolder.playerContext.push([19, message]);
+      }
     }
   }
 };
@@ -143,11 +153,99 @@ export let WalkerCorporeal = {
         this.raiseMixinEvent('actionDone');
         return true;
       }
+    },
+    checkAdjacentContextTile: function(contextHolder, dx, dy){
+      let dirKey = '';
+      if(dx == 0){
+        if(dy < 0){
+          dirKey = BINDINGS.GAME.MOVE_NORTH;
+        }
+        if(dy > 0){
+          dirKey = BINDINGS.GAME.MOVE_SOUTH;
+        }
+      }
+      if(dy == 0){
+        if(dx < 0){
+          dirKey = BINDINGS.GAME.MOVE_WEST;
+        }
+        if(dx > 0){
+          dirKey = BINDINGS.GAME.MOVE_EAST;
+        }
+      }
+      let messageStart = `[${dirKey}] - `;
+      let positionInfo = this.getMap().getTargetPositionInfo(this.getX() + dx, this.getY() + dy);
+      if(positionInfo.entity){
+        if(positionInfo.entity.getName() == "chest"){
+          let message = messageStart + 'Open chest';
+          contextHolder.mapContext.push([80, message]);
+        }
+        else if(positionInfo.entity.getName() == "jdog"){
+          let message = messageStart + 'Attack';
+          contextHolder.mapContext.push([30, message]);
+        }
+      }
+    },
+    checkCurrentContextTile: function(contextHolder){
+      let positionInfo = this.getMap().getTargetPositionInfo(this.getX(), this.getY());
+      if(positionInfo.tile){
+        if(positionInfo.tile.isA('stairs_down')){
+          let message =  `[${BINDINGS.GAME.NEXT_FLOOR}] - Go down to the next floor`;
+          contextHolder.mapContext.push([120, message]);
+        }
+        else if(positionInfo.tile.isA('stairs_up')){
+          let message =  `[${BINDINGS.GAME.PREV_FLOOR}] - Go up from the previous floor`;
+          contextHolder.mapContext.push([110, message]);
+        }
+      }
+      if(positionInfo.item){
+        let message = `[${BINDINGS.GAME.PICK_UP_ITEM}] - Pick up one item/[${BINDINGS.GAME.PICK_UP_ALL_ITEMS}] - Pick up all items`;
+        contextHolder.mapContext.push([60, message]);
+      }
     }
   },
   LISTENERS: {
     walkAttempt: function(evtData){
       this.tryWalk(evtData.dx, evtData.dy);
+    },
+    requestContextText: function(evtData){
+      //Player context
+      if(this.getMap().attr.floor == 0){
+        let message = `Try finding the stairs to the next floor (>)`;
+        evtData.contextHolder.playerContext.push([10, message]);
+      }
+      else if(this.getMap().attr.floor == 1){
+        let message = `Press [${BINDINGS.GAME.ENTER_SKILLS}] to open your skill menu and upgrade your skills.`;
+        evtData.contextHolder.playerContext.push([1, message]);
+      }
+      else if(this.getMap().attr.floor == 2){
+        let message = `Good luck on your journey!`;
+        evtData.contextHolder.playerContext.push([1, message]);
+      }
+      //Map context
+      if(this.getMap().attr.floor == 0){
+        let message = `Use arrow keys to move/attack (can be rebound using [${BINDINGS.GAME.ENTER_BINDINGS}])`;
+        evtData.contextHolder.mapContext.push([1, message]);
+      }
+      else if(this.getMap().attr.floor == 1){
+        let message = `Press [${BINDINGS.GAME.ENTER_INVENTORY}] to open your inventory to eat food or equip items.`;
+        evtData.contextHolder.mapContext.push([1, message]);
+      }
+      else if(this.getMap().attr.floor == 2){
+        let message = `Try to find out how far you can get!`;
+        evtData.contextHolder.mapContext.push([1, message]);
+      }
+      //Check 4 tiles around you
+      this.checkAdjacentContextTile(evtData.contextHolder, -1, 0);
+      this.checkAdjacentContextTile(evtData.contextHolder, 1, 0);
+      this.checkAdjacentContextTile(evtData.contextHolder, 0, -1);
+      this.checkAdjacentContextTile(evtData.contextHolder, 0, 1);
+      this.checkCurrentContextTile(evtData.contextHolder);
+    },
+    nextFloor: function(evtData){
+      this.raiseMixinEvent('actionDone');
+    },
+    previousFloor: function(evtData){
+      this.raiseMixinEvent('actionDone');
     }
   }
 };
@@ -167,20 +265,77 @@ export let PlayerMessage = {
     },
     // hpLost(int): the amount of health lost
     // hpLeft(int): the amount of hp remaining for the caller
-    lostHealth: function(evtData){
-      Message.send(`Lost ${evtData.hpLost} hp! Only ${evtData.hpLeft} left...`);
-    },
-    gainedHealth: function(evtData){
-      Message.send(`Gained ${evtData.hpGained} hp! Now you have ${evtData.hpLeft}.`);
-    },
-    attacks: function(evtData){
+    //lostHealth: function(evtData){
+    //  Message.send(`Lost ${evtData.hpLost} hp! Only ${evtData.hpLeft} left...`);
+    //},
+    //gainedHealth: function(evtData){
+    //  Message.send(`Gained ${evtData.hpGained} hp! Now you have ${evtData.hpLeft}.`);
+    //},
+    attacks: function(evtData){//not really useful
       Message.send(`You attack the ${evtData.target.getName()}!`);
+    },
+    attackedBy: function(evtData){
+      if(evtData.src===this){
+        Message.send('You accidentally hurt yourself while attacking.');
+        return;
+      }
+      Message.send(`You were attacked by the ${evtData.src.getName()} and hit for ${evtData.damage} damage.`);
+    },
+    attackFailed: function(evtData){
+      let target = evtData.target;
+      Message.send(`Your attack against the ${target.getName()} failed.`);
+    },
+    enemyAttackFailed: function(evtData){
+      let src = evtData.src;
+      Message.send(`The ${src.getName()} failed to attack you.`);
+    },
+    attackDodged: function(evtData){
+      let target = evtData.target;
+      let crit = evtData.crit;
+      if(crit){
+        Message.send(`The ${target.getName()} dodged your critical strike!`);
+      }
+      else{
+        Message.send(`The ${target.getName()} dodged your attack.`);
+      }
+    },
+    dodgedAttack: function(evtData){
+      let src = evtData.src;
+      let crit = evtData.theyCrit;
+      if(crit){
+        Message.send(`You dodged the ${target.getName()}'s critical strike!`);
+      }
+      else{
+        Message.send(`You dodged the ${target.getName()}'s attack.`);
+      }
+    },
+    attackSucceeded: function(evtData){
+      let target = evtData.target;
+      let crit = evtData.crit;
+      if(!crit){
+        Message.send(`You attacked the ${target.getName()}.`);
+      }
+      else{
+        Message.send(`You landed a critical strike on the ${target.getName()}!`);
+      }
+    },
+    attackBlocked: function(evtData){
+      let target = evtData.target;
+      let theyCrit = evtData.theyCrit;
+      let iCrit = evtData.iCrit;
+      Message.send('Your '+ (iCrit ? 'critical strike' : 'attack') + ` was blocked by the ${target.getName()}`+ (iCrit ? '!' : '.') + (theyCrit ? ' You did no damage.' : ''));
+    },
+    blockedDamage: function(evtData){
+      let src = evtData.src;
+      let theyCrit = evtData.theyCrit;
+      let iCrit = evtData.iCrit;
+      Message.send('You '+(iCrit ? 'fully' : 'partially') + ` blocked the ${src.getName()}'s ` + (theyCrit ? 'critical strike!' : 'attack.'));
     },
     bumpsFriendly: function(evtData){
       Message.send(`That ${evtData.target.getName()} is friendly! Don't attack.`);
     },
     damages: function(evtData){
-      Message.send(`You deal ${evtData.damageAmount} damage to the ${evtData.target.getName()}!`);
+      //Message.send(`You deal ${evtData.damageAmount} damage to the ${evtData.target.getName()}!`);
     },
     kills: function(evtData){
       Message.send(`You kill the ${evtData.target.getName()}!`)
@@ -269,8 +424,188 @@ export let PlayerMessage = {
     //addSkillFailed: function(evtData){
     //  Message.send(`You failed to improve the ${evtData.name} skill.${evtData.message ? ' ' + evtData.message : ''}`)
     //}
+    characterLevelUp: function(evtData){
+      Message.send(`You have leveled up to Level ${evtData.level}!`);
+    },
+    previousFloor: function(evtData){
+      Message.send("You have entered the previous floor");
+    },
+    nextFloor: function(evtData){
+      Message.send("You have entered the next floor");
+    },
+    foundChest: function(evtData){
+      Message.send(`You found a chest with ${evtData.items.length} items inside. The items dropped to your feet ([${BINDINGS.GAME.PICK_UP_ALL_ITEMS}] to pick them up).`);
+    }
   }
 }; 
+
+export let Combat = {
+  META: {
+    mixinName: 'Combat',
+    mixinGroupName: 'CombatGroup',
+    stateNamespace: '_Combat',
+    stateModel: {
+
+    },
+    initialize: function(template){
+
+    }
+  },
+  METHODS: {
+
+  },
+  LISTENERS: {
+    'attacking': function(evtData){
+      let defender = evtData.target;
+
+      let weapon;
+      if(typeof this.getEquipment === 'function'){
+        weapon = this.getEquipment().primaryHand;
+      }
+      let hit, success, damage;
+      if(weapon){
+        let weaponHitDice = getHit(weapon);
+        let weaponDamageDice = getDamage(weapon);
+        let weaponSuccessPartition = weapon.equipmentData.partition;
+        let weaponSkill = weapon.equipmentData.skill;
+        S.Skills[weaponSkill].modifyHit(weaponHitDice, this.getSkillInfo(weaponSkill).level);
+        hit = U.roll(weaponHitDice.numDice, weaponHitDice.diceVal, weaponHitDice.pick)+weaponHitDice.modifier;
+        success = U.successCalc(hit, weaponSuccessPartition);
+        console.log(hit + ' ' + success);
+        console.dir(weaponHitDice);
+        damage = U.roll(weaponDamageDice.numDice, weaponDamageDice.diceVal)+weaponDamageDice.base+this.getStat('strength');
+      }
+      else{
+        hit = U.roll(1, 20);
+        success = U.successCalc(hit, [2, 6, 20]);
+        damage = Math.floor(2*this.getStat('strength'));
+      }
+      switch (success) {
+        case 0://crit fail: hurt yourself
+          this.raiseMixinEvent('takingDamage', {src: this, 'damage': damage/2, 'weapon': weapon});
+          break;
+        case 1://fail: nothing happens
+          this.raiseMixinEvent('attackFailed', {target: defender, 'weapon': weapon});
+          defender.raiseMixinEvent('enemyAttackFailed', {src: this, 'weapon': weapon});
+          break;
+        case 2://success: regular hit
+          defender.raiseMixinEvent('defending', {'damage': damage, src: this, crit: false, 'weapon': weapon});
+          break;
+        case 3://crit: double damage, harder to defend
+          defender.raiseMixinEvent('defending', {'damage': damage*2, src: this, crit: true, 'weapon': weapon});
+          break;
+      }
+
+    },
+    'defending': function(evtData){
+      let attacker = evtData.src;
+      let crit = evtData.crit;
+      let weapon = evtData.weapon;
+
+      //dodging
+      let attackerSpeed = attacker.getStat('agility');
+      let defenderSpeed = this.getStat('agility');
+      let difference = defenderSpeed - attackerSpeed;
+      let attackerDiceData = {};
+      let defenderDiceData = {};
+      attackerDiceData.diceNum = attackerSpeed;
+      defenderDiceData.diceNum = attackerSpeed;
+      attackerDiceData.diceVal = 15;
+      defenderDiceData.diceVal = 12;
+      attackerDiceData.modifier = 0;
+      defenderDiceData.modifier = 0;
+
+      S.Skills['Dodging'].modifyDodge(attackerDiceData, attacker.getSkillInfo('Dodging').level);
+      S.Skills['Dodging'].modifyDodge(defenderDiceData, this.getSkillInfo('Dodging').level, true, difference);
+
+      let attackResult = U.roll(attackerDiceData.diceNum, attackerDiceData.diceVal);
+      let defendResult = U.roll(defenderDiceData.diceNum, defenderDiceData.diceVal);
+      let success = 0;
+      if(defendResult > attackResult){
+        success = 1;
+      }
+      if(crit){
+        let success2 = 0;
+        let attack2 = U.roll(attackerDiceData.diceNum, attackerDiceData.diceVal);
+        let defend2 = U.roll(defenderDiceData.diceNum, defenderDiceData.diceVal);
+        success = Math.min(success, success2);
+      }
+      if(success == 1){
+        attacker.raiseMixinEvent('attackDodged', {target: this, 'crit': crit, 'weapon': weapon});
+        this.raiseMixinEvent('dodgedAttack', {src: attacker, theyCrit: crit, 'weapon': weapon});
+        return;
+      }
+
+
+      //blocking
+      let shield = null;
+      if(typeof this.getEquipment === 'function'){
+        shield = this.getEquipment().secondaryHand;
+      }
+      let diceData = {};
+      diceData.diceNum = 1;
+      if(shield){
+        diceData.diceNum = 2;
+      }
+      diceData.diceVal = 20;
+      diceData.pick = 1;
+      diceData.modifier = 0;
+      S.Skills['Blocking'].modifyBlock(diceData, this.getSkillInfo('Blocking').level);
+      let block = U.roll(diceData.diceNum, diceData.diceVal, diceData.pick) + diceData.modifier;
+      success = U.successCalc(block, [0, 18, 22]);
+      if(crit){
+        let block2 = U.roll(diceData.diceNum, diceData.diceVal, diceData.pick) + diceData.modifier;
+        let success2 = U.successCalc(block2, [0, 18, 22]);
+        success = Math.min(success, success2);
+      }
+      let damage = evtData.damage;
+
+      switch (success) {
+        case 0:
+          console.log('Blocking crit failed, which really should not happen');
+          break;
+        case 1:
+          attacker.raiseMixinEvent('attackSucceeded', {target: this, 'damage': damage, 'crit': crit, 'weapon': weapon});
+          this.raiseMixinEvent('takingDamage', {src: attacker, 'damage': damage, 'weapon': weapon});
+          break;
+        case 2:
+          attacker.raiseMixinEvent('attackBlocked', {target: this, theyCrit: false, iCrit: crit, 'weapon': weapon});
+          this.raiseMixinEvent('blockedDamage', {src: attacker, 'damage': damage, theyCrit: crit, iCrit: false, 'weapon': weapon});
+          this.raiseMixinEvent('takingDamage', {src: attacker, 'damage': damage, multiplier: 0.25, 'weapon': weapon});
+          break;
+        case 3:
+          attacker.raiseMixinEvent('attackBlocked', {target: this, theyCrit: true, iCrit: crit, 'weapon': weapon});
+          this.raiseMixinEvent('blockedDamage', {src: attacker, 'damage': damage, theyCrit: crit, iCrit: true, 'weapon': weapon});
+          break;
+
+      }
+    },
+    'takingDamage': function(evtData){
+      let attacker = evtData.src;
+      let damage = evtData.damage;
+      let weapon = evtData.weapon;
+
+      let bonusDefense = 0;
+      if(typeof this.getEquipment === 'function'){
+        let equipment = this.getEquipment();
+        for(let equipmentType in equipment){
+          let equipmentPiece = equipment[equipmentType];
+          if(equipmentPiece && equipmentPiece.equipmentData && equipmentPiece.equipmentData.defense){
+            bonusDefense += equipmentPiece.equipmentData.defense;
+          }
+        }
+      }
+
+      let adjustedDamage = Math.max(damage - (this.getStat('endurance')+bonusDefense)/4, 0);
+      if(evtData.multiplier){
+        adjustedDamage=adjustedDamage*evtData.multiplier;
+      }
+      adjustedDamage = Math.floor(adjustedDamage);
+      this.raiseMixinEvent('attackedBy', {src: attacker, 'damage': adjustedDamage, 'weapon': weapon});
+      this.raiseMixinEvent('damaged', {damageAmount: adjustedDamage, src: attacker, 'weapon': weapon});
+    }
+  }
+}
 
 export let HitPoints = {
   META: {
@@ -279,11 +614,9 @@ export let HitPoints = {
     stateNamespace: '_HitPoints',
     stateModel: {
       hp: 1,
-      maxHp: 1
     },
     initialize: function(template){
-      this.attr._HitPoints.maxHp = template.maxHp;
-      this.attr._HitPoints.hp = template.hp || template.maxHp;
+      this.attr._HitPoints.hp = template.hp || template.stats.maxHp;
     }
   },
   METHODS: {
@@ -302,7 +635,7 @@ export let HitPoints = {
     gainHp: function(amt){
       let curHp = this.attr._HitPoints.hp;
       this.attr._HitPoints.hp += amt;
-      this.attr._HitPoints.hp = Math.min(this.attr._HitPoints.maxHp, this.attr._HitPoints.hp);
+      this.attr._HitPoints.hp = Math.min(this.getStat('maxHp'), this.attr._HitPoints.hp);
       let hpDiff = this.attr._HitPoints.hp-curHp;
       if(hpDiff > 0){
         this.raiseMixinEvent('gainedHealth', {
@@ -316,12 +649,6 @@ export let HitPoints = {
     },
     setHp: function(amt){
       this.attr._HitPoints.hp = amt;
-    },
-    getMaxHp: function(){
-      return this.attr._HitPoints.maxHp;
-    },
-    setMaxHp: function(amt){
-      this.attr._HitPoints.maxHp = amt;
     }
   },
   LISTENERS: {
@@ -338,7 +665,8 @@ export let HitPoints = {
       });
       if(this.getHp() == 0){
         this.raiseMixinEvent('killed',{
-          src: evtData.src
+          src: evtData.src,
+          weapon: evtData.weapon
         });
         evtData.src.raiseMixinEvent('kills', {
           target: this,
@@ -393,6 +721,16 @@ export let MeleeAttacker = {
   LISTENERS: {
     // target(entity): the target of the melee hit
     bumpEntity: function(evtData){
+      if(evtData.target.getName()==='chest'){
+        evtData.target.raiseMixinEvent('openChest', {src: this});
+      }
+      else if(evtData.target.getName()==='open_chest'){
+        //Do nothing
+      }
+      else{
+        this.raiseMixinEvent('attacking', evtData);
+      }
+      /* //Old implementation
       this.raiseMixinEvent('attacks', {
         actor: this,
         target: evtData.target
@@ -406,6 +744,7 @@ export let MeleeAttacker = {
         damageAmount: this.getMeleeDamage(),
         weapon: bumpWeapon
       });
+      */
     }
   }
 };
@@ -448,6 +787,18 @@ export let ActorPlayer = {
       if(this.isActing()){
         return;
       }
+      //Find context text
+      //Pass in arrays of [priority, text]
+      let contextHolder = {
+        playerContext: [],
+        mapContext: []
+      };
+      this.raiseMixinEvent('requestContextText', {
+        'contextHolder': contextHolder
+      });
+      this.raiseMixinEvent('updateContext', {
+        'contextHolder': contextHolder
+      });
       this.isActing(true);
       TIME_ENGINE.lock();
       DATASTORE.GAME.render();
@@ -488,6 +839,7 @@ export let AIActor = {
     initialize: function(template){
       this.setRenderDelay(template.renderDelay || -1);
       this.setPriorities(template.priorities);
+      this.setBaseActionDuration(template.delay || 1000);
       SCHEDULER.add(this, true, 0);
     }
   },
@@ -583,8 +935,8 @@ export let TeamMember = {
     },
     initialize: function(template){
       // console.log('AAAAAAAAAAAAAA');
-      this.attr._TeamMember.friendlyTeams = U.deepCopy(template.friendlyTeams);
-      this.attr._TeamMember.enemyTeams = U.deepCopy(template.enemyTeams);
+      this.attr._TeamMember.friendlyTeams = U.deepCopy(template.friendlyTeams || {});
+      this.attr._TeamMember.enemyTeams = U.deepCopy(template.enemyTeams || {});
       // console.log('assigned enemy teams');
       //console.dir(this.attr._TeamMember.enemyTeams);
       this.attr._TeamMember.team = template.team;
@@ -648,9 +1000,11 @@ export let OmniscientEnemyTargeter = {
       for(let entId in map.attr.entityIdToMapPos){
         let ent = DATASTORE.ENTITIES[entId];
         // console.dir(this.getEnemyTeams());
-        if(this.getEnemyTeams().indexOf(ent.getTeam())!=-1){
-          targets.push(ent);
-          // console.dir(ent);
+        if(typeof ent.getTeam === 'function'){
+          if(this.getEnemyTeams().indexOf(ent.getTeam())!=-1){
+            targets.push(ent);
+            // console.dir(ent);
+          }
         }
       }
       let minD = 100000
@@ -701,9 +1055,11 @@ export let SightedEnemyTargeter = {
         let ent = DATASTORE.ENTITIES[entId];
         // console.dir(this.getEnemyTeams());
         if(visibility_checker.check(ent.getX(), ent.getY())){
-          if(this.getEnemyTeams().indexOf(ent.getTeam())!=-1){
-            targets.push(ent);
-            //console.dir(ent);
+          if(typeof ent.getTeam === 'function'){
+            if(this.getEnemyTeams().indexOf(ent.getTeam())!=-1){
+              targets.push(ent);
+              //console.dir(ent);
+            }
           }
         }
       }
@@ -724,7 +1080,9 @@ export let SightedEnemyTargeter = {
         }
       }
       if(targets.length==0){
-        return this.attr._SightedEnemyTargeter.memoryPos;
+        if(this.attr._SightedEnemyTargeter.remember){
+          return this.attr._SightedEnemyTargeter.memoryPos;
+        }
       }
       let target = targets[minDIndex];
       let pos = `${target.getX()},${target.getY()}`;
@@ -1163,7 +1521,11 @@ export let ItemDropper = {
     mixinName: 'ItemDropper',
     mixinGroupName: 'ItemGroup',
     stateNamespace: '_ItemDropper',
-    initialize: function(){
+    stateModel: {
+      dropItem: ''
+    },
+    initialize: function(template){
+      this.attr._ItemDropper.dropItem = template.dropItem;
     }
   },
   METHODS: {
@@ -1173,21 +1535,13 @@ export let ItemDropper = {
     //For testing, drop a dummy item
     killed: function(evtData){
       if(evtData.src.getName() == 'avatar'){
-        for(let i = 0; i < 10; i++){
+        if(this.attr._ItemDropper.dropItem){
           let itemData = {x: this.getX(), y: this.getY()};
-          itemData.item = generateItem("JDog's Ramen");
-          this.raiseMixinEvent('addItemToMap', itemData);
-        }
-        for(let i = 0; i < 2; i++){
-          let itemData = {x: this.getX(), y: this.getY()};
-          itemData.item = generateItem("JDog's Calves");
+          itemData.item = generateItem(this.attr._ItemDropper.dropItem);
           this.raiseMixinEvent('addItemToMap', itemData);
         }
       }
       else{
-        let itemData = {x: this.getX(), y: this.getY()};
-        itemData.item = generateItem("JDog's Spicy Ramen");
-        this.raiseMixinEvent('addItemToMap', itemData);
       }
     }
   }
@@ -1298,16 +1652,26 @@ export let Inventory = {
     },
     initAvatar: function(evtData){
       let startingEquipment = [
-        "dagger_1",
-        "boots_1",
-        "boots_2",
-        "cursed_boots_1",
-        "shortsword_1",
-        "longsword_1",
-        "battle_axe_1",
-        "wooden_shield_1"
+        "dagger",
+        "wooden_shield",
+        "boots_leather",
+        /*"armor_leather",
+        "helmet_leather",
+        "pants_leather",
+        "gauntlets_leather",
+        "handaxe",
+        "cursed_boots",
+        "shortsword",
+        "longsword",
+        "axe",
+        "battle_axe",
+        "legendary_sword",
+        "legendary_axe",
+        "legendary_dagger"*/
       ];
-      let item = generateItem("Swiftness Candy");
+      let item = generateItem("Apple");
+      this.addItem(item);
+      item = generateItem("Swiftness Candy");
       this.addItem(item);
       for(let i = 0; i < startingEquipment.length; i++){
         let equip1 = generateEquipment(startingEquipment[i]);
@@ -1520,6 +1884,63 @@ export let ItemPile = {
     }
   },
   LISTENERS: {
+  }
+}
+
+//Requires ItemPile
+export let Chest = {
+  META: {
+    mixinName: 'Chest',
+    mixinGroupName: 'ItemGroup',
+    stateNamespace: '_Chest',
+    initialize: function(){
+      // do any initialization
+    }
+  },
+  METHODS: {
+    seedLoot: function(lootTable){
+      //Generate what's in this chest
+      let itemCount = Math.trunc(ROT.RNG.getUniform() * (lootTable.itemCount - 1)) + 1;
+      let lootSet = lootTable.lootSet;
+      for(let i = 0; i < itemCount; i++){
+        let possibleLoot = Array();
+        for(let loot in lootSet){
+          let n = lootSet[loot].chance;
+          for(let i = 0; i < n; i++){
+            possibleLoot.push(lootSet[loot]);
+          }
+        }
+        let index = Math.floor(ROT.RNG.getUniform()*possibleLoot.length);
+        //console.dir(structs);
+        //console.log(index);
+        let item = generateLoot(possibleLoot[index].item);
+        this.addItem(item);
+      }
+    }
+  },
+  LISTENERS: {
+    openChest: function(evtData){
+      //Drop all held items
+      let items = this.getItems();
+      if(items.length > 0){
+        evtData.src.raiseMixinEvent('foundChest', {
+          'items': items
+        });
+      }
+      for(let i = 0; i < items.length; i++){
+        let itemData = {x: evtData.src.getX(), y: evtData.src.getY()};
+        itemData.item = items[i];
+        this.raiseMixinEvent('addItemToMap', itemData);
+      }
+      let map = this.getMap();
+      let x = this.getX();
+      let y = this.getY();
+      this.clearItems();
+      this.destroy();
+      //Kill this chest, replace it with an opened one
+      let mob = EntityFactory.create('open_chest', true);
+      map.addEntityAt(mob, x, y);
+    }
   }
 }
 
@@ -1736,6 +2157,40 @@ export let Bloodthirst = {
   }
 }
 
+export let LackOfSkills = {
+  META: {
+    mixinName: 'Skills',
+    mixinGroupName: 'SkillsGroup',
+    stateNamespace: '_Skills',
+    stateModel: {
+      skillPoints: 0,
+      skillPointParts: 0,
+      levelXp: 0,
+      skills: {
+
+      }
+      //Each skill has a
+      //name(str),
+      //xp(int) - cumulative skill xp
+      //seen(bool)
+    },
+    initialize: function(){
+
+    }
+  },
+  METHODS: {
+    getSkillInfo: function(name){
+      return {
+        'name': name,
+        level: 0,
+        xp: 0,
+        seen: false,
+        description: S.getSkillDescription(name)
+      };
+    }
+  }
+}
+
 export let Skills = {
   META: {
     mixinName: 'Skills',
@@ -1744,6 +2199,7 @@ export let Skills = {
     stateModel: {
       skillPoints: 0,
       skillPointParts: 0,
+      levelXp: 0,
       skills: {
 
       }
@@ -1784,6 +2240,15 @@ export let Skills = {
     },
     getSkillInfo: function(name){
       let skill = this.getSkills()[name];
+      if(!skill){
+        return {
+          'name': name,
+          level: 0,
+          xp: 0,
+          seen: false,
+          description: S.getSkillDescription(name)
+        };
+      }
       let lvl = S.getLevelForSkill(skill.name, skill.xp);
       //xp remaining needed to level up
       let xpNeeded = S.getXpForSkillLevel(skill.name, lvl+1) - skill.xp;
@@ -1799,7 +2264,31 @@ export let Skills = {
       }
       return skillInfo;
     },
-    addSkill: function(name, xp, seen){
+    addSkill: function(name, xp, extraData){
+      let seen = false;
+      let addPointParts = true;
+      let addLevelXp = true;
+      let message = true;
+      if(extraData){
+        if(extraData.seen){
+          seen = true;
+        }
+        //No parts happens when we get a skill by default
+        //No parts also happens when we spen skill points
+        if(extraData.noParts){
+          addPointParts = false;
+        }
+        //No xp happens when we get a skill by default
+        if(extraData.noLevelXp){
+          addLevelXp = false;
+        }
+        if(extraData.noMessage){
+          message = false;
+        }
+      }
+      if(!xp){
+        xp = 0;
+      }
       let success = true;
       let skills = this.getSkills();
       let skill = skills[name];
@@ -1817,9 +2306,7 @@ export let Skills = {
       if(skill){
         oldLevel = S.getLevelForSkill(skill.name, skill.xp);
         //If new skill has higher xp, replace
-        if(xp){
-          skill.xp += xp;
-        }
+        skill.xp += xp;
         if(seen){
           skill.seen = true;
         }
@@ -1831,18 +2318,29 @@ export let Skills = {
         }
         skills[name] = {
           'name': name,
-          'xp': xp ? xp : 0,
+          'xp': xp,
           'seen': seenTruth
         };
       }
       let newSkill = skills[name];
-      //If skill is previously at max level, get some skill point parts
-      if(oldLevel == S.getMaxLevel(name)){
+      //Get some skill point parts
+      if(addPointParts){
+        let partXp = xp;
+        //If skill is previously at max level, get more skill point parts
+        if(oldLevel == S.getMaxLevel(name)){
+          partXp *= 2;
+        }
         this.raiseMixinEvent('addSkillPointParts', {
-          parts: xp
+          parts: partXp
         });
       }
       let newLevel = S.getLevelForSkill(newSkill.name, newSkill.xp);
+      //Gain level xp points
+      if(addLevelXp){
+        this.raiseMixinEvent('addLevelXp', {
+          'xp': xp
+        });
+      }
       //If skill reaches level 1, set seen flag to true
       if(newLevel > 0){
         if(!newSkill.seen){
@@ -1854,11 +2352,13 @@ export let Skills = {
         }
       }
       if(newLevel > oldLevel){
-        //If level up, fire an event
-        this.raiseMixinEvent('skillLevelUp', {
-          'name': newSkill.name,
-          'level': newLevel
-        });
+        if(message){
+            //If level up, fire an event
+            this.raiseMixinEvent('skillLevelUp', {
+              'name': newSkill.name,
+              'level': newLevel
+            });
+          }
       }
       return success;
     }
@@ -1869,7 +2369,7 @@ export let Skills = {
         points: 100
       });
       for(let i = 0; i < S.PlayerSkills.length; i++){
-        this.addSkill(S.PlayerSkills[i], 0);
+        this.addSkill(S.PlayerSkills[i]);
       }
       for(let i = 0; i < S.PlayerSeenSkills.length; i++){
         this.raiseMixinEvent('seeSkill', {
@@ -1877,7 +2377,7 @@ export let Skills = {
         });
       }
       for(let i = 0; i < S.PlayerStartSkills.length; i++){
-        this.raiseMixinEvent('addSkillXp', {
+        this.raiseMixinEvent('gainSkill', {
           name: S.PlayerStartSkills[i],
           xp: S.getXpForSkillLevel(S.PlayerStartSkills[i], 1)
         })
@@ -1895,12 +2395,20 @@ export let Skills = {
         points: addPoints
       });
     },
+    //Gains skill without adding skill points, level xp, or sending messages
+    gainSkill: function(evtData){
+      this.addSkill(evtData.name, evtData.xp, {
+        noParts: true,
+        noLevelXp: true,
+        noMessage: true
+      });
+    },
     //Also learns skills
     addSkillXp: function(evtData){
-      this.addSkill(evtData.name, evtData.xp ? evtData.xp : 0);
+      this.addSkill(evtData.name, evtData.xp, evtData);
     },
     seeSkill: function(evtData){
-      this.addSkill(evtData.name, 0, true);
+      this.addSkill(evtData.name, 0, {seen: true});
     },
     levelUpSkill: function(evtData){
       let skillInfo = this.getSkillInfo(evtData.name);
@@ -1911,7 +2419,9 @@ export let Skills = {
           if(S.hasPrereqs(evtData.name, this.getSkills())){
             let newSkillPoints = Math.trunc((skillPoints * S.ExperienceMultiplier - xpNeeded) / S.ExperienceMultiplier);
             this.setSkillPoints(newSkillPoints);
-            this.addSkill(evtData.name, xpNeeded);
+            this.addSkill(evtData.name, xpNeeded, {
+              noParts: true
+            });
           }
           else{
             this.raiseMixinEvent('skillLevelUpFailed', {
@@ -1937,12 +2447,68 @@ export let Skills = {
   }
 }
 
+export let LevelProgress = {
+  META: {
+    mixinName: 'LevelProgress',
+    mixinGroupName: 'SkillsGroup',
+    stateNamespace: '_LevelProgress',
+    stateModel: {
+      levelXp: 0
+    },
+    initialize: function(){
+      // do any initialization
+    }
+  },
+  METHODS: {
+    getLevelXp(){
+      return this.attr._LevelProgress.levelXp;
+    },
+    setLevelXp(s){
+      this.attr._LevelProgress.levelXp = s;
+    },
+    addXp(xp){
+      if(!xp){
+        return;
+      }
+      let oldLevel = this.getLevel();
+      let oldXp = this.getLevelXp();
+      let newLevel = S.getCharacterLevelFromXp(oldXp + xp);
+      if(newLevel > oldLevel){
+        for(let i = 0; i < newLevel - oldLevel; i++){
+          this.raiseMixinEvent('characterLevelUp', {
+            level: oldLevel + i + 1
+          });
+        }
+        this.setLevel(newLevel);
+      }
+      this.setLevelXp(oldXp + xp);
+    },
+    currentLevelXp(){
+      return S.getXpForCharacterLevel(this.getLevel());
+    },
+    nextLevelXp(){
+      return S.getXpForCharacterLevel(this.getLevel() + 1);
+    }
+  },
+  LISTENERS: {
+    addLevelXp(evtData){
+      this.addXp(evtData.xp);
+    }
+  }
+}
+
 //Requires Skills
 export let SkillLearner = {
   META: {
     mixinName: 'SkillLearner',
     mixinGroupName: 'SkillsGroup',
     stateNamespace: '_SkillLearner',
+    stateModel: {
+      beenTo: {
+        'f0': true
+        //floor:been(bool)
+      }
+    },
     initialize: function(){
       // do any initialization
     }
@@ -2004,6 +2570,19 @@ export let SkillLearner = {
         }
       }
       return true;
+    },
+    beenTo: function(){
+      return this.attr._SkillLearner.beenTo;
+    },
+    newFloorSkill: function(floor){
+      let beenToFloors = this.beenTo();
+      let floorNum = `f${floor}`;
+      if(!beenToFloors[floorNum]){
+        beenToFloors[floorNum] = true;
+        this.raiseMixinEvent('addSkillPoints',{
+          points: 100
+        });
+      }
     }
   },
   LISTENERS: {
@@ -2015,6 +2594,124 @@ export let SkillLearner = {
         if(xpGain && xpGain[evtName]){
           this.gainXpFromEvent(skillName, xpGain[evtName], evtData);
         }
+      }
+    },
+    nextFloor: function(evtData){
+      this.newFloorSkill(evtData.floor);
+    },
+    previousFloor: function(evtData){
+      this.newFloorSkill(evtData.floor);
+    }
+  }
+}
+
+export let Race = {
+  META: {
+    mixinName: 'Race',
+    mixinGroupName: 'StatsGroup',
+    stateNamespace: '_Race',
+    stateModel: {
+      race: []
+    },
+    initialize: function(template){
+      this.attr._CharacterStats.race = template.race || 'human';
+    }
+  },
+  METHODS: {
+    getRace(){
+      return this.attr._Race.race;
+    }
+  },
+  LISTENERS: {
+
+  }
+}
+
+export let CharacterStats = {
+  META: {
+    mixinName: 'CharacterStats',
+    mixinGroupName: 'StatsGroup',
+    stateNamespace: '_CharacterStats',
+    stateModel: {
+      statNames: []
+    },
+    initialize: function(template){
+      this.attr._CharacterStats.statNames = template.statNames || [];
+    }
+  },
+  METHODS: {
+    getStatNames: function(){
+      return this.attr._CharacterStats.statNames;
+    },
+    getCharacterStats: function(){
+      let output = Array();
+      let statNames = this.getStatNames();
+      for(let i = 0; i < statNames.length; i++){
+        let statName = statNames[i];
+        let statValue = this.getStat(statName);
+        output.push([statName, statValue]);
+      }
+      return output;
+    }
+  },
+  LISTENERS: {
+    characterLevelUp: function(evtData){
+      let statIncrease = {
+        maxHp: evtData.level,
+        strength: 0,
+        agility: 0,
+        endurance: 0,
+        charisma: 0,
+        magic: 0,
+        knowledge: 0
+      };
+      //Increase all stats every 4 levels
+      if(evtData.level % 4 == 0){
+        statIncrease = {
+          maxHp: evtData.level,
+          strength: 1,
+          agility: 1,
+          endurance: 1,
+          charisma: 1,
+          magic: 1,
+          knowledge: 1
+        };
+      }
+      let levelUpInfo;
+      if(typeof this.getRace === 'function'){
+        levelUpInfo = getLevelUpInfo(this.getRace());
+      }
+      else{
+        levelUpInfo = getLevelUpInfo();
+      }
+      if(levelUpInfo.maxHp){
+        statIncrease.maxHp += levelUpInfo.maxHp;
+      }
+      if(levelUpInfo.fixed){
+        for(let i = 0; i < levelUpInfo.fixed.length; i++){
+          statIncrease[levelUpInfo.fixed[i]] += 1;
+        }
+      }
+      if(levelUpInfo.random){
+        for(let i = 0; i < levelUpInfo.random.length; i++){
+          let count = levelUpInfo.random[i].count;
+          if(!count){
+            count = 1;
+          }
+          let statIncreases = levelUpInfo.random[i].inStats;
+          let shuffled = U.shuffleArray(U.deepCopy(statIncreases));
+          for(let j = 0; j < count; j++){
+            statIncrease[shuffled[j]] += 1;
+          }
+        }
+      }
+      if(statIncrease.maxHp){
+        this.raiseMixinEvent('healed', {
+          healAmount: statIncrease.maxHp
+        });
+      }
+      for(let stat in statIncrease){
+        this.setStat(stat, this.getStat(stat) + statIncrease[stat]);
       }
     }
   }

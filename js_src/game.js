@@ -1,6 +1,6 @@
 import ROT from 'rot-js';
 import * as U from './util.js';
-import {StartupMode, PlayMode, WinMode, LoseMode, MessagesMode, PersistenceMode, BindingsMode, InventoryMode, EquipmentMode, SkillsMode} from './ui_mode.js'
+import {StartupMode, PlayMode, WinMode, LoseMode, MessagesMode, PersistenceMode, BindingsMode, InventoryMode, EquipmentMode, SkillsMode, StatsMode} from './ui_mode.js'
 import {Message} from './message.js';
 import {MapMaker} from './map.js';
 import {DATASTORE, clearDatastore} from './datastore.js';
@@ -12,7 +12,7 @@ export let Game = {
   _SAVE_LIST_NAMESPACE: 'savelist',
   _BINDINGS_NAMESPACE: 'bindings',
   _DISPLAY_SPACING: 1.1,
-  _MAX_FLOORS: 10,
+  _MAX_FLOORS: 100,
   _xdim: 90,
   _ydim: 90,
   _display: {
@@ -97,6 +97,7 @@ export let Game = {
     this.modes.inventory = new InventoryMode(this);
     this.modes.equipment = new EquipmentMode(this);
     this.modes.skills = new SkillsMode(this);
+    this.modes.stats = new StatsMode(this);
   },
 
   switchMode: function(newModeName, template){
@@ -326,7 +327,6 @@ export let Game = {
     if(this.currMap < this._MAX_FLOORS - 1){
       this.currMap++;
       return true;
-
     }
     return false;
   },
@@ -354,6 +354,7 @@ export let Game = {
         this.switchMode('lose');
         this.renderDisplayMain();
       }
+      /*
       if(src.getName() == 'jdog'){
         console.log('killed a dog');
         console.log(DATASTORE.MAPS[this.getMapId()].getMobAmounts('jdog'));
@@ -366,10 +367,18 @@ export let Game = {
             this.renderDisplayMain();
           }
         }
-      }
+      }*/
     }
     else if(evtLabel == "addItemToMap"){
       DATASTORE.MAPS[this.getMapId()].addItemAt(evtData.item, evtData.x, evtData.y);
+    }
+    else if(evtLabel == "updateContext"){
+      //Loop through contexts, find highest priority for map/player
+      let contexts = evtData.contextHolder;
+      let playerContextMessage = this.findBestForContext(contexts.playerContext)[1];
+      let mapContextMessage = this.findBestForContext(contexts.mapContext)[1];
+      this.modes.play.attr.playerContextMessage = playerContextMessage;
+      this.modes.play.attr.mapContextMessage = mapContextMessage;
     }
     else if(evtLabel == "switchMode"){
       let template = evtData.template;
@@ -389,5 +398,29 @@ export let Game = {
       }
     }
     return true;
+  },
+
+  //High priority wins
+  findBestForContext: function(context){
+    if(context.length == 0){
+      return [null, null];
+    }
+    return context.reduce(function(a, b){
+      //Sort by priority
+      if(a[0] > b[0]){
+        return a;
+      }
+      else if(a[0] < b[0]){
+        return b;
+      }
+      //Sort alphabetically
+      else if(a[1] > b[1]){
+        return a;
+      }
+      else if(a[1] < b[1]){
+        return b;
+      }
+      return a;
+    });
   }
 };

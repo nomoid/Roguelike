@@ -22,7 +22,7 @@ export let Skills = {
         amount: 10
       }
     },
-    description: 'How atheletic you are. Increases your Strength/Speed stats on level up.'
+    description: 'How atheletic you are. The base skill for most combat related skills.'
   },
   'Archery': {
     name: 'Archery',
@@ -34,12 +34,17 @@ export let Skills = {
     name: 'Dagger Fighting',
     difficulty: 2,
     prerequisite: 'Athletics',
+    modifyHit: function(hitData, level){
+      hitData.numDice += level;
+    },
     xpGain: {
       damages: {
         amount: 100,
         requirements: {
           weapon: {
-            name: 'Dagger'
+            equipmentData: {
+              skill: 'Dagger Fighting'
+            }
           }
         }
       },
@@ -47,61 +52,120 @@ export let Skills = {
         amount: 500,
         requirements: {
           weapon: {
-            name: 'Dagger'
+            equipmentData: {
+              skill: 'Dagger Fighting'
+            }
           }
         }
       }
     },
-    description: 'How well you can use your dagger. Increases your chance to hit and your ability use better daggers.'
+    description: 'How well you can use your dagger. Increases your chance to hit and critically strike.'
   },
   'Swordfighting': {
     name: 'Swordfighting',
     difficulty: 3,
     prerequisite: 'Dagger Fighting',
+    modifyHit: function(hitData, level){
+      hitData.numDice += level;
+    },
     xpGain: {
       damages: {
         amount: 100,
         //Or among array
-        requirements: [
-          {
-            weapon: {
-              name: 'Shortsword'
+        requirements: {
+          weapon: {
+            equipmentData: {
+              skill: 'Swordfighting'
             }
-          },
-          {
-            weapon: {
-              name: 'Longsword'
-            }
-          },
-        ]
+          }
+        }
       },
       kills: {
         amount: 500,
         //Or among array
-        requirements: [
-          {
-            weapon: {
-              name: 'Shortsword'
+        requirements: {
+          weapon: {
+            equipmentData: {
+              skill: 'Swordfighting'
             }
-          },
-          {
-            weapon: {
-              name: 'Longsword'
-            }
-          },
-        ]
+          }
+        }
       }
     },
-    description: 'How well you can use your sword. Increases your chance to hit and your ability use better swords.'
+    description: 'How well you can use your sword. Increases your chance to hit and critically strike.'
+  },
+  'Axe Fighting': {
+    name: 'Axe Fighting',
+    difficulty: 2,
+    prerequisite: 'Athletics',
+    modifyHit: function(hitData, level){
+      hitData.modifier += level;
+    },
+    xpGain: {
+      damages: {
+        amount: 100,
+        //Or among array
+        requirements: {
+          weapon: {
+            equipmentData: {
+              skill: 'Axe Fighting'
+            }
+          }
+        }
+      },
+      kills: {
+        amount: 500,
+        //Or among array
+        requirements: {
+          weapon: {
+            equipmentData: {
+              skill: 'Axe Fighting'
+            }
+          }
+        }
+      }
+    },
+    description: 'How well you can use your axes. Increases your chance to hit and critically strike.'
+  },
+  'Blocking': {
+    name: 'Blocking',
+    difficulty: 2,
+    prerequisite: 'Athletics',
+    modifyBlock: function(blockData, level){
+      blockData.modifier += level;
+    },
+    xpGain: {
+      blockedDamage: {
+        amount: 400
+      }
+    },
+    description: 'How well you use shields. Increases your chance to block some damage taken from enemies.',
+  },
+  'Dodging': {
+    name: 'Dodging',
+    difficulty: 2,
+    prerequisite: 'Athletics',
+    modifyDodge: function(dodgeData, level, defending, speedDiff){
+      if(defending){
+        dodgeData.modifier = speedDiff * (1+0.2*level);
+      }
+      dodgeData.diceVal += 3*level;
+    },
+    xpGain: {
+      dodgedAttack: {
+        amount: 600
+      }
+    },
+    description: 'How well you dodge enemy attacks.',
   }
 };
 
 export let PlayerSkills = [
-  'Athletics', 'Archery', 'Dagger Fighting', 'Swordfighting'
+  'Athletics', 'Archery', 'Dagger Fighting', 'Swordfighting', 'Axe Fighting', 'Blocking', 'Dodging'
 ];
 
 export let PlayerSeenSkills = [
-  'Athletics', 'Dagger Fighting', 'Swordfighting'
+  'Athletics', 'Dagger Fighting', 'Swordfighting', 'Axe Fighting', 'Blocking', 'Dodging'
 ];
 
 export let PlayerStartSkills = [
@@ -208,4 +272,19 @@ export function prereqString(name){
   else{
     return 'Prerequisites: None';
   }
+}
+
+//Require 50 more xp per level up
+//0, 50, 150, 300, 500, 750, 1050, 1400
+export function getCharacterLevelFromXp(xp){
+  xp = Math.trunc(xp / ExperienceMultiplier);
+  //Inverse triangle formula
+  let multiplier = 50;
+  return Math.trunc((Math.sqrt(8*Math.trunc(xp/multiplier)+1)-1)/2) + 1;
+}
+
+export function getXpForCharacterLevel(level){
+  //Triangle formula
+  let multiplier = 50;
+  return Math.trunc(((level-1)*multiplier)*((level-1)*multiplier+1)/2) * ExperienceMultiplier;
 }

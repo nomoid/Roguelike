@@ -7,11 +7,13 @@ import {Color} from './color.js';
 import {Character} from './character.js';
 import {Entity} from './entity.js';
 import {EntityFactory} from './entities.js';
-import {BINDINGS, BINDING_DESCRIPTIONS, setKeybindingsArrowKeys, setKeybindingsWASD, setInventoryBindings} from './keybindings.js';
+import {BINDINGS, BINDING_DESCRIPTIONS, setKeybindingsArrowKeys, setKeybindingsWASD, setInventoryBindings, menuTopLine} from './keybindings.js';
 import {TIME_ENGINE, loadScheduler, saveScheduler} from './timing.js';
 import {getFunctionality} from './items.js';
 import {EquipmentSlots, EquipmentOrder} from './equipment.js';
 import {renderXp, ExperienceMultiplier, hasPrereqs, prereqString} from './skills.js';
+import {getStatDisplayName} from './stats.js';
+import * as A from './avatar.js';
 
 class UIMode{
   constructor(game){
@@ -35,7 +37,7 @@ class UIMode{
     display.drawText(2, 2, "rendering "+this.constructor.name);
   }
   renderAvatar(display){
-    display.drawText(2, 1, "this is avatar");
+    //display.drawText(2, 1, "this is avatar");
   }
 
 }
@@ -50,16 +52,37 @@ export class StartupMode extends UIMode{
     this.game.isPlaying = false;
   }
 
+/*
+ ▄█          ▄████████    ▄██████▄     ▄████████ ███▄▄▄▄   ████████▄        ▄██████▄     ▄████████           ▄█
+███         ███    ███   ███    ███   ███    ███ ███▀▀▀██▄ ███   ▀███      ███    ███   ███    ███          ███
+███         ███    █▀    ███    █▀    ███    █▀  ███   ███ ███    ███      ███    ███   ███    █▀           ███
+███        ▄███▄▄▄      ▄███         ▄███▄▄▄     ███   ███ ███    ███      ███    ███  ▄███▄▄▄              ███
+███       ▀▀███▀▀▀     ▀▀███ ████▄  ▀▀███▀▀▀     ███   ███ ███    ███      ███    ███ ▀▀███▀▀▀              ███
+███         ███    █▄    ███    ███   ███    █▄  ███   ███ ███    ███      ███    ███   ███                 ███
+███▌    ▄   ███    ███   ███    ███   ███    ███ ███   ███ ███   ▄███      ███    ███   ███                 ███
+█████▄▄██   ██████████   ████████▀    ██████████  ▀█   █▀  ████████▀        ▀██████▀    ███             █▄ ▄███
+▀                                                                                                       ▀▀▀▀▀▀
+
+
+
+
+
+
+
+
+
+
+*/
+
   renderMain(display){
     display.drawText(2, 1, "Welcome to...")
-    U.drawTextWithSpaces(display, 2, 2, "  _____ _      _    _          _ _____                                 ");
-    U.drawTextWithSpaces(display, 2, 3, " |  __ (_)    | |  | |        | |  __ \\                                ");
-    U.drawTextWithSpaces(display, 2, 4, " | |__) |  ___| | _| | ___  __| | |__) |__  _ __   ___ ___  _ __ _ __  ");
-    U.drawTextWithSpaces(display, 2, 5, " |  ___/ |/ __| |/ / |/ _ \\/ _` |  ___/ _ \\| '_ \\ / __/ _ \\| '__| '_ \\ ");
-    U.drawTextWithSpaces(display, 2, 6, " | |   | | (__|   <| |  __/ (_| | |  | (_) | |_) | (_| (_) | |  | | | |");
-    U.drawTextWithSpaces(display, 2, 7, " |_|   |_|\\___|_|\\_\\_|\\___|\\__,_|_|   \\___/| .__/ \\___\\___/|_|  |_| |_|");
-    U.drawTextWithSpaces(display, 2, 8, "                                           | |                         ");
-    U.drawTextWithSpaces(display, 2, 9, "                                           |_|                         ");
+    U.drawTextWithSpaces(display, 2, 2, "    _                                      _        ");
+    U.drawTextWithSpaces(display, 2, 3, " \\_|_)                          |         | |    /\\  ");
+    U.drawTextWithSpaces(display, 2, 4, "   |     _   __,  _   _  _    __|     __  | |   |  | ");
+    U.drawTextWithSpaces(display, 2, 5, "  _|    |/  /  | |/  / |/ |  /  |    /  \\_|/    |  | ");
+    U.drawTextWithSpaces(display, 2, 6, " (/\\___/|__/\\_/|/|__/  |  |_/\\_/|_/  \\__/ |__/   \\_|/");
+    U.drawTextWithSpaces(display, 2, 7, "              /|                          |\\      /| ");
+    U.drawTextWithSpaces(display, 2, 8, "              \\|                          |/      \\|");
     display.drawText(2, 15, "Press space key to continue...")
   }
 
@@ -123,15 +146,21 @@ export class PlayMode extends UIMode{
     //console.log(this.attr.cameramapx);
     DATASTORE.MAPS[this.game.getMapId()].render(display, this.attr.cameramapx, this.attr.cameramapy, this.getAvatar().generateVisibilityChecker());
     //this.cameraSymbol.render(display, Math.trunc(display.getOptions().width/2), Math.trunc(display.getOptions().height/2));
+    this.renderContext(display);
   }
 
   renderAvatar(display){
-    display.drawText(2, 2, "AVATAR, THIS IS");
-    display.drawText(2, 3, `Time: ${this.getAvatar().getTime()}`);
-    display.drawText(2, 4, `HP: ${this.getAvatar().getHp()}/${this.getAvatar().getMaxHp()}`);
-    display.drawText(2, 5, `Location: ${this.getAvatar().getX()}, ${this.getAvatar().getY()}`);
-    display.drawText(2, 6, `Floor: ${this.game.currMap+1}`);
-    display.drawText(2, 7, `${DATASTORE.MAPS[this.game.getMapId()].getMobAmounts('jdog')} jdogs left`);
+    A.renderAvatar(display, this.getAvatar(), this.game, 'play');
+  }
+
+  renderContext(display){
+    let bottom = 23;
+    if(this.attr.mapContextMessage){
+      display.drawText(0, bottom, this.attr.mapContextMessage);
+    }
+    if(this.attr.playerContextMessage){
+      display.drawText(0, bottom - 1, this.attr.playerContextMessage);
+    }
   }
 
   handleInput(eventType, evt){
@@ -173,12 +202,26 @@ export class PlayMode extends UIMode{
         });
         return true;
       }
+      else if(evt.key == BINDINGS.GAME.ENTER_SKILLS){
+        this.game.pushMode('skills', {
+          avatarId: this.attr.avatarId
+        });
+        return true;
+      }
+      else if(evt.key == BINDINGS.GAME.ENTER_STATS){
+        this.game.pushMode('stats', {
+          avatarId: this.attr.avatarId
+        });
+        return true;
+      }
       else if(evt.key == BINDINGS.GAME.PREV_FLOOR){
         let oldId = this.game.getMapId();
         if(`${this.getAvatar().getX()},${this.getAvatar().getY()}` === DATASTORE.MAPS[oldId].getEntrancePos()){
           if(this.game.previousFloor()){
-            Message.send("You have entered the previous floor");
             this.setupAvatar();
+            this.getAvatar().raiseMixinEvent("previousFloor",{
+              floor: this.game.currMap
+            });
             DATASTORE.MAPS[oldId].removeEntity(DATASTORE.ENTITIES[this.attr.avatarId]);
             return true;
           }
@@ -188,8 +231,10 @@ export class PlayMode extends UIMode{
         let oldId = this.game.getMapId();
         if(`${this.getAvatar().getX()},${this.getAvatar().getY()}` === DATASTORE.MAPS[oldId].getExitPos()){
           if(this.game.nextFloor()){
-            Message.send("You have entered the next floor");
             this.setupAvatar();
+            this.getAvatar().raiseMixinEvent("nextFloor",{
+              floor: this.game.currMap
+            });
             DATASTORE.MAPS[oldId].removeEntity(DATASTORE.ENTITIES[this.attr.avatarId]);
             return true;
           }
@@ -305,7 +350,7 @@ export class WinMode extends UIMode{
   }
 
   renderMain(display){
-    display.drawText(2, 2, "You have won the game of PickledPopcorn")
+    display.drawText(2, 2, "You have won the game of Legend of J. Stay tuned for more.")
     display.drawText(2, 15, "Press any key to restart...")
   }
 
@@ -619,6 +664,7 @@ export class PersistenceMode extends UIMode{
       Message.send("Error Loading!");
       throw e;
     }
+    this.deleteSave(uid);
   }
 
   deleteSave(uid){
@@ -857,7 +903,7 @@ export class InventoryMode extends UIMode{
 
   renderMain(display){
     let bottom = 23;
-    display.drawText(0, 0, '|Equipment|' + U.applyBackground(U.applyColor('Inventory', Color.TEXT_HIGHLIGHTED), Color.TEXT_HIGHLIGHTED_BG) + '|Skills|');
+    display.drawText(0, 0, menuTopLine(1));
     let items = this.getAvatar().getItems();
     let maxRender = 20;
     if(items.length - this.game.persist.inventoryIndex > maxRender){
@@ -911,6 +957,10 @@ export class InventoryMode extends UIMode{
       }
     }
 
+  }
+
+  renderAvatar(display){
+    A.renderAvatar(display, this.getAvatar(), this.game, 'inventory');
   }
 
   handleInput(eventType, evt){
@@ -981,6 +1031,31 @@ export class InventoryMode extends UIMode{
             }
           }
         }
+        //Game bindings have last priority in inventory
+        if(evt.key == BINDINGS.GAME.ENTER_INVENTORY){
+          this.game.swapMode('inventory', {
+            avatarId: this.avatarId
+          });
+          return true;
+        }
+        else if(evt.key == BINDINGS.GAME.ENTER_EQUIPMENT){
+          this.game.swapMode('equipment', {
+            avatarId: this.avatarId
+          });
+          return true;
+        }
+        else if(evt.key == BINDINGS.GAME.ENTER_SKILLS){
+          this.game.swapMode('skills', {
+            avatarId: this.avatarId
+          });
+          return true;
+        }
+        else if(evt.key == BINDINGS.GAME.ENTER_STATS){
+          this.game.swapMode('stats', {
+            avatarId: this.avatarId
+          });
+          return true;
+        }
       }
     }
     return false;
@@ -1019,7 +1094,7 @@ export class EquipmentMode extends UIMode{
   }
 
   renderMain(display){
-    display.drawText(0, 0, '|' + U.applyBackground(U.applyColor('Equipment', Color.TEXT_HIGHLIGHTED), Color.TEXT_HIGHLIGHTED_BG) + '|Inventory|Skills|');
+    display.drawText(0, 0, menuTopLine(0));
     let equipment = this.getAvatar().getEquipment();
     for(let i = 0; i < EquipmentOrder.length; i++){
       let slot = EquipmentOrder[i];
@@ -1065,8 +1140,12 @@ export class EquipmentMode extends UIMode{
     }
     else if(selectedItem){
       display.drawText(functionalityX, functionalityY, `[${BINDINGS.INVENTORY.UNEQUIP}] - Unequip`);
-      display.drawText(functionalityX, functionalityY, `[${BINDINGS.INVENTORY.DROP}] - Drop`);
+      display.drawText(functionalityX, functionalityY + 1, `[${BINDINGS.INVENTORY.DROP}] - Drop`);
     }
+  }
+
+  renderAvatar(display){
+    A.renderAvatar(display, this.getAvatar(), this.game, 'equipment');
   }
 
   handleInput(eventType, evt){
@@ -1118,7 +1197,7 @@ export class EquipmentMode extends UIMode{
           }
           //Disallow L/R when equipping
           else if(evt.key == BINDINGS.MASTER.MENU_LEFT){
-            this.game.swapMode('skills', {
+            this.game.swapMode('stats', {
               avatarId: this.avatarId
             });
             return true;
@@ -1157,6 +1236,31 @@ export class EquipmentMode extends UIMode{
             return true;
           }
           //For a safety measure, you can't trash things equipped on yourself
+          //Game bindings have last priority in inventory
+          else if(evt.key == BINDINGS.GAME.ENTER_INVENTORY){
+            this.game.swapMode('inventory', {
+              avatarId: this.avatarId
+            });
+            return true;
+          }
+          else if(evt.key == BINDINGS.GAME.ENTER_EQUIPMENT){
+            this.game.swapMode('equipment', {
+              avatarId: this.avatarId
+            });
+            return true;
+          }
+          else if(evt.key == BINDINGS.GAME.ENTER_SKILLS){
+            this.game.swapMode('skills', {
+              avatarId: this.avatarId
+            });
+            return true;
+          }
+          else if(evt.key == BINDINGS.GAME.ENTER_STATS){
+            this.game.swapMode('stats', {
+              avatarId: this.avatarId
+            });
+            return true;
+          }
         }
       }
     }
@@ -1226,7 +1330,7 @@ export class SkillsMode extends UIMode{
   }
 
   renderMain(display){
-    display.drawText(0, 0, '|Equipment|Inventory|' + U.applyBackground(U.applyColor('Skills', Color.TEXT_HIGHLIGHTED), Color.TEXT_HIGHLIGHTED_BG) + '|');
+    display.drawText(0, 0, menuTopLine(2));
     let skillPoints = this.getAvatar().getSkillPoints();
     display.drawText(2, 2, `Skill points: ${skillPoints}`);
     let skills = this.getAvatar().getSkills();
@@ -1279,6 +1383,10 @@ export class SkillsMode extends UIMode{
       }
 
     }
+  }
+
+  renderAvatar(display){
+    A.renderAvatar(display, this.getAvatar(), this.game, 'skills');
   }
 
   getSkillArray(){
@@ -1336,7 +1444,7 @@ export class SkillsMode extends UIMode{
         return true;
       }
       else if(evt.key == BINDINGS.MASTER.MENU_RIGHT){
-        this.game.swapMode('equipment', {
+        this.game.swapMode('stats', {
           avatarId: this.avatarId
         });
         return true;
@@ -1364,6 +1472,110 @@ export class SkillsMode extends UIMode{
           }
           return true;
         }
+      }
+      //Game bindings have last priority in inventory
+      else if(evt.key == BINDINGS.GAME.ENTER_INVENTORY){
+        this.game.swapMode('inventory', {
+          avatarId: this.avatarId
+        });
+        return true;
+      }
+      else if(evt.key == BINDINGS.GAME.ENTER_EQUIPMENT){
+        this.game.swapMode('equipment', {
+          avatarId: this.avatarId
+        });
+        return true;
+      }
+      else if(evt.key == BINDINGS.GAME.ENTER_SKILLS){
+        this.game.swapMode('skills', {
+          avatarId: this.avatarId
+        });
+        return true;
+      }
+      else if(evt.key == BINDINGS.GAME.ENTER_STATS){
+        this.game.swapMode('stats', {
+          avatarId: this.avatarId
+        });
+        return true;
+      }
+    }
+    return false;
+  }
+
+  getAvatar(){
+    return DATASTORE.ENTITIES[this.avatarId];
+  }
+}
+
+export class StatsMode extends UIMode{
+  constructor(game){
+    super(game);
+  }
+
+  enter(template){
+    if(template.avatarId){
+      this.avatarId = template.avatarId;
+    }
+  }
+
+  renderMain(display){
+    display.drawText(0, 0, menuTopLine(3));
+    display.drawText(2, 2, `Level: ${this.getAvatar().getLevel()}`);
+    let characterStats = this.getAvatar().getCharacterStats();
+    for(let i = 0; i < characterStats.length; i++){
+      let stat = characterStats[i][0];
+      let statValue = characterStats[i][1];
+      let statName = getStatDisplayName(stat);
+      display.drawText(2, 4 + i, `${statName}: ${statValue}`);
+    }
+  }
+
+  renderAvatar(display){
+    A.renderAvatar(display, this.getAvatar(), this.game, 'stats');
+  }
+
+  handleInput(eventType, evt){
+    if(eventType == "keyup"){
+      if(evt.key == BINDINGS.MASTER.EXIT_MENU){
+        this.game.popMode();
+        return true;
+      }
+      else if(evt.key == BINDINGS.MASTER.MENU_LEFT){
+        this.game.swapMode('skills', {
+          avatarId: this.avatarId
+        });
+        return true;
+      }
+      else if(evt.key == BINDINGS.MASTER.MENU_RIGHT){
+        this.game.swapMode('equipment', {
+          avatarId: this.avatarId
+        });
+        return true;
+      }
+      //Game bindings have last priority in inventory
+      else if(evt.key == BINDINGS.GAME.ENTER_INVENTORY){
+        this.game.swapMode('inventory', {
+          avatarId: this.avatarId
+        });
+        return true;
+      }
+      else if(evt.key == BINDINGS.GAME.ENTER_EQUIPMENT){
+        this.game.swapMode('equipment', {
+          avatarId: this.avatarId
+        });
+        return true;
+      }
+      else if(evt.key == BINDINGS.GAME.ENTER_SKILLS){
+        this.game.swapMode('skills', {
+          avatarId: this.avatarId
+        });
+        return true;
+      }
+      else if(evt.key == BINDINGS.GAME.ENTER_STATS){
+        this.game.swapMode('stats', {
+          avatarId: this.avatarId
+        });
+        return true;
       }
     }
     return false;
