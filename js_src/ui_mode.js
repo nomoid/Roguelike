@@ -13,6 +13,7 @@ import {getFunctionality} from './items.js';
 import {EquipmentSlots, EquipmentOrder} from './equipment.js';
 import {renderXp, ExperienceMultiplier, hasPrereqs, prereqString} from './skills.js';
 import {getStatDisplayName} from './stats.js';
+import * as A from './avatar.js';
 
 class UIMode{
   constructor(game){
@@ -36,7 +37,7 @@ class UIMode{
     display.drawText(2, 2, "rendering "+this.constructor.name);
   }
   renderAvatar(display){
-    display.drawText(2, 1, "this is avatar");
+    //display.drawText(2, 1, "this is avatar");
   }
 
 }
@@ -148,7 +149,7 @@ export class PlayMode extends UIMode{
   }
 
   renderAvatar(display){
-    U.renderAvatar(display, this.getAvatar(), this.game, 'play');
+    A.renderAvatar(display, this.getAvatar(), this.game, 'play');
   }
 
   handleInput(eventType, evt){
@@ -947,7 +948,7 @@ export class InventoryMode extends UIMode{
   }
 
   renderAvatar(display){
-    U.renderAvatar(display, this.getAvatar(), this.game, 'inventory');
+    A.renderAvatar(display, this.getAvatar(), this.game, 'inventory');
   }
 
   handleInput(eventType, evt){
@@ -1132,7 +1133,7 @@ export class EquipmentMode extends UIMode{
   }
 
   renderAvatar(display){
-    U.renderAvatar(display, this.getAvatar(), this.game, 'equipment');
+    A.renderAvatar(display, this.getAvatar(), this.game, 'equipment');
   }
 
   handleInput(eventType, evt){
@@ -1373,7 +1374,7 @@ export class SkillsMode extends UIMode{
   }
 
   renderAvatar(display){
-    U.renderAvatar(display, this.getAvatar(), this.game, 'skills');
+    A.renderAvatar(display, this.getAvatar(), this.game, 'skills');
   }
 
   getSkillArray(){
@@ -1518,7 +1519,7 @@ export class StatsMode extends UIMode{
   }
 
   renderAvatar(display){
-    U.renderAvatar(display, this.getAvatar(), this.game, 'stats');
+    A.renderAvatar(display, this.getAvatar(), this.game, 'stats');
   }
 
   handleInput(eventType, evt){

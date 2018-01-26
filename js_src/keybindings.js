@@ -29,6 +29,14 @@ export let BINDINGS = {
 };
 
 export let BINDING_DESCRIPTIONS = {
+  MASTER: {
+    EXIT_MENU: "Exit menu",
+    MENU_UP: "Go up",
+    MENU_LEFT: "Go left",
+    MENU_DOWN: "Go down",
+    MENU_RIGHT: "Go right",
+    SELECT: "Select"
+  },
   INVENTORY: {
     DROP: "Drop an item",
     EQUIP: "Equip an item",
@@ -57,6 +65,46 @@ export let BINDING_DESCRIPTIONS = {
     PREV_FLOOR: "Previous floor",
     WIN: "Win the game",
     LOSE: "Lose the game"
+  },
+};
+
+export let BINDING_DESCRIPTIONS_SHORT = {
+  MASTER: {
+    EXIT_MENU: "Exit",
+    MENU_UP: "Up",
+    MENU_LEFT: "Left",
+    MENU_DOWN: "Down",
+    MENU_RIGHT: "Right",
+    SELECT: "Select"
+  },
+  INVENTORY: {
+    DROP: "Drop",
+    EQUIP: "Equip",
+    UNEQUIP: "Unequip",
+    CONSUME: "Consume",
+    UPGRADE: "Level up",
+    TRASH: "Trash",
+    ENTER_BINDINGS: "Bindings"
+  },
+  GAME: {
+    MOVE_NORTH: "North",
+    MOVE_WEST: "West",
+    MOVE_SOUTH: "South",
+    MOVE_EAST: "East",
+    MOVE_IN_PLACE: "Stay",
+    PICK_UP_ITEM: "Pick up",
+    PICK_UP_ALL_ITEMS: "Pick up all",
+    ENTER_INVENTORY: "Inventory",
+    ENTER_EQUIPMENT: "Equipment",
+    ENTER_SKILLS: "Skills",
+    ENTER_STATS: "Stats",
+    ENTER_PERSISTENCE: "Save/load",
+    ENTER_MESSAGES: "Messages",
+    ENTER_BINDINGS: "Bindings",
+    NEXT_FLOOR: "Next floor",
+    PREV_FLOOR: "Prev floor",
+    WIN: "Win",
+    LOSE: "Lose"
   },
 };
 

@@ -9,15 +9,6 @@ export function printTest(){
   console.log("Some important piece of information that needs to be logged");
 }
 
-export function renderAvatar(display, avatar, game, mode){
-  display.drawText(2, 2, "AVATAR, THIS IS");
-  display.drawText(2, 3, `Time: ${avatar.getTime()}`);
-  display.drawText(2, 4, `HP: ${avatar.getHp()}/${avatar.getStat('maxHp')}`);
-  display.drawText(2, 5, `Location: ${avatar.getX()}, ${avatar.getY()}`);
-  display.drawText(2, 6, `Floor: ${game.currMap+1}`);
-  display.drawText(2, 7, `${DATASTORE.MAPS[game.getMapId()].getMobAmounts('jdog')} jdogs left`);
-}
-
 export function drawTextWithSpaces(display, x, y, text){
   if(text.charAt(0) == ' '){
     for(let i = 1; i < text.length; i++){
