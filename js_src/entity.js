@@ -17,6 +17,7 @@ export class Entity extends MixableSymbol{
     this.attr.mapId = 0;
     this.attr.id = uniqueId(`entity${this.attr.name ? '-'+this.attr.name : ''}`);
     this.attr.stats = entityData.stats || {};
+    this.attr.level = entityData.level || 1;
   }
 
   getStats(){
@@ -33,6 +34,13 @@ export class Entity extends MixableSymbol{
   }
   setStat(name, value){
     this.attr.stats[name] = value;
+  }
+  //Player level is based on max floor reached
+  getLevel(){
+    return this.attr.level;
+  }
+  setLevel(level){
+    this.attr.level = level;
   }
   getName(){
     return this.attr.name;

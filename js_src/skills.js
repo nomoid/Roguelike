@@ -209,3 +209,18 @@ export function prereqString(name){
     return 'Prerequisites: None';
   }
 }
+
+//Require 50 more xp per level up
+//0, 50, 150, 300, 500, 750, 1050, 1400
+export function getCharacterLevelFromXp(xp){
+  xp = Math.trunc(xp / ExperienceMultiplier);
+  //Inverse triangle formula
+  let multiplier = 50;
+  return Math.trunc((Math.sqrt(8*Math.trunc(xp/multiplier)+1)-1)/2);
+}
+
+export function getXpForCharacterLevel(level){
+  //Triangle formula
+  let multiplier = 50;
+  return Math.trunc((xp*multiplier)*(xp*multiplier+1)/2) * ExperienceMultiplier;
+}

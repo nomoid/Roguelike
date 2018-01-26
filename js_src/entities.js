@@ -11,10 +11,10 @@ EntityFactory.learn({
   meleeDamage: 10,
   radius: 16,
   stats: {
-    maxHp: 100
+    maxHp: 100,
   },
   statNames: ['maxHp', 'strength', 'agility', 'endurance', 'charisma', 'magic', 'knowledge'],
-  mixinNames: ['TimeTracker', 'WalkerCorporeal', 'PlayerMessage', 'HitPoints', 'ActorPlayer', 'MeleeAttacker', 'FOVHandler', 'ItemPile', 'Inventory', 'Equipment', 'Skills', 'SkillLearner', 'CharacterStats', 'ItemConsumer', 'BuffHandler', 'Bloodthirst']
+  mixinNames: ['TimeTracker', 'WalkerCorporeal', 'PlayerMessage', 'HitPoints', 'ActorPlayer', 'MeleeAttacker', 'FOVHandler', 'ItemPile', 'Inventory', 'Equipment', 'Skills', 'SkillLearner', 'LevelProgress', 'CharacterStats', 'ItemConsumer', 'BuffHandler', 'Bloodthirst']
 });
 
 EntityFactory.learn({
@@ -27,7 +27,9 @@ EntityFactory.learn({
   name: 'jdog',
   chr: 'd',
   fg: '#d06',
-  maxHp: 40,
+  stats: {
+    maxHp: 40,
+  },
   meleeDamage: 10,
   priorities: {
     'ActorRandomWalker': 1

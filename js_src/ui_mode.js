@@ -1466,6 +1466,7 @@ export class StatsMode extends UIMode{
 
   renderMain(display){
     display.drawText(0, 0, menuTopLine(3));
+    display.drawText(2, 2, `Level: ${this.getAvatar().getLevel()}`);
     let characterStats = this.getAvatar().getCharacterStats();
     for(let i = 0; i < characterStats.length; i++){
       let stat = characterStats[i][0];

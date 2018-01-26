@@ -251,6 +251,9 @@ export let PlayerMessage = {
     //addSkillFailed: function(evtData){
     //  Message.send(`You failed to improve the ${evtData.name} skill.${evtData.message ? ' ' + evtData.message : ''}`)
     //}
+    characterLevelUp: function(evtData){
+      Message.send(`You have leveled up to Level ${evtData.level}!`);
+    }
   }
 };
 
@@ -1204,6 +1207,7 @@ export let Skills = {
     stateModel: {
       skillPoints: 0,
       skillPointParts: 0,
+      levelXp: 0,
       skills: {
 
       }
@@ -1259,7 +1263,31 @@ export let Skills = {
       }
       return skillInfo;
     },
-    addSkill: function(name, xp, seen){
+    addSkill: function(name, xp, extraData){
+      let seen = false;
+      let addPointParts = true;
+      let addLevelXp = true;
+      let message = true;
+      if(extraData){
+        if(extraData.seen){
+          seen = true;
+        }
+        //No parts happens when we get a skill by default
+        //No parts also happens when we spen skill points
+        if(extraData.noParts){
+          addPointParts = false;
+        }
+        //No xp happens when we get a skill by default
+        if(extraData.noLevelXp){
+          addLevelXp = false;
+        }
+        if(extraData.noMessage){
+          message = false;
+        }
+      }
+      if(!xp){
+        xp = 0;
+      }
       let success = true;
       let skills = this.getSkills();
       let skill = skills[name];
@@ -1277,9 +1305,7 @@ export let Skills = {
       if(skill){
         oldLevel = S.getLevelForSkill(skill.name, skill.xp);
         //If new skill has higher xp, replace
-        if(xp){
-          skill.xp += xp;
-        }
+        skill.xp += xp;
         if(seen){
           skill.seen = true;
         }
@@ -1291,18 +1317,29 @@ export let Skills = {
         }
         skills[name] = {
           'name': name,
-          'xp': xp ? xp : 0,
+          'xp': xp,
           'seen': seenTruth
         };
       }
       let newSkill = skills[name];
-      //If skill is previously at max level, get some skill point parts
-      if(oldLevel == S.getMaxLevel(name)){
+      //Get some skill point parts
+      if(addPointParts){
+        let partXp = xp;
+        //If skill is previously at max level, get more skill point parts
+        if(oldLevel == S.getMaxLevel(name)){
+          partXp *= 2;
+        }
         this.raiseMixinEvent('addSkillPointParts', {
-          parts: xp
+          parts: partXp
         });
       }
       let newLevel = S.getLevelForSkill(newSkill.name, newSkill.xp);
+      //Gain level xp points
+      if(addLevelXp){
+        this.raiseMixinEvent('addLevelXp', {
+          'xp': xp
+        });
+      }
       //If skill reaches level 1, set seen flag to true
       if(newLevel > 0){
         if(!newSkill.seen){
@@ -1314,11 +1351,13 @@ export let Skills = {
         }
       }
       if(newLevel > oldLevel){
-        //If level up, fire an event
-        this.raiseMixinEvent('skillLevelUp', {
-          'name': newSkill.name,
-          'level': newLevel
-        });
+        if(message){
+            //If level up, fire an event
+            this.raiseMixinEvent('skillLevelUp', {
+              'name': newSkill.name,
+              'level': newLevel
+            });
+          }
       }
       return success;
     }
@@ -1329,7 +1368,7 @@ export let Skills = {
         points: 100
       });
       for(let i = 0; i < S.PlayerSkills.length; i++){
-        this.addSkill(S.PlayerSkills[i], 0);
+        this.addSkill(S.PlayerSkills[i]);
       }
       for(let i = 0; i < S.PlayerSeenSkills.length; i++){
         this.raiseMixinEvent('seeSkill', {
@@ -1337,7 +1376,7 @@ export let Skills = {
         });
       }
       for(let i = 0; i < S.PlayerStartSkills.length; i++){
-        this.raiseMixinEvent('addSkillXp', {
+        this.raiseMixinEvent('gainSkill', {
           name: S.PlayerStartSkills[i],
           xp: S.getXpForSkillLevel(S.PlayerStartSkills[i], 1)
         })
@@ -1355,12 +1394,20 @@ export let Skills = {
         points: addPoints
       });
     },
+    //Gains skill without adding skill points, level xp, or sending messages
+    gainSkill: function(evtData){
+      this.addSkill(evtData.name, evtData.xp, {
+        noParts: true,
+        noLevelXp: true,
+        noMessage: true
+      });
+    },
     //Also learns skills
     addSkillXp: function(evtData){
-      this.addSkill(evtData.name, evtData.xp ? evtData.xp : 0);
+      this.addSkill(evtData.name, evtData.xp, evtData);
     },
     seeSkill: function(evtData){
-      this.addSkill(evtData.name, 0, true);
+      this.addSkill(evtData.name, 0, {seen: true});
     },
     levelUpSkill: function(evtData){
       let skillInfo = this.getSkillInfo(evtData.name);
@@ -1393,6 +1440,55 @@ export let Skills = {
           name: evtData.name
         });
       }
+    }
+  }
+}
+
+export let LevelProgress = {
+  META: {
+    mixinName: 'LevelProgress',
+    mixinGroupName: 'SkillsGroup',
+    stateNamespace: '_LevelProgress',
+    stateModel: {
+      levelXp: 0
+    },
+    initialize: function(){
+      // do any initialization
+    }
+  },
+  METHODS: {
+    getLevelXp(){
+      return this.attr._LevelProgress.levelXp;
+    },
+    setLevelXp(s){
+      this.attr._LevelProgress.levelXp = s;
+    },
+    addXp(xp){
+      if(!xp){
+        return;
+      }
+      let oldLevel = this.getLevel();
+      let oldXp = this.getLevelXp();
+      let newLevel = S.getCharacterLevelFromXp(oldXp + xp);
+      if(newLevel > oldLevel){
+        this.raiseMixinEvent('characterLevelUp', {
+          'oldLevel': oldLevel,
+          level: newLevel
+        });
+        this.setLevel(newLevel);
+      }
+      this.setLevelXp(oldXp + xp);
+    },
+    currentLevelXp(){
+      return S.getXpForCharacterLevel(this.getLevel());
+    },
+    nextLevelXp(){
+      return S.getXpForCharacterLevel(this.getLevel() + 1);
+    }
+  },
+  LISTENERS: {
+    addLevelXp(evtData){
+      this.addXp(evtData.xp);
     }
   }
 }
