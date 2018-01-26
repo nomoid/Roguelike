@@ -73,14 +73,14 @@ export let Equipment = {
       skill: 'Dagger Fighting',
       hit: {
         numDice: 3,
-        value: 4,
+        diceVal: 4,
         modifier: 0,
         pick: 2
       },
       damage: {
-        base: 20,
+        base: 4,
         numDice: 2,
-        value: 5
+        diceVal: 8
       },
       partition: [4, 6, 8]
     },

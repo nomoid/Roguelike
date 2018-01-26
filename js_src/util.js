@@ -181,7 +181,7 @@ export function romanNumeral(num) {
   return roman;
 }
 
-export function roll(num, diceVal, pickNum, highest){
+export function roll(num, diceVal, pickNum, lowest){
   //pass in highest as false if you want to pick low
   pickNum = pickNum || num;
   if(pickNum > num){
@@ -195,35 +195,35 @@ export function roll(num, diceVal, pickNum, highest){
   }
   for(let p=0; p<pickNum; p++){
     let min, max, minIndex, maxIndex;
-    if(highest){
-      max = 0;
-      maxIndex = 0;
-    }
-    else{
+    if(lowest){
       min = diceVal+1;
       minIndex = 0;
     }
+    else{
+      max = 0;
+      maxIndex = 0;
+    }
     for(let n=0; n<dice.length; n++){
-      if(highest){
-        if(dice[n]>max){
-          max = dice[n];
-          maxIndex = n;
-        }
-      }
-      else{
+      if(lowest){
         if(dice[n]<min){
           min = dice[n]
           minIndex = n;
         }
       }
+      else{
+        if(dice[n]>max){
+          max = dice[n];
+          maxIndex = n;
+        }
+      }
     }
-    if(highest){
-      total+=max;
-      dice.splice(maxIndex, 1);
-    }
-    else{
+    if(lowest){
       total+=min;
       dice.splice(minIndex, 1);
+    }
+    else{
+      total+=max;
+      dice.splice(maxIndex, 1);
     }
   }
 

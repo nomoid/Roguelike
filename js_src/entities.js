@@ -15,7 +15,7 @@ EntityFactory.learn({
   enemyTeams: ['baddies'],
   friendlyTeams: ['avatar'],
   stats: {
-    maxHp: 10000,
+    maxHp: 100,
     strength: 10,
     agility: 10,
     endurance: 10,
@@ -45,6 +45,8 @@ EntityFactory.learn({
   //targetName: 'avatar',
   stats: {
     maxHp: 40,
+    strength: 5,
+    endurance: 5
   },
   meleeDamage: 10,
   priorities: {
@@ -52,7 +54,7 @@ EntityFactory.learn({
     'SightedPathfinder': 2,
     'ActorRandomWalker': 3
   },
-  mixinNames: ['HitPoints', 'AIActor', 'ActorRandomWalker', 'Combat', 'WalkerCorporeal', 'TeamMember', 'MeleeAttacker', 'ItemDropper', 'FOVHandler', 'NearsightedAttacker', 'SightedEnemyTargeter', 'SightedPathfinder']
+  mixinNames: ['HitPoints', 'AIActor', 'ActorRandomWalker', 'LackOfSkills', 'Combat', 'WalkerCorporeal', 'TeamMember', 'MeleeAttacker', 'ItemDropper', 'FOVHandler', 'NearsightedAttacker', 'SightedEnemyTargeter', 'SightedPathfinder']
 });
 
 EntityFactory.learn({

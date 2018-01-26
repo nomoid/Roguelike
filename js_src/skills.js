@@ -127,7 +127,7 @@ export let Skills = {
 };
 
 export let PlayerSkills = [
-  'Athletics', 'Archery', 'Dagger Fighting', 'Swordfighting'
+  'Athletics', 'Archery', 'Dagger Fighting', 'Swordfighting', 'Blocking', 'Dodging'
 ];
 
 export let PlayerSeenSkills = [
