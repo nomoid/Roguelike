@@ -7,7 +7,7 @@ import {TIME_ENGINE, SCHEDULER, setTimedUnlocker} from './timing.js';
 import {DATASTORE} from './datastore.js';
 import {Color} from './color.js';
 import {generateItem} from './items.js';
-import {generateEquipment, EquipmentSlots} from './equipment.js';
+import {generateEquipment, EquipmentSlots, getHit, getDamage} from './equipment.js';
 import {generateBuff} from './buffs.js';
 import * as U from './util.js';
 import * as S from './skills.js';
@@ -265,14 +265,71 @@ export let PlayerMessage = {
     },
     // hpLost(int): the amount of health lost
     // hpLeft(int): the amount of hp remaining for the caller
-    lostHealth: function(evtData){
-      Message.send(`Lost ${evtData.hpLost} hp! Only ${evtData.hpLeft} left...`);
-    },
-    gainedHealth: function(evtData){
-      Message.send(`Gained ${evtData.hpGained} hp! Now you have ${evtData.hpLeft}.`);
-    },
-    attacks: function(evtData){
+    //lostHealth: function(evtData){
+    //  Message.send(`Lost ${evtData.hpLost} hp! Only ${evtData.hpLeft} left...`);
+    //},
+    //gainedHealth: function(evtData){
+    //  Message.send(`Gained ${evtData.hpGained} hp! Now you have ${evtData.hpLeft}.`);
+    //},
+    attacks: function(evtData){//not really useful
       Message.send(`You attack the ${evtData.target.getName()}!`);
+    },
+    attackedBy: function(evtData){
+      if(evtData.src===this){
+        Message.send('You accidentally hurt yourself while attacking.');
+        return;
+      }
+      Message.send(`You were attacked by the ${evtData.src.getName()} and hit for ${evtData.damage} damage.`);
+    },
+    attackFailed: function(evtData){
+      let target = evtData.target;
+      Message.send(`Your attack against the ${target.getName()} failed.`);
+    },
+    enemyAttackFailed: function(evtData){
+      let src = evtData.src;
+      Message.send(`The ${src.getName()} failed to attack you.`);
+    },
+    attackDodged: function(evtData){
+      let target = evtData.target;
+      let crit = evtData.crit;
+      if(crit){
+        Message.send(`The ${target.getName()} dodged your critical strike!`);
+      }
+      else{
+        Message.send(`The ${target.getName()} dodged your attack.`);
+      }
+    },
+    dodgedAttack: function(evtData){
+      let src = evtData.src;
+      let crit = evtData.theyCrit;
+      if(crit){
+        Message.send(`You dodged the ${target.getName()}'s critical strike!`);
+      }
+      else{
+        Message.send(`You dodged the ${target.getName()}'s attack.`);
+      }
+    },
+    attackSucceeded: function(evtData){
+      let target = evtData.target;
+      let crit = evtData.crit;
+      if(!crit){
+        Message.send(`You attacked the ${target.getName()}.`);
+      }
+      else{
+        Message.send(`You landed a critical strike on the ${target.getName()}!`);
+      }
+    },
+    attackBlocked: function(evtData){
+      let target = evtData.target;
+      let theyCrit = evtData.theyCrit;
+      let iCrit = evtData.iCrit;
+      Message.send('Your '+ (iCrit ? 'critical strike' : 'attack') + ` was blocked by the ${target.getName()}`+ (iCrit ? '!' : '.') + (theyCrit ? ' You did no damage.' : ''));
+    },
+    blockedDamage: function(evtData){
+      let src = evtData.src;
+      let theyCrit = evtData.theyCrit;
+      let iCrit = evtData.iCrit;
+      Message.send('You '+(iCrit ? 'fully' : 'partially') + ` blocked the ${src.getName()}'s ` + (theyCrit ? 'critical strike!' : 'attack.'));
     },
     bumpsFriendly: function(evtData){
       Message.send(`That ${evtData.target.getName()} is friendly! Don't attack.`);
@@ -381,6 +438,160 @@ export let PlayerMessage = {
     }
   }
 };
+
+export let Combat = {
+  META: {
+    mixinName: 'Combat',
+    mixinGroupName: 'CombatGroup',
+    stateNamespace: '_Combat',
+    stateModel: {
+
+    },
+    initialize: function(template){
+
+    }
+  },
+  METHODS: {
+
+  },
+  LISTENERS: {
+    'attacking': function(evtData){
+      let defender = evtData.target;
+
+      let weapon;
+      if(typeof this.getEquipment === 'function'){
+        weapon = this.getEquipment().primaryHand;
+      }
+      let hit, success, damage;
+      if(weapon){
+        let weaponHitDice = getHit(weapon);
+        let weaponDamageDice = getDamage(weapon);
+        let weaponSuccessPartition = weapon.equipmentData.partition;
+        let weaponSkill = weapon.equipmentData.skill;
+        S.Skills[weaponSkill].modifyHit(weaponHitDice, this.getSkillInfo(weaponSkill).level);
+        hit = U.roll(weaponHitDice.numDice, weaponHitDice.diceVal, weaponHitDice.pick)+weaponHitDice.modifier;
+        success = U.successCalc(hit, weaponSuccessPartition);
+        console.log(hit + ' ' + success);
+        console.dir(weaponHitDice);
+        damage = U.roll(weaponDamageDice.numDice, weaponDamageDice.diceVal)+weaponDamageDice.base+this.getStat('strength');
+      }
+      else{
+        hit = U.roll(1, 20);
+        success = U.successCalc(hit, [2, 6, 20]);
+        damage = Math.floor(2*this.getStat('strength'));
+      }
+      switch (success) {
+        case 0://crit fail: hurt yourself
+          this.raiseMixinEvent('takingDamage', {src: this, 'damage': damage/2});
+          break;
+        case 1://fail: nothing happens
+          this.raiseMixinEvent('attackFailed', {target: defender});
+          defender.raiseMixinEvent('enemyAttackFailed', {src: this})
+          break;
+        case 2://success: regular hit
+          defender.raiseMixinEvent('defending', {'damage': damage, src: this, crit: false});
+          break;
+        case 3://crit: double damage, harder to defend
+          defender.raiseMixinEvent('defending', {'damage': damage*2, src: this, crit: true});
+          break;
+      }
+
+    },
+    'defending': function(evtData){
+      let attacker = evtData.src;
+      let crit = evtData.crit;
+
+      //dodging
+      let attackerSpeed = attacker.getStat('agility');
+      let defenderSpeed = this.getStat('agility');
+      let difference = defenderSpeed - attackerSpeed;
+      let attackerDiceData = {};
+      let defenderDiceData = {};
+      attackerDiceData.diceNum = attackerSpeed;
+      defenderDiceData.diceNum = attackerSpeed;
+      attackerDiceData.diceVal = 15;
+      defenderDiceData.diceVal = 12;
+      attackerDiceData.modifier = 0;
+      defenderDiceData.modifier = 0;
+
+      S.Skills['Dodging'].modifyDodge(attackerDiceData, attacker.getSkillInfo('Dodging').level);
+      S.Skills['Dodging'].modifyDodge(defenderDiceData, this.getSkillInfo('Dodging').level, true, difference);
+
+      let attackResult = U.roll(attackerDiceData.diceNum, attackerDiceData.diceVal);
+      let defendResult = U.roll(defenderDiceData.diceNum, defenderDiceData.diceVal);
+      let success = 0;
+      if(defendResult > attackResult){
+        success = 1;
+      }
+      if(crit){
+        let success2 = 0;
+        let attack2 = U.roll(attackerDiceData.diceNum, attackerDiceData.diceVal);
+        let defend2 = U.roll(defenderDiceData.diceNum, defenderDiceData.diceVal);
+        success = Math.min(success, success2);
+      }
+      if(success == 1){
+        attacker.raiseMixinEvent('attackDodged', {target: this, 'crit': crit});
+        this.raiseMixinEvent('dodgedAttack', {src: attacker, theyCrit: crit});
+        return;
+      }
+
+
+      //blocking
+      let shield = null;
+      if(typeof this.getEquipment === 'function'){
+        shield = this.getEquipment().secondaryHand;
+      }
+      let diceData = {};
+      diceData.diceNum = 1;
+      if(shield){
+        diceData.diceNum = 2;
+      }
+      diceData.diceVal = 20;
+      diceData.pick = 1;
+      diceData.modifier = 0;
+      S.Skills['Blocking'].modifyBlock(diceData, this.getSkillInfo('Blocking').level);
+      let block = U.roll(diceData.diceNum, diceData.diceVal, diceData.pick) + diceData.modifier;
+      success = U.successCalc(block, [0, 18, 22]);
+      if(crit){
+        let block2 = U.roll(diceData.diceNum, diceData.diceVal, diceData.pick) + diceData.modifier;
+        let success2 = U.successCalc(block2, [0, 18, 22]);
+        success = Math.min(success, success2);
+      }
+      let damage = evtData.damage;
+
+      switch (success) {
+        case 0:
+          console.log('Blocking crit failed, which really should not happen');
+          break;
+        case 1:
+          attacker.raiseMixinEvent('attackSucceeded', {target: this, 'damage': damage, 'crit': crit});
+          this.raiseMixinEvent('takingDamage', {src: attacker, 'damage': damage});
+          break;
+        case 2:
+          attacker.raiseMixinEvent('attackBlocked', {target: this, theyCrit: false, iCrit: crit});
+          this.raiseMixinEvent('blockedDamage', {src: attacker, 'damage': damage, theyCrit: crit, iCrit: false});
+          this.raiseMixinEvent('takingDamage', {src: attacker, 'damage': damage, multiplier: 0.25});
+          break;
+        case 3:
+          attacker.raiseMixinEvent('attackBlocked', {target: this, theyCrit: true, iCrit: crit});
+          this.raiseMixinEvent('blockedDamage', {src: attacker, 'damage': damage, theyCrit: crit, iCrit: true});
+          break;
+
+      }
+    },
+    'takingDamage': function(evtData){
+      let attacker = evtData.src;
+      let damage = evtData.damage;
+      let adjustedDamage = Math.max(damage - this.getStat('endurance')/2, 0);
+      if(evtData.multiplier){
+        adjustedDamage=adjustedDamage*evtData.multiplier;
+      }
+      adjustedDamage = Math.floor(adjustedDamage);
+      this.raiseMixinEvent('attackedBy', {src: attacker, 'damage': adjustedDamage});
+      this.raiseMixinEvent('damaged', {damageAmount: adjustedDamage, src: attacker});
+    }
+  }
+}
 
 export let HitPoints = {
   META: {
@@ -498,6 +709,10 @@ export let MeleeAttacker = {
       if(evtData.target.getName()==='chest'){
         evtData.target.raiseMixinEvent('openChest', {src: this});
       }
+      else{
+        this.raiseMixinEvent('attacking', evtData);
+      }
+      /* //Old implementation
       this.raiseMixinEvent('attacks', {
         actor: this,
         target: evtData.target
@@ -511,6 +726,7 @@ export let MeleeAttacker = {
         damageAmount: this.getMeleeDamage(),
         weapon: bumpWeapon
       });
+      */
     }
   }
 };
@@ -1914,6 +2130,40 @@ export let Bloodthirst = {
   }
 }
 
+export let LackOfSkills = {
+  META: {
+    mixinName: 'Skills',
+    mixinGroupName: 'SkillsGroup',
+    stateNamespace: '_Skills',
+    stateModel: {
+      skillPoints: 0,
+      skillPointParts: 0,
+      levelXp: 0,
+      skills: {
+
+      }
+      //Each skill has a
+      //name(str),
+      //xp(int) - cumulative skill xp
+      //seen(bool)
+    },
+    initialize: function(){
+
+    }
+  },
+  METHODS: {
+    getSkillInfo: function(name){
+      return {
+        'name': name,
+        level: 0,
+        xp: 0,
+        seen: false,
+        description: S.getSkillDescription(name)
+      };
+    }
+  }
+}
+
 export let Skills = {
   META: {
     mixinName: 'Skills',
@@ -1963,6 +2213,15 @@ export let Skills = {
     },
     getSkillInfo: function(name){
       let skill = this.getSkills()[name];
+      if(!skill){
+        return {
+          'name': name,
+          level: 0,
+          xp: 0,
+          seen: false,
+          description: S.getSkillDescription(name)
+        };
+      }
       let lvl = S.getLevelForSkill(skill.name, skill.xp);
       //xp remaining needed to level up
       let xpNeeded = S.getXpForSkillLevel(skill.name, lvl+1) - skill.xp;

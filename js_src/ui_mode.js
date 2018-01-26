@@ -218,6 +218,9 @@ export class PlayMode extends UIMode{
         let oldId = this.game.getMapId();
         if(`${this.getAvatar().getX()},${this.getAvatar().getY()}` === DATASTORE.MAPS[oldId].getEntrancePos()){
           if(this.game.previousFloor()){
+            this.getAvatar().raiseMixinEvent("previousFloor",{
+              floor: DATASTORE.MAPS[oldId].attr.floor - 1
+            });
             this.setupAvatar();
             this.getAvatar().raiseMixinEvent("previousFloor",{
               floor: this.game.currMap
