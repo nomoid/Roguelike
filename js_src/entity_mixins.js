@@ -1083,6 +1083,9 @@ export let SightedEnemyTargeter = {
         if(this.attr._SightedEnemyTargeter.remember){
           return this.attr._SightedEnemyTargeter.memoryPos;
         }
+        else{
+          return null;
+        }
       }
       let target = targets[minDIndex];
       let pos = `${target.getX()},${target.getY()}`;
