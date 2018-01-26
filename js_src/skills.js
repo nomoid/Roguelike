@@ -22,7 +22,7 @@ export let Skills = {
         amount: 10
       }
     },
-    description: 'How atheletic you are. Increases your Strength/Speed stats on level up.'
+    description: 'How atheletic you are. The base skill for most combat related skills.'
   },
   'Archery': {
     name: 'Archery',
@@ -42,7 +42,9 @@ export let Skills = {
         amount: 100,
         requirements: {
           weapon: {
-            name: 'Dagger'
+            equipmentData: {
+              skill: 'Dagger Fighting'
+            }
           }
         }
       },
@@ -50,52 +52,80 @@ export let Skills = {
         amount: 500,
         requirements: {
           weapon: {
-            name: 'Dagger'
+            equipmentData: {
+              skill: 'Dagger Fighting'
+            }
           }
         }
       }
     },
-    description: 'How well you can use your dagger. Increases your chance to hit and your ability use better daggers.'
+    description: 'How well you can use your dagger. Increases your chance to hit and critically strike.'
   },
   'Swordfighting': {
     name: 'Swordfighting',
     difficulty: 3,
     prerequisite: 'Dagger Fighting',
+    modifyHit: function(hitData, level){
+      hitData.numDice += level;
+    },
     xpGain: {
       damages: {
         amount: 100,
         //Or among array
-        requirements: [
-          {
-            weapon: {
-              name: 'Shortsword'
+        requirements: {
+          weapon: {
+            equipmentData: {
+              skill: 'Swordfighting'
             }
-          },
-          {
-            weapon: {
-              name: 'Longsword'
-            }
-          },
-        ]
+          }
+        }
       },
       kills: {
         amount: 500,
         //Or among array
-        requirements: [
-          {
-            weapon: {
-              name: 'Shortsword'
+        requirements: {
+          weapon: {
+            equipmentData: {
+              skill: 'Swordfighting'
             }
-          },
-          {
-            weapon: {
-              name: 'Longsword'
-            }
-          },
-        ]
+          }
+        }
       }
     },
-    description: 'How well you can use your sword. Increases your chance to hit and your ability use better swords.'
+    description: 'How well you can use your sword. Increases your chance to hit and critically strike.'
+  },
+  'Axe Fighting': {
+    name: 'Axe Fighting',
+    difficulty: 2,
+    prerequisite: 'Athletics',
+    modifyHit: function(hitData, level){
+      hitData.modifier += level;
+    },
+    xpGain: {
+      damages: {
+        amount: 100,
+        //Or among array
+        requirements: {
+          weapon: {
+            equipmentData: {
+              skill: 'Axe Fighting'
+            }
+          }
+        }
+      },
+      kills: {
+        amount: 500,
+        //Or among array
+        requirements: {
+          weapon: {
+            equipmentData: {
+              skill: 'Axe Fighting'
+            }
+          }
+        }
+      }
+    },
+    description: 'How well you can use your axes. Increases your chance to hit and critically strike.'
   },
   'Blocking': {
     name: 'Blocking',
@@ -105,7 +135,9 @@ export let Skills = {
       blockData.modifier += level;
     },
     xpGain: {
-
+      blockedDamage: {
+        amount: 400
+      }
     },
     description: 'How well you use shields. Increases your chance to block some damage taken from enemies.',
   },
@@ -120,18 +152,20 @@ export let Skills = {
       dodgeData.diceVal += 3*level;
     },
     xpGain: {
-
+      dodgedAttack: {
+        amount: 600
+      }
     },
     description: 'How well you dodge enemy attacks.',
   }
 };
 
 export let PlayerSkills = [
-  'Athletics', 'Archery', 'Dagger Fighting', 'Swordfighting', 'Blocking', 'Dodging'
+  'Athletics', 'Archery', 'Dagger Fighting', 'Swordfighting', 'Axe Fighting', 'Blocking', 'Dodging'
 ];
 
 export let PlayerSeenSkills = [
-  'Athletics', 'Dagger Fighting', 'Swordfighting'
+  'Athletics', 'Dagger Fighting', 'Swordfighting', 'Axe Fighting', 'Blocking', 'Dodging'
 ];
 
 export let PlayerStartSkills = [

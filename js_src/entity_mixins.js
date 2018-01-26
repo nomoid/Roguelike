@@ -482,17 +482,17 @@ export let Combat = {
       }
       switch (success) {
         case 0://crit fail: hurt yourself
-          this.raiseMixinEvent('takingDamage', {src: this, 'damage': damage/2});
+          this.raiseMixinEvent('takingDamage', {src: this, 'damage': damage/2, 'weapon': weapon});
           break;
         case 1://fail: nothing happens
-          this.raiseMixinEvent('attackFailed', {target: defender});
-          defender.raiseMixinEvent('enemyAttackFailed', {src: this})
+          this.raiseMixinEvent('attackFailed', {target: defender, 'weapon': weapon});
+          defender.raiseMixinEvent('enemyAttackFailed', {src: this, 'weapon': weapon});
           break;
         case 2://success: regular hit
-          defender.raiseMixinEvent('defending', {'damage': damage, src: this, crit: false});
+          defender.raiseMixinEvent('defending', {'damage': damage, src: this, crit: false, 'weapon': weapon});
           break;
         case 3://crit: double damage, harder to defend
-          defender.raiseMixinEvent('defending', {'damage': damage*2, src: this, crit: true});
+          defender.raiseMixinEvent('defending', {'damage': damage*2, src: this, crit: true, 'weapon': weapon});
           break;
       }
 
@@ -500,6 +500,7 @@ export let Combat = {
     'defending': function(evtData){
       let attacker = evtData.src;
       let crit = evtData.crit;
+      let weapon = evtData.weapon;
 
       //dodging
       let attackerSpeed = attacker.getStat('agility');
@@ -530,8 +531,8 @@ export let Combat = {
         success = Math.min(success, success2);
       }
       if(success == 1){
-        attacker.raiseMixinEvent('attackDodged', {target: this, 'crit': crit});
-        this.raiseMixinEvent('dodgedAttack', {src: attacker, theyCrit: crit});
+        attacker.raiseMixinEvent('attackDodged', {target: this, 'crit': crit, 'weapon': weapon});
+        this.raiseMixinEvent('dodgedAttack', {src: attacker, theyCrit: crit, 'weapon': weapon});
         return;
       }
 
@@ -564,17 +565,17 @@ export let Combat = {
           console.log('Blocking crit failed, which really should not happen');
           break;
         case 1:
-          attacker.raiseMixinEvent('attackSucceeded', {target: this, 'damage': damage, 'crit': crit});
-          this.raiseMixinEvent('takingDamage', {src: attacker, 'damage': damage});
+          attacker.raiseMixinEvent('attackSucceeded', {target: this, 'damage': damage, 'crit': crit, 'weapon': weapon});
+          this.raiseMixinEvent('takingDamage', {src: attacker, 'damage': damage, 'weapon': weapon});
           break;
         case 2:
-          attacker.raiseMixinEvent('attackBlocked', {target: this, theyCrit: false, iCrit: crit});
-          this.raiseMixinEvent('blockedDamage', {src: attacker, 'damage': damage, theyCrit: crit, iCrit: false});
-          this.raiseMixinEvent('takingDamage', {src: attacker, 'damage': damage, multiplier: 0.25});
+          attacker.raiseMixinEvent('attackBlocked', {target: this, theyCrit: false, iCrit: crit, 'weapon': weapon});
+          this.raiseMixinEvent('blockedDamage', {src: attacker, 'damage': damage, theyCrit: crit, iCrit: false, 'weapon': weapon});
+          this.raiseMixinEvent('takingDamage', {src: attacker, 'damage': damage, multiplier: 0.25, 'weapon': weapon});
           break;
         case 3:
-          attacker.raiseMixinEvent('attackBlocked', {target: this, theyCrit: true, iCrit: crit});
-          this.raiseMixinEvent('blockedDamage', {src: attacker, 'damage': damage, theyCrit: crit, iCrit: true});
+          attacker.raiseMixinEvent('attackBlocked', {target: this, theyCrit: true, iCrit: crit, 'weapon': weapon});
+          this.raiseMixinEvent('blockedDamage', {src: attacker, 'damage': damage, theyCrit: crit, iCrit: true, 'weapon': weapon});
           break;
 
       }
@@ -582,6 +583,7 @@ export let Combat = {
     'takingDamage': function(evtData){
       let attacker = evtData.src;
       let damage = evtData.damage;
+      let weapon = evtData.weapon;
 
       let bonusDefense = 0;
       if(typeof this.getEquipment === 'function'){
@@ -599,8 +601,8 @@ export let Combat = {
         adjustedDamage=adjustedDamage*evtData.multiplier;
       }
       adjustedDamage = Math.floor(adjustedDamage);
-      this.raiseMixinEvent('attackedBy', {src: attacker, 'damage': adjustedDamage});
-      this.raiseMixinEvent('damaged', {damageAmount: adjustedDamage, src: attacker});
+      this.raiseMixinEvent('attackedBy', {src: attacker, 'damage': adjustedDamage, 'weapon': weapon});
+      this.raiseMixinEvent('damaged', {damageAmount: adjustedDamage, src: attacker, 'weapon': weapon});
     }
   }
 }
@@ -663,7 +665,8 @@ export let HitPoints = {
       });
       if(this.getHp() == 0){
         this.raiseMixinEvent('killed',{
-          src: evtData.src
+          src: evtData.src,
+          weapon: evtData.weapon
         });
         evtData.src.raiseMixinEvent('kills', {
           target: this,
@@ -1647,14 +1650,22 @@ export let Inventory = {
     },
     initAvatar: function(evtData){
       let startingEquipment = [
-        "dagger_1",
-        "boots_1",
-        "boots_2",
-        "cursed_boots_1",
-        "shortsword_1",
-        "longsword_1",
-        "battle_axe_1",
-        "wooden_shield_1"
+        "dagger",
+        "boots_leather",
+        "armor_leather",
+        "helmet_leather",
+        "pants_leather",
+        "gauntlets_leather",
+        "handaxe",
+        "cursed_boots",
+        "shortsword",
+        "longsword",
+        "axe",
+        "battle_axe",
+        "wooden_shield",
+        "legendary_sword",
+        "legendary_axe",
+        "legendary_dagger"
       ];
       let item = generateItem("Swiftness Candy");
       this.addItem(item);
