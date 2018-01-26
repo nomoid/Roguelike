@@ -291,6 +291,30 @@ export let Combat = {
     'attacking': function(evtData){
       let defender = evtData.target;
 
+      let weapon = this.getEquipment().primaryHand;
+      if(weapon){
+
+      }
+      else{
+        let hit = U.roll(1, 20);
+        let success = U.successCalc(hit, [2, 6, 20]);
+        switch (success) {
+          case 0:
+
+            break;
+          case 1:
+
+            break;
+          case 2:
+
+            break;
+          case 3:
+
+            break;
+
+        }
+      }
+
       foe.raiseMixinEvent('defending', newData);
     },
     'defending': function(evtData){

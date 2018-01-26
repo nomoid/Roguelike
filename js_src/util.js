@@ -228,5 +228,13 @@ export function roll(num, diceVal, pickNum, highest){
   }
 
   return total;
+}
 
+export function successCalc(result, partition){
+  for(let i = 0; i < partition.length; i++){
+    if(result<partition[i]){
+      return i;
+    }
+  }
+  return partition.length;
 }

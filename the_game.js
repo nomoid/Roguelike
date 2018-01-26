@@ -356,6 +356,7 @@ exports.deepCopy = deepCopy;
 exports.fillTemplate = fillTemplate;
 exports.romanNumeral = romanNumeral;
 exports.roll = roll;
+exports.successCalc = successCalc;
 
 var _datastore = __webpack_require__(28);
 
@@ -589,6 +590,15 @@ function roll(num, diceVal, pickNum, highest) {
   }
 
   return total;
+}
+
+function successCalc(result, partition) {
+  for (var i = 0; i < partition.length; i++) {
+    if (result < partition[i]) {
+      return i;
+    }
+  }
+  return partition.length;
 }
 
 /***/ }),
@@ -10818,6 +10828,8 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.EquipmentOrder = exports.EquipmentSlots = exports.Equipment = undefined;
 exports.generateEquipment = generateEquipment;
+exports.getHit = getHit;
+exports.getDamage = getDamage;
 
 var _util = __webpack_require__(15);
 
@@ -10891,7 +10903,19 @@ var Equipment = exports.Equipment = {
     type: "Equipment",
     slot: "One-Handed",
     equipmentData: {
-      attack: 2
+      skill: 'Dagger Fighting',
+      hit: {
+        numDice: 3,
+        value: 4,
+        modifier: 0,
+        pick: 2
+      },
+      damage: {
+        base: 20,
+        numDice: 2,
+        value: 5
+      },
+      partition: [4, 6, 8]
     },
     description: "A dagger. Deals ${this.equipmentData.attack} damage."
   }
@@ -10914,6 +10938,14 @@ var EquipmentOrder = exports.EquipmentOrder = ['head', 'armor', 'pants', 'boots'
 
 function generateEquipment(name) {
   return (0, _util.deepCopy)(Equipment[name]);
+}
+
+function getHit(weapon) {
+  return (0, _util.deepCopy)(weapon.equipmentData.hit);
+}
+
+function getDamage(weapon) {
+  return (0, _util.deepCopy)(weapon.equipmentData.damage);
 }
 
 /***/ }),
@@ -10969,6 +11001,9 @@ var Skills = exports.Skills = {
     name: 'Dagger Fighting',
     difficulty: 2,
     prerequisite: 'Athletics',
+    modifyHit: function modifyHit(hitData, level) {
+      hitData.numDice += level;
+    },
     xpGain: {
       damages: {
         amount: 100,
@@ -17031,9 +17066,6 @@ var Game = exports.Game = {
     console.dir(this);
     console.log('datastore');
     console.dir(_datastore.DATASTORE);
-    for (var i = 0; i < 10; i++) {
-      console.log(U.roll(5, 6, 2, true));
-    }
   },
 
   setupDisplays: function setupDisplays() {
@@ -19302,6 +19334,27 @@ var Combat = exports.Combat = {
   LISTENERS: {
     'attacking': function attacking(evtData) {
       var defender = evtData.target;
+
+      var weapon = this.getEquipment().primaryHand;
+      if (weapon) {} else {
+        var hit = U.roll(1, 20);
+        var success = U.successCalc(hit, [2, 6, 20]);
+        switch (success) {
+          case 0:
+
+            break;
+          case 1:
+
+            break;
+          case 2:
+
+            break;
+          case 3:
+
+            break;
+
+        }
+      }
 
       foe.raiseMixinEvent('defending', newData);
     },

@@ -34,6 +34,9 @@ export let Skills = {
     name: 'Dagger Fighting',
     difficulty: 2,
     prerequisite: 'Athletics',
+    modifyHit: function(hitData, level){
+      hitData.numDice += level;
+    },
     xpGain: {
       damages: {
         amount: 100,
