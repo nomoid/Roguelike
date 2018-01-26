@@ -12,7 +12,7 @@ export let Game = {
   _SAVE_LIST_NAMESPACE: 'savelist',
   _BINDINGS_NAMESPACE: 'bindings',
   _DISPLAY_SPACING: 1.1,
-  _MAX_FLOORS: 10,
+  _MAX_FLOORS: 100,
   _xdim: 90,
   _ydim: 90,
   _display: {

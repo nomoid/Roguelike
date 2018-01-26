@@ -38,6 +38,16 @@ export let Buffs = {
     effect: {
       durationMultiplier: 0.5
     }
+  },
+  "poisioning_1": {
+    name: 'Poisoned',
+    duration: 100,
+    frequency: 10,
+    description: 'Takes ${this.effect.damageAmount} damage every ${this.frequency} turns.',
+    effect: {
+      mixinEvent: "damaged",
+      damageAmount: 1
+    }
   }
 }
 

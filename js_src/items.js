@@ -90,6 +90,21 @@ export let Items = {
       mixinEvent: "addBuffFromName",
       buffName: "haste_1"
     }
+  },
+  "Zombie Flesh": {
+    name: "Zombie Flesh",
+    type: "Food",
+    description: "The rotting flesh of a zombie. Heals the user but causes food poisioning.",
+    effects: [
+        {
+          mixinEvent: "healed",
+          healAmount: 10
+        },
+        {
+          mixinEvent: "addBuffFromName",
+          buffName: "poisioning_1"
+        }
+    ]
   }
 
 

@@ -50,7 +50,7 @@ export let TILE_GRID_POPULATOR = {
       }
     }
 
-    for(let i = 0; i < 2; i++){
+    for(let i = 0; i < map.attr.xdim * map.attr.ydim / 4; i++){
       let p = ROT.RNG.getUniform();
       console.log(p);
       if(p < 0.25){
@@ -60,6 +60,14 @@ export let TILE_GRID_POPULATOR = {
       map.addEntityAtRandomPosition(dog);
     }
 
+    //Make each floor harder
+    let floor = map.attr.floor;
+    for(let i = 0; i < floor && i < map.attr.xdim * map.attr.ydim / 4; i++){
+      let zombie = EntityFactory.create('zombie', true);
+      zombie.setStat('strength', 3 + Math.trunc(floor/5));
+      zombie.setStat('endurance', 3 + Math.trunc(floor/5));
+      map.addEntityAtRandomPosition(zombie);
+    }
 
 
     ROT.RNG.setState(origRngState);

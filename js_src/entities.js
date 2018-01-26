@@ -121,6 +121,32 @@ EntityFactory.learn({
 });
 
 EntityFactory.learn({
+  name: 'zombie',
+  chr: 'z',
+  fg: '#d77',
+  radius: 16,
+  dropItem: 'Zombie Flesh',
+  team: 'baddies',
+  remember: true,
+  enemyTeams: ['avatar'],
+  friendlyTeams: ['baddies'],
+  delay: 2000,
+  //targetName: 'avatar',
+  stats: {
+    maxHp: 100,
+    strength: 5,
+    endurance: 5
+  },
+  meleeDamage: 10,
+  priorities: {
+    'NearsightedAttacker': 1,
+    'SightedPathfinder': 2,
+    'ActorRandomWalker': 3
+  },
+  mixinNames: ['HitPoints', 'AIActor', 'ActorRandomWalker', 'LackOfSkills', 'Combat', 'WalkerCorporeal', 'TeamMember', 'MeleeAttacker', 'ItemDropper', 'FOVHandler', 'NearsightedAttacker', 'SightedEnemyTargeter', 'SightedPathfinder']
+});
+
+EntityFactory.learn({
   name: 'item_pile',
   chr: 'o',
   fg: Color.ITEM_PILE_FG,
