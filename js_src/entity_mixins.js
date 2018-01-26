@@ -309,9 +309,9 @@ export let Combat = {
         let weaponSuccessPartition = weapon.equipmentData.partition;
         let weaponSkill = weapon.equipmentData.skill;
         S[weaponSkill].modifyHit(weaponHitDice, this.getSkillInfo(weaponSkill).level);
-        hit = U.roll(weaponHitDice.numDice, weaponHitDice.diceVal, weaponHitDice.pick);
+        hit = U.roll(weaponHitDice.numDice, weaponHitDice.diceVal, weaponHitDice.pick)+weaponHitDice.modifier;
         success = U.successCalc(hit, weaponSuccessPartition);
-        damage = U.roll(weaponDamageDice.numDice, weaponDamageDice.diceVal, weaponDamageDice.pick);
+        damage = U.roll(weaponDamageDice.numDice, weaponDamageDice.diceVal, weaponDamageDice.pick)+weaponDamageDice.modifier;
       }
       else{
         hit = U.roll(1, 20);
@@ -320,24 +320,66 @@ export let Combat = {
       }
       switch (success) {
         case 0://crit fail: hurt yourself
-          this.raiseMixinEvent('takingDamage', {source: this, 'damage': damage});
+          this.raiseMixinEvent('takingDamage', {src: this, 'damage': damage});
           break;
         case 1://fail: nothing happens
           this.raiseMixinEvent('attackFailed', {target: defender});
           defender.raiseMixinEvent('enemyAttackFailed', {src: this})
           break;
         case 2://success: regular hit
-          foe.raiseMixinEvent('defending', {'damage': damage, src: this, crit: false});
+          defender.raiseMixinEvent('defending', {'damage': damage, src: this, crit: false});
           break;
         case 3://crit: double damage, harder to defend
-          foe.raiseMixinEvent('defending', {'damage': damage*2, src: this, crit: true});
+          defender.raiseMixinEvent('defending', {'damage': damage*2, src: this, crit: true});
           break;
       }
 
-      foe.raiseMixinEvent('defending', newData);
     },
     'defending': function(evtData){
       let attacker = evtData.src;
+      let crit = evtData.crit;
+
+      let attackerSpeed = attacker.getStat('speed');
+      let defenderSpeed = this.getStat('speed');
+
+      //blocking
+      let shield = this.getEquipment().secondaryHand;
+      let diceData;
+      if(shield){
+        diceData.diceNum = 2;
+      }
+      else{
+        diceData.diceNum = 1;
+      }
+      diceData.diceVal = 20;
+      diceData.pick = 1;
+      diceData.modifier = 0;
+      S['Blocking'].modifyHit(diceData, this.getSkillInfo('Blocking').level);
+      let block = U.roll(diceData.diceNum, diceData.diceVal, diceData.pick) + diceData.modifier;
+      let success = U.successCalc(block, [0, 18, 22]);
+      let damage = evtData.damage;
+
+      switch (success) {
+        case 0:
+          console.log('Blocking crit failed, which really should not happen');
+          break;
+        case 1:
+          attacker.raiseMixinEvent('attackSucceeded', {target: this, 'damage': damage});
+          this.raiseMixinEvent('takingDamage', {src: attacker, 'damage': damage, theyCrit: crit});
+          break;
+        case 2:
+          attacker.raiseMixinEvent('attackBlocked', {target: this, crit: false});
+          this.raiseMixinEvent('takingDamage', {src: attacker, 'damage': damage, theyCrit: crit});
+          this.raiseMixinEvent('blockedDamage', {src: attacker, 'damage': damage, theyCrit: crit, iCrit: false});
+          break;
+        case 3:
+          attacker.raiseMixinEvent('attackBlocked', {target: this, crit: true});
+          this.raiseMixinEvent('blockedDamage', {src: attacker, 'damage': damage, theyCrit: crit, iCrit: true});
+          break;
+
+      }
+
+
     },
     'takingDamage': function(evtData){
       //TODO: this

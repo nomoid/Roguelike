@@ -19152,9 +19152,9 @@ var Combat = exports.Combat = {
         var weaponSuccessPartition = weapon.equipmentData.partition;
         var weaponSkill = weapon.equipmentData.skill;
         S[weaponSkill].modifyHit(weaponHitDice, this.getSkillInfo(weaponSkill).level);
-        hit = U.roll(weaponHitDice.numDice, weaponHitDice.diceVal, weaponHitDice.pick);
+        hit = U.roll(weaponHitDice.numDice, weaponHitDice.diceVal, weaponHitDice.pick) + weaponHitDice.modifier;
         success = U.successCalc(hit, weaponSuccessPartition);
-        damage = U.roll(weaponDamageDice.numDice, weaponDamageDice.diceVal, weaponDamageDice.pick);
+        damage = U.roll(weaponDamageDice.numDice, weaponDamageDice.diceVal, weaponDamageDice.pick) + weaponDamageDice.modifier;
       } else {
         hit = U.roll(1, 20);
         success = U.successCalc(hit, [2, 6, 20]);
@@ -19163,7 +19163,7 @@ var Combat = exports.Combat = {
       switch (success) {
         case 0:
           //crit fail: hurt yourself
-          this.raiseMixinEvent('takingDamage', { source: this, 'damage': damage });
+          this.raiseMixinEvent('takingDamage', { src: this, 'damage': damage });
           break;
         case 1:
           //fail: nothing happens
@@ -19172,18 +19172,56 @@ var Combat = exports.Combat = {
           break;
         case 2:
           //success: regular hit
-          foe.raiseMixinEvent('defending', { 'damage': damage, src: this, crit: false });
+          defender.raiseMixinEvent('defending', { 'damage': damage, src: this, crit: false });
           break;
         case 3:
           //crit: double damage, harder to defend
-          foe.raiseMixinEvent('defending', { 'damage': damage * 2, src: this, crit: true });
+          defender.raiseMixinEvent('defending', { 'damage': damage * 2, src: this, crit: true });
           break;
       }
-
-      foe.raiseMixinEvent('defending', newData);
     },
     'defending': function defending(evtData) {
       var attacker = evtData.src;
+      var crit = evtData.crit;
+
+      var attackerSpeed = attacker.getStat('speed');
+      var defenderSpeed = this.getStat('speed');
+
+      //blocking
+      var shield = this.getEquipment().secondaryHand;
+      var diceData = void 0;
+      if (shield) {
+        diceData.diceNum = 2;
+      } else {
+        diceData.diceNum = 1;
+      }
+      diceData.diceVal = 20;
+      diceData.pick = 1;
+      diceData.modifier = 0;
+      S['Blocking'].modifyHit(diceData, this.getSkillInfo('Blocking').level);
+      var block = U.roll(diceData.diceNum, diceData.diceVal, diceData.pick) + diceData.modifier;
+      var success = U.successCalc(block, [0, 18, 22]);
+      var damage = evtData.damage;
+
+      switch (success) {
+        case 0:
+          console.log('Blocking crit failed, which really should not happen');
+          break;
+        case 1:
+          attacker.raiseMixinEvent('attackSucceeded', { target: this, 'damage': damage });
+          this.raiseMixinEvent('takingDamage', { src: attacker, 'damage': damage, theyCrit: crit });
+          break;
+        case 2:
+          attacker.raiseMixinEvent('attackBlocked', { target: this, crit: false });
+          this.raiseMixinEvent('takingDamage', { src: attacker, 'damage': damage, theyCrit: crit });
+          this.raiseMixinEvent('blockedDamage', { src: attacker, 'damage': damage, theyCrit: crit, iCrit: false });
+          break;
+        case 3:
+          attacker.raiseMixinEvent('attackBlocked', { target: this, crit: true });
+          this.raiseMixinEvent('blockedDamage', { src: attacker, 'damage': damage, theyCrit: crit, iCrit: true });
+          break;
+
+      }
     },
     'takingDamage': function takingDamage(evtData) {
       //TODO: this
@@ -21737,6 +21775,24 @@ var Skills = exports.Skills = {
       }
     },
     description: 'How well you can use your sword. Increases your chance to hit and your ability use better swords.'
+  },
+  'Blocking': {
+    name: 'Blocking',
+    difficulty: 2,
+    prerequisite: 'Athletics',
+    modifyBlock: function modifyBlock(blockData, level) {
+      blockData.modifier += level;
+    },
+    xpGain: {},
+    description: 'How well you use shields. Increases your chance to block some damage taken from enemies.'
+  },
+  'Dodging': {
+    name: 'Dodging',
+    difficulty: 2,
+    prerequisite: 'Athletics',
+    modifyDodge: function modifyDodge(dodgeData, level) {},
+    xpGain: {},
+    description: 'How well you dodge enemy attacks.'
   }
 };
 

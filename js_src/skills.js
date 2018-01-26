@@ -96,6 +96,30 @@ export let Skills = {
       }
     },
     description: 'How well you can use your sword. Increases your chance to hit and your ability use better swords.'
+  },
+  'Blocking': {
+    name: 'Blocking',
+    difficulty: 2,
+    prerequisite: 'Athletics',
+    modifyBlock: function(blockData, level){
+      blockData.modifier += level;
+    },
+    xpGain: {
+
+    },
+    description: 'How well you use shields. Increases your chance to block some damage taken from enemies.',
+  },
+  'Dodging': {
+    name: 'Dodging',
+    difficulty: 2,
+    prerequisite: 'Athletics',
+    modifyDodge: function(dodgeData, level){
+
+    },
+    xpGain: {
+
+    },
+    description: 'How well you dodge enemy attacks.',
   }
 };
 
