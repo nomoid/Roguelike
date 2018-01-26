@@ -335,7 +335,7 @@ export let PlayerMessage = {
       Message.send(`That ${evtData.target.getName()} is friendly! Don't attack.`);
     },
     damages: function(evtData){
-      Message.send(`You deal ${evtData.damageAmount} damage to the ${evtData.target.getName()}!`);
+      //Message.send(`You deal ${evtData.damageAmount} damage to the ${evtData.target.getName()}!`);
     },
     kills: function(evtData){
       Message.send(`You kill the ${evtData.target.getName()}!`)
@@ -836,6 +836,7 @@ export let AIActor = {
     initialize: function(template){
       this.setRenderDelay(template.renderDelay || -1);
       this.setPriorities(template.priorities);
+      this.setBaseActionDuration(template.delay || 1000);
       SCHEDULER.add(this, true, 0);
     }
   },
@@ -1076,7 +1077,9 @@ export let SightedEnemyTargeter = {
         }
       }
       if(targets.length==0){
-        return this.attr._SightedEnemyTargeter.memoryPos;
+        if(this.attr._SightedEnemyTargeter.remember){
+          return this.attr._SightedEnemyTargeter.memoryPos;
+        }
       }
       let target = targets[minDIndex];
       let pos = `${target.getX()},${target.getY()}`;
@@ -1515,7 +1518,11 @@ export let ItemDropper = {
     mixinName: 'ItemDropper',
     mixinGroupName: 'ItemGroup',
     stateNamespace: '_ItemDropper',
-    initialize: function(){
+    stateModel: {
+      dropItem: ''
+    },
+    initialize: function(template){
+      this.attr._ItemDropper.dropItem = template.dropItem;
     }
   },
   METHODS: {
@@ -1525,21 +1532,13 @@ export let ItemDropper = {
     //For testing, drop a dummy item
     killed: function(evtData){
       if(evtData.src.getName() == 'avatar'){
-        for(let i = 0; i < 10; i++){
+        if(this.attr._ItemDropper.dropItem){
           let itemData = {x: this.getX(), y: this.getY()};
-          itemData.item = generateItem("JDog's Ramen");
-          this.raiseMixinEvent('addItemToMap', itemData);
-        }
-        for(let i = 0; i < 2; i++){
-          let itemData = {x: this.getX(), y: this.getY()};
-          itemData.item = generateItem("JDog's Calves");
+          itemData.item = generateItem(this.attr._ItemDropper.dropItem);
           this.raiseMixinEvent('addItemToMap', itemData);
         }
       }
       else{
-        let itemData = {x: this.getX(), y: this.getY()};
-        itemData.item = generateItem("JDog's Spicy Ramen");
-        this.raiseMixinEvent('addItemToMap', itemData);
       }
     }
   }
