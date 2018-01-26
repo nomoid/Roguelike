@@ -73,6 +73,15 @@ export let Equipment = {
       attack: 2
     },
     description: "A dagger. Deals ${this.equipmentData.attack} damage."
+  },
+  "legendary_sword_1": {
+    name: "Legendary Sword",
+    type: "Equipment",
+    slot: "Primary Hand",
+    equipmentData: {
+      attack: 20
+    },
+    description: "A special sword forged by the strongest metals. Deals ${this.equipmentData.attack} damage."
   }
 }
 

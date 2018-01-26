@@ -3,6 +3,8 @@ import {init2DArray, uniqueId} from './util.js';
 import ROT from 'rot-js';
 import {DATASTORE} from './datastore.js';
 import {EntityFactory} from './entities.js';
+import {generateEquipment} from './equipment.js';
+import {generateItem} from './items.js';
 
 export let TILE_GRID_POPULATOR = {
   'basic_caves' : function(map){
@@ -39,6 +41,9 @@ export let TILE_GRID_POPULATOR = {
             map.attr.mobAmounts[mobName] = 0;
           }
           let mob = EntityFactory.create(mobName, true);
+          if(mobName == 'chest'){
+            mob.seedLoot(LootTables[tile.seedData.lootTable]);
+          }
           map.addEntityAt(mob, xi, yi);
           map.tileGrid[xi][yi] = TILES.FLOOR;
         }
@@ -59,4 +64,91 @@ export let TILE_GRID_POPULATOR = {
 
     ROT.RNG.setState(origRngState);
   }
+}
+
+let LootTables = {
+  'basic': {
+    itemCount: 8,
+    lootSet: {
+      sword: {
+        item: 'randomWeapon',
+        chance: 1
+      },
+      food: {
+        item: 'randomFood',
+        chance: 3
+      }
+    }
+  }
+}
+
+let ItemTables = {
+  'randomWeapon': [
+    {
+      item: 'shortsword_1',
+      type: 'equipment',
+      chance: 1
+    },
+    {
+      item: 'longsword_1',
+      type: 'equipment',
+      chance: 1
+    },
+    {
+      item: 'battle_axe_1',
+      type: 'equipment',
+      chance: 1
+    },
+    {
+      item: 'dagger_1',
+      type: 'equipment',
+      chance: 1
+    },
+    {
+      item: 'legendary_sword_1',
+      type: 'equipment',
+      chance: 100
+    },
+  ],
+  'randomFood': [
+    {
+      item: 'JDog\'s Ramen',
+      type: 'item',
+      chance: 3
+    },
+    {
+      item: 'JDog\'s Spicy Ramen',
+      type: 'item',
+      chance: 2
+    },
+    {
+      item: 'Swiftness Candy',
+      type: 'item',
+      chance: 1
+    }
+  ]
+}
+
+export function generateLoot(lootName){
+  let lootSet = ItemTables[lootName];
+  let possibleLoot = Array();
+  for(let loot in lootSet){
+    let n = lootSet[loot].chance;
+    for(let i = 0; i < n; i++){
+      possibleLoot.push(lootSet[loot]);
+    }
+  }
+  let index = Math.floor(ROT.RNG.getUniform()*possibleLoot.length);
+  //console.dir(structs);
+  //console.log(index);
+  let name = possibleLoot[index].item;
+  let lootType = possibleLoot[index].type;
+  let item;
+  if(lootType == 'item'){
+    item = generateItem(name);
+  }
+  if(lootType == 'equipment'){
+    item = generateEquipment(name);
+  }
+  return item;
 }

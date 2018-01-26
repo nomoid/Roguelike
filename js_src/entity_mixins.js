@@ -13,6 +13,7 @@ import * as U from './util.js';
 import * as S from './skills.js';
 import {getLevelUpInfo} from './stats.js';
 import {BINDINGS} from './keybindings.js';
+import {generateLoot} from './populators.js';
 
 let _exampleMixin = {
   META: {
@@ -173,7 +174,7 @@ export let WalkerCorporeal = {
       let messageStart = `[${dirKey}] - `;
       let positionInfo = this.getMap().getTargetPositionInfo(this.getX() + dx, this.getY() + dy);
       if(positionInfo.entity){
-        if(positionInfo.entity.getName() == "Chest"){
+        if(positionInfo.entity.getName() == "chest"){
           let message = messageStart + 'Open chest';
           contextHolder.mapContext.push([80, message]);
         }
@@ -373,6 +374,9 @@ export let PlayerMessage = {
     },
     nextFloor: function(evtData){
       Message.send("You have entered the next floor");
+    },
+    foundChest: function(evtData){
+      Message.send(`You found a chest with ${evtData.items.length} items inside. The items dropped to your feet ([${BINDINGS.GAME.PICK_UP_ALL_ITEMS}] to pick them up).`);
     }
   }
 };
@@ -490,6 +494,9 @@ export let MeleeAttacker = {
   LISTENERS: {
     // target(entity): the target of the melee hit
     bumpEntity: function(evtData){
+      if(evtData.target.getName()==='chest'){
+        evtData.target.raiseMixinEvent('openChest', {src: this});
+      }
       this.raiseMixinEvent('attacks', {
         actor: this,
         target: evtData.target
@@ -692,8 +699,8 @@ export let TeamMember = {
     },
     initialize: function(template){
       // console.log('AAAAAAAAAAAAAA');
-      this.attr._TeamMember.friendlyTeams = U.deepCopy(template.friendlyTeams);
-      this.attr._TeamMember.enemyTeams = U.deepCopy(template.enemyTeams);
+      this.attr._TeamMember.friendlyTeams = U.deepCopy(template.friendlyTeams || {});
+      this.attr._TeamMember.enemyTeams = U.deepCopy(template.enemyTeams || {});
       // console.log('assigned enemy teams');
       //console.dir(this.attr._TeamMember.enemyTeams);
       this.attr._TeamMember.team = template.team;
@@ -757,9 +764,11 @@ export let OmniscientEnemyTargeter = {
       for(let entId in map.attr.entityIdToMapPos){
         let ent = DATASTORE.ENTITIES[entId];
         // console.dir(this.getEnemyTeams());
-        if(this.getEnemyTeams().indexOf(ent.getTeam())!=-1){
-          targets.push(ent);
-          // console.dir(ent);
+        if(typeof ent.getTeam === 'function'){
+          if(this.getEnemyTeams().indexOf(ent.getTeam())!=-1){
+            targets.push(ent);
+            // console.dir(ent);
+          }
         }
       }
       let minD = 100000
@@ -810,9 +819,11 @@ export let SightedEnemyTargeter = {
         let ent = DATASTORE.ENTITIES[entId];
         // console.dir(this.getEnemyTeams());
         if(visibility_checker.check(ent.getX(), ent.getY())){
-          if(this.getEnemyTeams().indexOf(ent.getTeam())!=-1){
-            targets.push(ent);
-            //console.dir(ent);
+          if(typeof ent.getTeam === 'function'){
+            if(this.getEnemyTeams().indexOf(ent.getTeam())!=-1){
+              targets.push(ent);
+              //console.dir(ent);
+            }
           }
         }
       }
@@ -1629,6 +1640,56 @@ export let ItemPile = {
     }
   },
   LISTENERS: {
+  }
+}
+
+//Requires ItemPile
+export let Chest = {
+  META: {
+    mixinName: 'Chest',
+    mixinGroupName: 'ItemGroup',
+    stateNamespace: '_Chest',
+    initialize: function(){
+      // do any initialization
+    }
+  },
+  METHODS: {
+    seedLoot: function(lootTable){
+      //Generate what's in this chest
+      let itemCount = Math.trunc(ROT.RNG.getUniform() * (lootTable.itemCount - 1)) + 1;
+      let lootSet = lootTable.lootSet;
+      for(let i = 0; i < itemCount; i++){
+        let possibleLoot = Array();
+        for(let loot in lootSet){
+          let n = lootSet[loot].chance;
+          for(let i = 0; i < n; i++){
+            possibleLoot.push(lootSet[loot]);
+          }
+        }
+        let index = Math.floor(ROT.RNG.getUniform()*possibleLoot.length);
+        //console.dir(structs);
+        //console.log(index);
+        let item = generateLoot(possibleLoot[index].item);
+        this.addItem(item);
+      }
+    }
+  },
+  LISTENERS: {
+    openChest: function(evtData){
+      //Drop all held items
+      let items = this.getItems();
+      if(items.length > 0){
+        evtData.src.raiseMixinEvent('foundChest', {
+          'items': items
+        });
+      }
+      for(let i = 0; i < items.length; i++){
+        let itemData = {x: evtData.src.getX(), y: evtData.src.getY()};
+        itemData.item = items[i];
+        this.raiseMixinEvent('addItemToMap', itemData);
+      }
+      this.clearItems();
+    }
   }
 }
 
