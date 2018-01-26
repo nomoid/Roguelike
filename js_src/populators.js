@@ -85,30 +85,142 @@ let LootTables = {
 let ItemTables = {
   'randomWeapon': [
     {
-      item: 'shortsword_1',
-      type: 'equipment',
-      chance: 1
-    },
-    {
-      item: 'longsword_1',
-      type: 'equipment',
-      chance: 1
-    },
-    {
-      item: 'battle_axe_1',
-      type: 'equipment',
-      chance: 1
-    },
-    {
-      item: 'dagger_1',
-      type: 'equipment',
-      chance: 1
-    },
-    {
-      item: 'legendary_sword_1',
+      item: 'shortsword',
       type: 'equipment',
       chance: 100
     },
+    {
+      item: 'longsword',
+      type: 'equipment',
+      chance: 60
+    },
+    {
+      item: 'handaxe',
+      type: 'equipment',
+      chance: 100
+    },
+    {
+      item: 'axe',
+      type: 'equipment',
+      chance: 80
+    },
+    {
+      item: 'battle_axe',
+      type: 'equipment',
+      chance: 40
+    },
+    {
+      item: 'legendary_sword',
+      type: 'equipment',
+      chance: 1
+    },
+    {
+      item: 'legendary_dagger',
+      type: 'equipment',
+      chance: 1
+    },
+    {
+      item: 'legendary_axe',
+      type: 'equipment',
+      chance: 1
+    }
+  ],
+  'randomArmor': [
+    {
+      item: 'wooden_shield',
+      type: 'equipment',
+      chance: 60
+    },
+    {
+      item: 'iron_shield',
+      type: 'equipment',
+      chance: 30
+    },
+    {
+      item: 'legendary_shield',
+      type: 'equipment',
+      chance: 1
+    },
+    {
+      item: 'armor_leather',
+      type: 'equipment',
+      chance: 60
+    },
+    {
+      item: 'armor_steel',
+      type: 'equipment',
+      chance: 30
+    },
+    {
+      item: 'armor_legendary',
+      type: 'equipment',
+      chance: 1
+    },
+    {
+      item: 'helmet_leather',
+      type: 'equipment',
+      chance: 60
+    },
+    {
+      item: 'helmet_steel',
+      type: 'equipment',
+      chance: 30
+    },
+    {
+      item: 'helmet_legendary',
+      type: 'equipment',
+      chance: 1
+    },
+    {
+      item: 'boots_leather',
+      type: 'equipment',
+      chance: 60
+    },
+    {
+      item: 'boots_steel',
+      type: 'equipment',
+      chance: 30
+    },
+    {
+      item: 'boots_legendary',
+      type: 'equipment',
+      chance: 1
+    },
+    {
+      item: 'gauntlets_leather',
+      type: 'equipment',
+      chance: 60
+    },
+    {
+      item: 'gauntlets_steel',
+      type: 'equipment',
+      chance: 30
+    },
+    {
+      item: 'gauntlets_legendary',
+      type: 'equipment',
+      chance: 1
+    },
+    {
+      item: 'pants_leather',
+      type: 'equipment',
+      chance: 60
+    },
+    {
+      item: 'pants_steel',
+      type: 'equipment',
+      chance: 30
+    },
+    {
+      item: 'pants_legendary',
+      type: 'equipment',
+      chance: 1
+    },
+    {
+      item: 'cursed_boots',
+      type: 'equipment',
+      chance: 10
+    }
   ],
   'randomFood': [
     {
