@@ -19201,6 +19201,11 @@ var Combat = exports.Combat = {
       S['Blocking'].modifyHit(diceData, this.getSkillInfo('Blocking').level);
       var block = U.roll(diceData.diceNum, diceData.diceVal, diceData.pick) + diceData.modifier;
       var success = U.successCalc(block, [0, 18, 22]);
+      if (crit) {
+        var block2 = U.roll(diceData.diceNum, diceData.diceVal, diceData.pick) + diceData.modifier;
+        var success2 = U.successCalc(block2, [0, 18, 22]);
+        success = Math.min(success, success2);
+      }
       var damage = evtData.damage;
 
       switch (success) {
