@@ -84,7 +84,7 @@ export let Equipment = {
       },
       partition: [4, 6, 8]
     },
-    description: "A dagger. Deals ${this.equipmentData.attack} damage."
+    description: "A dagger. Deals ${this.equipmentData.damage.base} to ${this.equipmentData.damage.base+this.equipmentData.damage.numDice*this.equipmentData.damage.diceVal} damage."
   }
 }
 

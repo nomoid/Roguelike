@@ -482,7 +482,19 @@ export let Combat = {
     'takingDamage': function(evtData){
       let attacker = evtData.src;
       let damage = evtData.damage;
-      let adjustedDamage = Math.max(damage - this.getStat('endurance')/2, 0);
+
+      let bonusDefense = 0;
+      if(typeof this.getEquipment === 'function'){
+        let equipment = this.getEquipment();
+        for(let equipmentType in equipment){
+          let equipmentPiece = equipment[equipmentType];
+          if(equipmentPiece && equipmentPiece.equipmentData && equipmentPiece.equipmentData.defense){
+            bonusDefense += equipmentPiece.equipmentData.defense;
+          }
+        }
+      }
+
+      let adjustedDamage = Math.max(damage - (this.getStat('endurance')+bonusDefense)/4, 0);
       if(evtData.multiplier){
         adjustedDamage=adjustedDamage*evtData.multiplier;
       }
