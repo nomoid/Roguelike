@@ -12061,15 +12061,15 @@ var ItemTables = {
   }, {
     item: 'legendary_sword',
     type: 'equipment',
-    chance: 1
+    chance: 5
   }, {
     item: 'legendary_dagger',
     type: 'equipment',
-    chance: 1
+    chance: 5
   }, {
     item: 'legendary_axe',
     type: 'equipment',
-    chance: 1
+    chance: 5
   }],
   'randomArmor': [{
     item: 'wooden_shield',
@@ -12082,7 +12082,7 @@ var ItemTables = {
   }, {
     item: 'legendary_shield',
     type: 'equipment',
-    chance: 1
+    chance: 5
   }, {
     item: 'armor_leather',
     type: 'equipment',
@@ -12094,7 +12094,7 @@ var ItemTables = {
   }, {
     item: 'armor_legendary',
     type: 'equipment',
-    chance: 1
+    chance: 5
   }, {
     item: 'helmet_leather',
     type: 'equipment',
@@ -12106,7 +12106,7 @@ var ItemTables = {
   }, {
     item: 'helmet_legendary',
     type: 'equipment',
-    chance: 1
+    chance: 5
   }, {
     item: 'boots_leather',
     type: 'equipment',
@@ -12118,7 +12118,7 @@ var ItemTables = {
   }, {
     item: 'boots_legendary',
     type: 'equipment',
-    chance: 1
+    chance: 5
   }, {
     item: 'gauntlets_leather',
     type: 'equipment',
@@ -12130,7 +12130,7 @@ var ItemTables = {
   }, {
     item: 'gauntlets_legendary',
     type: 'equipment',
-    chance: 1
+    chance: 5
   }, {
     item: 'pants_leather',
     type: 'equipment',
@@ -12142,7 +12142,7 @@ var ItemTables = {
   }, {
     item: 'pants_legendary',
     type: 'equipment',
-    chance: 1
+    chance: 5
   }, {
     item: 'cursed_boots',
     type: 'equipment',
@@ -21412,6 +21412,8 @@ var TeamMember = exports.TeamMember = {
       if (targets.length == 0) {
         if (this.attr._SightedEnemyTargeter.remember) {
           return this.attr._SightedEnemyTargeter.memoryPos;
+        } else {
+          return null;
         }
       }
       var target = targets[minDIndex];
