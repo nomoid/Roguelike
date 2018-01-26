@@ -11,6 +11,7 @@ import {generateEquipment, EquipmentSlots} from './equipment.js';
 import {generateBuff} from './buffs.js';
 import * as U from './util.js';
 import * as S from './skills.js';
+import {getLevelUpInfo} from './stats.js';
 
 let _exampleMixin = {
   META: {
@@ -269,6 +270,15 @@ export let PlayerMessage = {
     //addSkillFailed: function(evtData){
     //  Message.send(`You failed to improve the ${evtData.name} skill.${evtData.message ? ' ' + evtData.message : ''}`)
     //}
+    characterLevelUp: function(evtData){
+      Message.send(`You have leveled up to Level ${evtData.level}!`);
+    },
+    previousFloor: function(evtData){
+      Message.send("You have entered the previous floor");
+    },
+    nextFloor: function(evtData){
+      Message.send("You have entered the next floor");
+    }
   }
 };
 
@@ -330,11 +340,9 @@ export let HitPoints = {
     stateNamespace: '_HitPoints',
     stateModel: {
       hp: 1,
-      maxHp: 1
     },
     initialize: function(template){
-      this.attr._HitPoints.maxHp = template.maxHp;
-      this.attr._HitPoints.hp = template.hp || template.maxHp;
+      this.attr._HitPoints.hp = template.hp || template.stats.maxHp;
     }
   },
   METHODS: {
@@ -353,7 +361,7 @@ export let HitPoints = {
     gainHp: function(amt){
       let curHp = this.attr._HitPoints.hp;
       this.attr._HitPoints.hp += amt;
-      this.attr._HitPoints.hp = Math.min(this.attr._HitPoints.maxHp, this.attr._HitPoints.hp);
+      this.attr._HitPoints.hp = Math.min(this.getStat('maxHp'), this.attr._HitPoints.hp);
       let hpDiff = this.attr._HitPoints.hp-curHp;
       if(hpDiff > 0){
         this.raiseMixinEvent('gainedHealth', {
@@ -367,12 +375,6 @@ export let HitPoints = {
     },
     setHp: function(amt){
       this.attr._HitPoints.hp = amt;
-    },
-    getMaxHp: function(){
-      return this.attr._HitPoints.maxHp;
-    },
-    setMaxHp: function(amt){
-      this.attr._HitPoints.maxHp = amt;
     }
   },
   LISTENERS: {
@@ -1795,6 +1797,7 @@ export let Skills = {
     stateModel: {
       skillPoints: 0,
       skillPointParts: 0,
+      levelXp: 0,
       skills: {
 
       }
@@ -1850,7 +1853,31 @@ export let Skills = {
       }
       return skillInfo;
     },
-    addSkill: function(name, xp, seen){
+    addSkill: function(name, xp, extraData){
+      let seen = false;
+      let addPointParts = true;
+      let addLevelXp = true;
+      let message = true;
+      if(extraData){
+        if(extraData.seen){
+          seen = true;
+        }
+        //No parts happens when we get a skill by default
+        //No parts also happens when we spen skill points
+        if(extraData.noParts){
+          addPointParts = false;
+        }
+        //No xp happens when we get a skill by default
+        if(extraData.noLevelXp){
+          addLevelXp = false;
+        }
+        if(extraData.noMessage){
+          message = false;
+        }
+      }
+      if(!xp){
+        xp = 0;
+      }
       let success = true;
       let skills = this.getSkills();
       let skill = skills[name];
@@ -1868,9 +1895,7 @@ export let Skills = {
       if(skill){
         oldLevel = S.getLevelForSkill(skill.name, skill.xp);
         //If new skill has higher xp, replace
-        if(xp){
-          skill.xp += xp;
-        }
+        skill.xp += xp;
         if(seen){
           skill.seen = true;
         }
@@ -1882,18 +1907,29 @@ export let Skills = {
         }
         skills[name] = {
           'name': name,
-          'xp': xp ? xp : 0,
+          'xp': xp,
           'seen': seenTruth
         };
       }
       let newSkill = skills[name];
-      //If skill is previously at max level, get some skill point parts
-      if(oldLevel == S.getMaxLevel(name)){
+      //Get some skill point parts
+      if(addPointParts){
+        let partXp = xp;
+        //If skill is previously at max level, get more skill point parts
+        if(oldLevel == S.getMaxLevel(name)){
+          partXp *= 2;
+        }
         this.raiseMixinEvent('addSkillPointParts', {
-          parts: xp
+          parts: partXp
         });
       }
       let newLevel = S.getLevelForSkill(newSkill.name, newSkill.xp);
+      //Gain level xp points
+      if(addLevelXp){
+        this.raiseMixinEvent('addLevelXp', {
+          'xp': xp
+        });
+      }
       //If skill reaches level 1, set seen flag to true
       if(newLevel > 0){
         if(!newSkill.seen){
@@ -1905,11 +1941,13 @@ export let Skills = {
         }
       }
       if(newLevel > oldLevel){
-        //If level up, fire an event
-        this.raiseMixinEvent('skillLevelUp', {
-          'name': newSkill.name,
-          'level': newLevel
-        });
+        if(message){
+            //If level up, fire an event
+            this.raiseMixinEvent('skillLevelUp', {
+              'name': newSkill.name,
+              'level': newLevel
+            });
+          }
       }
       return success;
     }
@@ -1920,7 +1958,7 @@ export let Skills = {
         points: 100
       });
       for(let i = 0; i < S.PlayerSkills.length; i++){
-        this.addSkill(S.PlayerSkills[i], 0);
+        this.addSkill(S.PlayerSkills[i]);
       }
       for(let i = 0; i < S.PlayerSeenSkills.length; i++){
         this.raiseMixinEvent('seeSkill', {
@@ -1928,7 +1966,7 @@ export let Skills = {
         });
       }
       for(let i = 0; i < S.PlayerStartSkills.length; i++){
-        this.raiseMixinEvent('addSkillXp', {
+        this.raiseMixinEvent('gainSkill', {
           name: S.PlayerStartSkills[i],
           xp: S.getXpForSkillLevel(S.PlayerStartSkills[i], 1)
         })
@@ -1946,12 +1984,20 @@ export let Skills = {
         points: addPoints
       });
     },
+    //Gains skill without adding skill points, level xp, or sending messages
+    gainSkill: function(evtData){
+      this.addSkill(evtData.name, evtData.xp, {
+        noParts: true,
+        noLevelXp: true,
+        noMessage: true
+      });
+    },
     //Also learns skills
     addSkillXp: function(evtData){
-      this.addSkill(evtData.name, evtData.xp ? evtData.xp : 0);
+      this.addSkill(evtData.name, evtData.xp, evtData);
     },
     seeSkill: function(evtData){
-      this.addSkill(evtData.name, 0, true);
+      this.addSkill(evtData.name, 0, {seen: true});
     },
     levelUpSkill: function(evtData){
       let skillInfo = this.getSkillInfo(evtData.name);
@@ -1962,7 +2008,9 @@ export let Skills = {
           if(S.hasPrereqs(evtData.name, this.getSkills())){
             let newSkillPoints = Math.trunc((skillPoints * S.ExperienceMultiplier - xpNeeded) / S.ExperienceMultiplier);
             this.setSkillPoints(newSkillPoints);
-            this.addSkill(evtData.name, xpNeeded);
+            this.addSkill(evtData.name, xpNeeded, {
+              noParts: true
+            });
           }
           else{
             this.raiseMixinEvent('skillLevelUpFailed', {
@@ -1988,12 +2036,67 @@ export let Skills = {
   }
 }
 
+export let LevelProgress = {
+  META: {
+    mixinName: 'LevelProgress',
+    mixinGroupName: 'SkillsGroup',
+    stateNamespace: '_LevelProgress',
+    stateModel: {
+      levelXp: 0
+    },
+    initialize: function(){
+      // do any initialization
+    }
+  },
+  METHODS: {
+    getLevelXp(){
+      return this.attr._LevelProgress.levelXp;
+    },
+    setLevelXp(s){
+      this.attr._LevelProgress.levelXp = s;
+    },
+    addXp(xp){
+      if(!xp){
+        return;
+      }
+      let oldLevel = this.getLevel();
+      let oldXp = this.getLevelXp();
+      let newLevel = S.getCharacterLevelFromXp(oldXp + xp);
+      if(newLevel > oldLevel){
+        for(let i = 0; i < newLevel - oldLevel; i++){
+          this.raiseMixinEvent('characterLevelUp', {
+            level: oldLevel + i + 1
+          });
+        }
+        this.setLevel(newLevel);
+      }
+      this.setLevelXp(oldXp + xp);
+    },
+    currentLevelXp(){
+      return S.getXpForCharacterLevel(this.getLevel());
+    },
+    nextLevelXp(){
+      return S.getXpForCharacterLevel(this.getLevel() + 1);
+    }
+  },
+  LISTENERS: {
+    addLevelXp(evtData){
+      this.addXp(evtData.xp);
+    }
+  }
+}
+
 //Requires Skills
 export let SkillLearner = {
   META: {
     mixinName: 'SkillLearner',
     mixinGroupName: 'SkillsGroup',
     stateNamespace: '_SkillLearner',
+    stateModel: {
+      beenTo: {
+        //floor:been(bool)
+      }
+    },
     initialize: function(){
       // do any initialization
     }
@@ -2055,6 +2158,19 @@ export let SkillLearner = {
         }
       }
       return true;
+    },
+    beenTo: function(){
+      return this.attr._SkillLearner.beenTo;
+    },
+    newFloorSkill: function(floor){
+      let beenToFloors = this.beenTo();
+      let floorNum = `f${floor}`;
+      if(!beenToFloors[floorNum]){
+        beenToFloors[floorNum] = true;
+        this.raiseMixinEvent('addSkillPoints',{
+          points: 100
+        });
+      }
     }
   },
   LISTENERS: {
@@ -2066,6 +2182,119 @@ export let SkillLearner = {
         if(xpGain && xpGain[evtName]){
           this.gainXpFromEvent(skillName, xpGain[evtName], evtData);
         }
+      }
+    },
+    nextFloor: function(evtData){
+      this.newFloorSkill(evtData.floor);
+    },
+    previousFloor: function(evtData){
+      this.newFloorSkill(evtData.floor);
+    }
+  }
+}
+
+export let Race = {
+  META: {
+    mixinName: 'Race',
+    mixinGroupName: 'StatsGroup',
+    stateNamespace: '_Race',
+    stateModel: {
+      race: []
+    },
+    initialize: function(template){
+      this.attr._CharacterStats.race = template.race || 'human';
+    }
+  },
+  METHODS: {
+    getRace(){
+      return this.attr._Race.race;
+    }
+  },
+  LISTENERS: {
+
+  }
+}
+
+export let CharacterStats = {
+  META: {
+    mixinName: 'CharacterStats',
+    mixinGroupName: 'StatsGroup',
+    stateNamespace: '_CharacterStats',
+    stateModel: {
+      statNames: []
+    },
+    initialize: function(template){
+      this.attr._CharacterStats.statNames = template.statNames || [];
+    }
+  },
+  METHODS: {
+    getStatNames: function(){
+      return this.attr._CharacterStats.statNames;
+    },
+    getCharacterStats: function(){
+      let output = Array();
+      let statNames = this.getStatNames();
+      for(let i = 0; i < statNames.length; i++){
+        let statName = statNames[i];
+        let statValue = this.getStat(statName);
+        output.push([statName, statValue]);
+      }
+      return output;
+    }
+  },
+  LISTENERS: {
+    characterLevelUp: function(evtData){
+      let statIncrease = {
+        maxHp: evtData.level,
+        strength: 0,
+        agility: 0,
+        endurance: 0,
+        charisma: 0,
+        magic: 0,
+        knowledge: 0
+      };
+      //Increase all stats every 4 levels
+      if(evtData.level % 4 == 0){
+        statIncrease = {
+          maxHp: evtData.level,
+          strength: 1,
+          agility: 1,
+          endurance: 1,
+          charisma: 1,
+          magic: 1,
+          knowledge: 1
+        };
+      }
+      let levelUpInfo;
+      if(typeof this.getRace === 'function'){
+        levelUpInfo = getLevelUpInfo(this.getRace());
+      }
+      else{
+        levelUpInfo = getLevelUpInfo();
+      }
+      if(levelUpInfo.maxHp){
+        statIncrease.maxHp += levelUpInfo.maxHp;
+      }
+      if(levelUpInfo.fixed){
+        for(let i = 0; i < levelUpInfo.fixed.length; i++){
+          statIncrease[levelUpInfo.fixed[i]] += 1;
+        }
+      }
+      if(levelUpInfo.random){
+        for(let i = 0; i < levelUpInfo.random.length; i++){
+          let count = levelUpInfo.random[i].count;
+          if(!count){
+            count = 1;
+          }
+          let statIncreases = levelUpInfo.random[i].inStats;
+          let shuffled = U.shuffleArray(U.deepCopy(statIncreases));
+          for(let j = 0; j < count; j++){
+            statIncrease[shuffled[j]] += 1;
+          }
+        }
+      }
+      for(let stat in statIncrease){
+        this.setStat(stat, this.getStat(stat) + statIncrease[stat]);
       }
     }
   }

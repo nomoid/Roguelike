@@ -237,4 +237,15 @@ export function successCalc(result, partition){
     }
   }
   return partition.length;
+//Code adapted from https://stackoverflow.com/questions/6274339/how-can-i-shuffle-an-array
+//Retrieved 2018-01-25
+export function shuffleArray(a) {
+    var j, x, i;
+    for (i = a.length - 1; i > 0; i--) {
+        j = Math.floor(ROT.RNG.getUniform() * (i + 1));
+        x = a[i];
+        a[i] = a[j];
+        a[j] = x;
+    }
+    return a;
 }
