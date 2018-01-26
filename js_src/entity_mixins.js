@@ -724,6 +724,9 @@ export let MeleeAttacker = {
       if(evtData.target.getName()==='chest'){
         evtData.target.raiseMixinEvent('openChest', {src: this});
       }
+      else if(evtData.target.getName()==='open_chest'){
+        //Do nothing
+      }
       else{
         this.raiseMixinEvent('attacking', evtData);
       }

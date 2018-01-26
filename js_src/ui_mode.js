@@ -350,7 +350,7 @@ export class WinMode extends UIMode{
   }
 
   renderMain(display){
-    display.drawText(2, 2, "You have won the game of PickledPopcorn")
+    display.drawText(2, 2, "You have won the game of Legend of J. Stay tuned for more.")
     display.drawText(2, 15, "Press any key to restart...")
   }
 

@@ -76,19 +76,23 @@ export let TILE_GRID_POPULATOR = {
 
 let LootTables = {
   'basic': {
-    itemCount: 8,
+    itemCount: 6,
     lootSet: {
       weapon: {
         item: 'randomWeapon',
-        chance: 1
+        chance: 1000
       },
       armor: {
         item: 'randomArmor',
-        chance: 1
+        chance: 1000
       },
       food: {
         item: 'randomFood',
-        chance: 2
+        chance: 2000
+      },
+      relic: {
+        item: 'relic',
+        chance: 1
       }
     }
   }
@@ -247,6 +251,13 @@ let ItemTables = {
     },
     {
       item: 'Swiftness Candy',
+      type: 'item',
+      chance: 1
+    }
+  ],
+  'relic': [
+    {
+      item: 'Holy Water of J',
       type: 'item',
       chance: 1
     }

@@ -105,6 +105,18 @@ export let Items = {
           buffName: "poisioning_1"
         }
     ]
+  },
+  "Holy Water of J": {
+    name: "Holy Water of J",
+    type: "Food",
+    description: "An extremely rare and sought after relic. It is unknown what consuming this item would do...",
+    effects: [
+      {
+        mixinEvent: "switchMode",
+        type: "switch",
+        mode: "win"
+      }
+    ]
   }
 
 

@@ -160,7 +160,7 @@ export let Equipment = {
         pick: 2
       },
       damage: {
-        base: 6,
+        base: 5,
         numDice: 2,
         diceVal: 10
       },
@@ -181,7 +181,7 @@ export let Equipment = {
         pick: 2
       },
       damage: {
-        base: 8,
+        base: 7,
         numDice: 2,
         diceVal: 12
       },
@@ -266,7 +266,7 @@ export let Equipment = {
     type: "Equipment",
     slot: "Secondary Hand",
     equipmentData: {
-      defense: 2
+      defense: 3
     },
     description: "Simple iron shield. Provides ${this.equipmentData.defense} defense."
   },
@@ -292,7 +292,7 @@ export let Equipment = {
         pick: 2
       },
       damage: {
-        base: 4,
+        base: 3,
         numDice: 2,
         diceVal: 8
       },
