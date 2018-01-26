@@ -84,7 +84,7 @@ export let BINDING_DESCRIPTIONS_SHORT = {
     CONSUME: "Consume",
     UPGRADE: "Level up",
     TRASH: "Trash",
-    ENTER_BINDINGS: "Bindings"
+    ENTER_BINDINGS: "Key Bindings"
   },
   GAME: {
     MOVE_NORTH: "North",
@@ -100,7 +100,7 @@ export let BINDING_DESCRIPTIONS_SHORT = {
     ENTER_STATS: "Stats",
     ENTER_PERSISTENCE: "Save/load",
     ENTER_MESSAGES: "Messages",
-    ENTER_BINDINGS: "Bindings",
+    ENTER_BINDINGS: "Key Bindings",
     NEXT_FLOOR: "Next floor",
     PREV_FLOOR: "Prev floor"
   },

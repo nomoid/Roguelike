@@ -664,6 +664,7 @@ export class PersistenceMode extends UIMode{
       Message.send("Error Loading!");
       throw e;
     }
+    this.deleteSave(uid);
   }
 
   deleteSave(uid){
