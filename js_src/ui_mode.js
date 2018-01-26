@@ -148,12 +148,7 @@ export class PlayMode extends UIMode{
   }
 
   renderAvatar(display){
-    display.drawText(2, 2, "AVATAR, THIS IS");
-    display.drawText(2, 3, `Time: ${this.getAvatar().getTime()}`);
-    display.drawText(2, 4, `HP: ${this.getAvatar().getHp()}/${this.getAvatar().getStat('maxHp')}`);
-    display.drawText(2, 5, `Location: ${this.getAvatar().getX()}, ${this.getAvatar().getY()}`);
-    display.drawText(2, 6, `Floor: ${this.game.currMap+1}`);
-    display.drawText(2, 7, `${DATASTORE.MAPS[this.game.getMapId()].getMobAmounts('jdog')} jdogs left`);
+    U.renderAvatar(display, this.getAvatar(), this.game, 'play');
   }
 
   handleInput(eventType, evt){
@@ -951,6 +946,10 @@ export class InventoryMode extends UIMode{
 
   }
 
+  renderAvatar(display){
+    U.renderAvatar(display, this.getAvatar(), this.game, 'inventory');
+  }
+
   handleInput(eventType, evt){
     if(eventType == "keyup"){
       if(evt.key == BINDINGS.MASTER.EXIT_MENU){
@@ -1128,8 +1127,12 @@ export class EquipmentMode extends UIMode{
     }
     else if(selectedItem){
       display.drawText(functionalityX, functionalityY, `[${BINDINGS.INVENTORY.UNEQUIP}] - Unequip`);
-      display.drawText(functionalityX, functionalityY, `[${BINDINGS.INVENTORY.DROP}] - Drop`);
+      display.drawText(functionalityX, functionalityY + 1, `[${BINDINGS.INVENTORY.DROP}] - Drop`);
     }
+  }
+
+  renderAvatar(display){
+    U.renderAvatar(display, this.getAvatar(), this.game, 'equipment');
   }
 
   handleInput(eventType, evt){
@@ -1369,6 +1372,10 @@ export class SkillsMode extends UIMode{
     }
   }
 
+  renderAvatar(display){
+    U.renderAvatar(display, this.getAvatar(), this.game, 'skills');
+  }
+
   getSkillArray(){
     let skillArray = Array();
     let skills = this.getAvatar().getSkills();
@@ -1508,6 +1515,10 @@ export class StatsMode extends UIMode{
       let statName = getStatDisplayName(stat);
       display.drawText(2, 4 + i, `${statName}: ${statValue}`);
     }
+  }
+
+  renderAvatar(display){
+    U.renderAvatar(display, this.getAvatar(), this.game, 'stats');
   }
 
   handleInput(eventType, evt){
