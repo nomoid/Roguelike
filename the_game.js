@@ -355,6 +355,7 @@ exports.localStorageAvailable = localStorageAvailable;
 exports.deepCopy = deepCopy;
 exports.fillTemplate = fillTemplate;
 exports.romanNumeral = romanNumeral;
+exports.roll = roll;
 
 var _datastore = __webpack_require__(28);
 
@@ -539,6 +540,55 @@ function romanNumeral(num) {
     }
   }
   return roman;
+}
+
+function roll(num, diceVal, pickNum, highest) {
+  //pass in highest as false if you want to pick low
+  pickNum = pickNum || num;
+  if (pickNum > num) {
+    pickNum = num;
+  }
+  var total = 0;
+  var dice = [];
+  for (var i = 0; i < num; i++) {
+    var _roll = Math.floor(_rotJs2.default.RNG.getUniform() * diceVal) + 1;
+    dice.push(_roll);
+  }
+  for (var p = 0; p < pickNum; p++) {
+    var min = void 0,
+        max = void 0,
+        minIndex = void 0,
+        maxIndex = void 0;
+    if (highest) {
+      max = 0;
+      maxIndex = 0;
+    } else {
+      min = diceVal + 1;
+      minIndex = 0;
+    }
+    for (var n = 0; n < dice.length; n++) {
+      if (highest) {
+        if (dice[n] > max) {
+          max = dice[n];
+          maxIndex = n;
+        }
+      } else {
+        if (dice[n] < min) {
+          min = dice[n];
+          minIndex = n;
+        }
+      }
+    }
+    if (highest) {
+      total += max;
+      dice.splice(maxIndex, 1);
+    } else {
+      total += min;
+      dice.splice(minIndex, 1);
+    }
+  }
+
+  return total;
 }
 
 /***/ }),
@@ -16981,6 +17031,9 @@ var Game = exports.Game = {
     console.dir(this);
     console.log('datastore');
     console.dir(_datastore.DATASTORE);
+    for (var i = 0; i < 10; i++) {
+      console.log(U.roll(5, 6, 2, true));
+    }
   },
 
   setupDisplays: function setupDisplays() {
@@ -19247,8 +19300,14 @@ var Combat = exports.Combat = {
   },
   METHODS: {},
   LISTENERS: {
-    'attacking': function attacking(evtData) {},
-    'defending': function defending(evtData) {}
+    'attacking': function attacking(evtData) {
+      var defender = evtData.target;
+
+      foe.raiseMixinEvent('defending', newData);
+    },
+    'defending': function defending(evtData) {
+      var attacker = evtData.src;
+    }
   }
 };
 

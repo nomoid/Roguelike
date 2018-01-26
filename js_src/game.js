@@ -64,6 +64,9 @@ export let Game = {
     console.dir(this);
     console.log('datastore');
     console.dir(DATASTORE);
+    for(let i = 0; i < 10; i++){
+      console.log(U.roll(5,6,2,true));
+    }
 
   },
 

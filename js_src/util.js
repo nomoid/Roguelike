@@ -180,3 +180,53 @@ export function romanNumeral(num) {
   }
   return roman;
 }
+
+export function roll(num, diceVal, pickNum, highest){
+  //pass in highest as false if you want to pick low
+  pickNum = pickNum || num;
+  if(pickNum > num){
+    pickNum = num;
+  }
+  let total = 0;
+  let dice = [];
+  for (let i = 0; i < num; i++){
+    let roll = Math.floor(ROT.RNG.getUniform()*diceVal)+1;
+    dice.push(roll);
+  }
+  for(let p=0; p<pickNum; p++){
+    let min, max, minIndex, maxIndex;
+    if(highest){
+      max = 0;
+      maxIndex = 0;
+    }
+    else{
+      min = diceVal+1;
+      minIndex = 0;
+    }
+    for(let n=0; n<dice.length; n++){
+      if(highest){
+        if(dice[n]>max){
+          max = dice[n];
+          maxIndex = n;
+        }
+      }
+      else{
+        if(dice[n]<min){
+          min = dice[n]
+          minIndex = n;
+        }
+      }
+    }
+    if(highest){
+      total+=max;
+      dice.splice(maxIndex, 1);
+    }
+    else{
+      total+=min;
+      dice.splice(minIndex, 1);
+    }
+  }
+
+  return total;
+
+}
