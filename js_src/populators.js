@@ -68,7 +68,7 @@ export let TILE_GRID_POPULATOR = {
 
 let LootTables = {
   'basic': {
-    itemCount: 4,
+    itemCount: 8,
     lootSet: {
       weapon: {
         item: 'randomWeapon',

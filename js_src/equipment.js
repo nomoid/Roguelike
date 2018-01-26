@@ -206,7 +206,7 @@ export let Equipment = {
         numDice: 4,
         diceVal: 6
       },
-      partition: [6, 9, 14]
+      partition: [6, 8, 14]
     },
     description: "A lightweight handaxe ideal for axe training. Deals ${this.equipmentData.damage.base} to ${this.equipmentData.damage.base+this.equipmentData.damage.numDice*this.equipmentData.damage.diceVal} damage."
   },
@@ -227,7 +227,7 @@ export let Equipment = {
         numDice: 6,
         diceVal: 6
       },
-      partition: [9, 12, 18]
+      partition: [8, 12, 18]
     },
     description: "A two-handed heavy axe that may be difficult to use. Deals ${this.equipmentData.damage.base} to ${this.equipmentData.damage.base+this.equipmentData.damage.numDice*this.equipmentData.damage.diceVal} damage."
   },

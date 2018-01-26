@@ -1650,8 +1650,9 @@ export let Inventory = {
     initAvatar: function(evtData){
       let startingEquipment = [
         "dagger",
+        "wooden_shield",
         "boots_leather",
-        "armor_leather",
+        /*"armor_leather",
         "helmet_leather",
         "pants_leather",
         "gauntlets_leather",
@@ -1661,12 +1662,13 @@ export let Inventory = {
         "longsword",
         "axe",
         "battle_axe",
-        "wooden_shield",
         "legendary_sword",
         "legendary_axe",
-        "legendary_dagger"
+        "legendary_dagger"*/
       ];
-      let item = generateItem("Swiftness Candy");
+      let item = generateItem("Apple");
+      this.addItem(item);
+      item = generateItem("Swiftness Candy");
       this.addItem(item);
       for(let i = 0; i < startingEquipment.length; i++){
         let equip1 = generateEquipment(startingEquipment[i]);
@@ -2699,6 +2701,11 @@ export let CharacterStats = {
             statIncrease[shuffled[j]] += 1;
           }
         }
+      }
+      if(statIncrease.maxHp){
+        this.raiseMixinEvent('healed', {
+          healAmount: statIncrease.maxHp
+        });
       }
       for(let stat in statIncrease){
         this.setStat(stat, this.getStat(stat) + statIncrease[stat]);
