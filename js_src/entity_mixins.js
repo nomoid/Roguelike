@@ -76,6 +76,12 @@ export let TimeTracker = {
         timeCounter: this.getTime()
       });
       this.raiseMixinEvent('turnDone');
+    },
+    requestContextText: function(evtData){
+      if(this.getTime() < 50){
+        let message = `Check here for useful tips/info!`;
+        evtData.contextHolder.playerContext.push([19, message]);
+      }
     }
   }
 };
@@ -169,7 +175,7 @@ export let WalkerCorporeal = {
       if(positionInfo.entity){
         if(positionInfo.entity.getName() == "Chest"){
           let message = messageStart + 'Open chest';
-          contextHolder.mapContext.push([50, message]);
+          contextHolder.mapContext.push([80, message]);
         }
         else if(positionInfo.entity.getName() == "jdog"){
           let message = messageStart + 'Attack';
@@ -184,10 +190,14 @@ export let WalkerCorporeal = {
           let message =  `[${BINDINGS.GAME.NEXT_FLOOR}] - Go down to the next floor`;
           contextHolder.mapContext.push([120, message]);
         }
-        if(positionInfo.tile.isA('stairs_up')){
+        else if(positionInfo.tile.isA('stairs_up')){
           let message =  `[${BINDINGS.GAME.PREV_FLOOR}] - Go up from the previous floor`;
           contextHolder.mapContext.push([110, message]);
         }
+      }
+      if(positionInfo.item){
+        let message = `[${BINDINGS.GAME.PICK_UP_ITEM}] - Pick up one item/[${BINDINGS.GAME.PICK_UP_ALL_ITEMS}] - Pick up all items`;
+        contextHolder.mapContext.push([60, message]);
       }
     }
   },
@@ -196,6 +206,32 @@ export let WalkerCorporeal = {
       this.tryWalk(evtData.dx, evtData.dy);
     },
     requestContextText: function(evtData){
+      //Player context
+      if(this.getMap().attr.floor == 0){
+        let message = `Try finding the stairs to the next floor (>)`;
+        evtData.contextHolder.playerContext.push([10, message]);
+      }
+      else if(this.getMap().attr.floor == 1){
+        let message = `Press [${BINDINGS.GAME.ENTER_SKILLS}] to open your skill menu and upgrade your skills.`;
+        evtData.contextHolder.playerContext.push([1, message]);
+      }
+      else if(this.getMap().attr.floor == 2){
+        let message = `Good luck on your journey!`;
+        evtData.contextHolder.playerContext.push([1, message]);
+      }
+      //Map context
+      if(this.getMap().attr.floor == 0){
+        let message = `Use arrow keys to move/attack (can be rebound using [${BINDINGS.GAME.ENTER_BINDINGS}])`;
+        evtData.contextHolder.mapContext.push([1, message]);
+      }
+      else if(this.getMap().attr.floor == 1){
+        let message = `Press [${BINDINGS.GAME.ENTER_INVENTORY}] to open your inventory to eat food or equip items.`;
+        evtData.contextHolder.mapContext.push([1, message]);
+      }
+      else if(this.getMap().attr.floor == 2){
+        let message = `Try to find out how far you can get!`;
+        evtData.contextHolder.mapContext.push([1, message]);
+      }
       //Check 4 tiles around you
       this.checkAdjacentContextTile(evtData.contextHolder, -1, 0);
       this.checkAdjacentContextTile(evtData.contextHolder, 1, 0);

@@ -158,7 +158,7 @@ export class PlayMode extends UIMode{
     if(this.attr.mapContextMessage){
       display.drawText(0, bottom, this.attr.mapContextMessage);
     }
-    else if(this.attr.playerContextMessage){
+    if(this.attr.playerContextMessage){
       display.drawText(0, bottom - 1, this.attr.playerContextMessage);
     }
   }
