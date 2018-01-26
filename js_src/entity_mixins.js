@@ -1515,7 +1515,11 @@ export let ItemDropper = {
     mixinName: 'ItemDropper',
     mixinGroupName: 'ItemGroup',
     stateNamespace: '_ItemDropper',
-    initialize: function(){
+    stateModel: {
+      dropItem: ''
+    },
+    initialize: function(template){
+      this.attr._ItemDropper.dropItem = template.dropItem;
     }
   },
   METHODS: {
@@ -1525,21 +1529,13 @@ export let ItemDropper = {
     //For testing, drop a dummy item
     killed: function(evtData){
       if(evtData.src.getName() == 'avatar'){
-        for(let i = 0; i < 10; i++){
+        if(this.attr._ItemDropper.dropItem){
           let itemData = {x: this.getX(), y: this.getY()};
-          itemData.item = generateItem("JDog's Ramen");
-          this.raiseMixinEvent('addItemToMap', itemData);
-        }
-        for(let i = 0; i < 2; i++){
-          let itemData = {x: this.getX(), y: this.getY()};
-          itemData.item = generateItem("JDog's Calves");
+          itemData.item = generateItem(this.attr._ItemDropper.dropItem);
           this.raiseMixinEvent('addItemToMap', itemData);
         }
       }
       else{
-        let itemData = {x: this.getX(), y: this.getY()};
-        itemData.item = generateItem("JDog's Spicy Ramen");
-        this.raiseMixinEvent('addItemToMap', itemData);
       }
     }
   }
