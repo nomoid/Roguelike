@@ -113,8 +113,11 @@ export let Skills = {
     name: 'Dodging',
     difficulty: 2,
     prerequisite: 'Athletics',
-    modifyDodge: function(dodgeData, level){
-
+    modifyDodge: function(dodgeData, level, defending, speedDiff){
+      if(defending){
+        dodgeData.modifier = speedDiff * (1+0.2*level);
+      }
+      dodgeData.diceVal += 3*level;
     },
     xpGain: {
 

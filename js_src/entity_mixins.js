@@ -339,17 +339,46 @@ export let Combat = {
       let attacker = evtData.src;
       let crit = evtData.crit;
 
+      //dodging
       let attackerSpeed = attacker.getStat('speed');
       let defenderSpeed = this.getStat('speed');
+      let difference = defenderSpeed - attackerSpeed;
+      let attackerDiceData;
+      let defenderDiceData;
+      attackerDiceData.diceNum = attackerSpeed;
+      defenderDiceData.diceNum = attackerSpeed;
+      attackerDiceData.diceVal = 15;
+      defenderDiceData.diceVal = 12;
+      attackerDiceData.modifier = 0;
+      defenderDiceData.modifier = 0;
+
+      S['Dodging'].modifyDodge(attackerDiceData, attacker.getSkillInfo('Dodging').level);
+      S['Dodging'].modifyDodge(defenderDiceData, defender.getSkillInfo('Dodging').level, true, difference);
+
+      let attackResult = U.roll(attackerData.diceNum, attackerData.diceVal);
+      let defendResult = U.roll(defenderData.diceNum, defenderData.diceVal);
+      let success = 0;
+      if(defendResult > attackResult){
+        success = 1;
+      }
+      if(crit){
+        let success2 = 0;
+        let attack2 = U.roll(attackerData.diceNum, attackerData.diceVal);
+        let defend2 = U.roll(defenderData.diceNum, defenderData.diceVal);
+        success = Math.min(success, success2);
+      }
+      if(success == 1){
+        attacker.raiseMixinEvent('attackDodged', {target: this});
+        this.raiseMixinEvent('dodgedAttack', {src: attacker, theyCrit: crit});
+      }
+
 
       //blocking
       let shield = this.getEquipment().secondaryHand;
       let diceData;
+      diceData.diceNum = 1;
       if(shield){
         diceData.diceNum = 2;
-      }
-      else{
-        diceData.diceNum = 1;
       }
       diceData.diceVal = 20;
       diceData.pick = 1;
