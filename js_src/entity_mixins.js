@@ -14,6 +14,7 @@ import * as S from './skills.js';
 import {getLevelUpInfo} from './stats.js';
 import {BINDINGS} from './keybindings.js';
 import {generateLoot} from './populators.js';
+import {EntityFactory} from './entities.js';
 
 let _exampleMixin = {
   META: {
@@ -1688,7 +1689,14 @@ export let Chest = {
         itemData.item = items[i];
         this.raiseMixinEvent('addItemToMap', itemData);
       }
+      let map = this.getMap();
+      let x = this.getX();
+      let y = this.getY();
       this.clearItems();
+      this.destroy();
+      //Kill this chest, replace it with an opened one
+      let mob = EntityFactory.create('open_chest', true);
+      map.addEntityAt(mob, x, y);
     }
   }
 }

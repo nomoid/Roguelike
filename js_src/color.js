@@ -4,6 +4,7 @@ export let Color = {
   ITEM_PILE_FG: '#ff0',
   AVATAR_FG: '#eb4',
   CHEST_FG: '#a61',
+  CHEST_OPENED_FG: '#777',
   TEXT_ACTIVE: '#ccc',
   TEXT_DISABLED: '#555',
   TEXT_CHANGING_KEY: '#cc4',

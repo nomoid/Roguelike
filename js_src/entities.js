@@ -69,3 +69,11 @@ EntityFactory.learn({
   team: 'baddies',
   mixinNames: ['ItemPile', 'Chest', 'TeamMember']
 });
+
+EntityFactory.learn({
+  name: 'open_chest',
+  chr: '\u25a4',
+  fg: Color.CHEST_OPENED_FG,
+  team: 'baddies',
+  mixinNames: ['TeamMember']
+})
