@@ -128,17 +128,17 @@ let ItemTables = {
     {
       item: 'legendary_sword',
       type: 'equipment',
-      chance: 1
+      chance: 5
     },
     {
       item: 'legendary_dagger',
       type: 'equipment',
-      chance: 1
+      chance: 5
     },
     {
       item: 'legendary_axe',
       type: 'equipment',
-      chance: 1
+      chance: 5
     }
   ],
   'randomArmor': [
@@ -155,7 +155,7 @@ let ItemTables = {
     {
       item: 'legendary_shield',
       type: 'equipment',
-      chance: 1
+      chance: 5
     },
     {
       item: 'armor_leather',
@@ -170,7 +170,7 @@ let ItemTables = {
     {
       item: 'armor_legendary',
       type: 'equipment',
-      chance: 1
+      chance: 5
     },
     {
       item: 'helmet_leather',
@@ -185,7 +185,7 @@ let ItemTables = {
     {
       item: 'helmet_legendary',
       type: 'equipment',
-      chance: 1
+      chance: 5
     },
     {
       item: 'boots_leather',
@@ -200,7 +200,7 @@ let ItemTables = {
     {
       item: 'boots_legendary',
       type: 'equipment',
-      chance: 1
+      chance: 5
     },
     {
       item: 'gauntlets_leather',
@@ -215,7 +215,7 @@ let ItemTables = {
     {
       item: 'gauntlets_legendary',
       type: 'equipment',
-      chance: 1
+      chance: 5
     },
     {
       item: 'pants_leather',
@@ -230,7 +230,7 @@ let ItemTables = {
     {
       item: 'pants_legendary',
       type: 'equipment',
-      chance: 1
+      chance: 5
     },
     {
       item: 'cursed_boots',
