@@ -33,7 +33,66 @@ export let Items = {
       buffName: "haste_1"
     },
     description: "A candy that makes you act twice as fast."
+  },
+  "Applesauce": {
+    name: "Applesauce",
+    type: "Food",
+    description: "A very tasty snack, often hoarded by Thomas. Heals for ${this.effect.healAmount} and regenerates lots of health for a long time.",
+    effects:[
+      {
+        mixinEvent: "healed",
+        healAmount: 30
+      },
+      {
+        mixinEvent: "addBuffFromName",
+        buffName: "hp_regen_2",
+      }
+    ]
+  },
+  "Dog Food": {
+    name: "Dog Food",
+    type: "Food",
+    description: "A nasty pile of food that only the hounds could enjoy. Heals for ${this.effect.healAmount}.",
+    effect: {
+      mixinEvent: "healed",
+      healAmount: 8
+    }
+  },
+  "Apple": {
+    name: "Apple",
+    type: "Food",
+    description: "A hearty snack. Heals for ${this.effect.healAmount}.",
+    effect: {
+      mixinEvent: "healed",
+      healAmount: 16
+    }
+  },
+  "Bread": {
+    name: "Bread",
+    type: "Food",
+    description: "A hearty snack. Heals for ${this.effect.healAmount}.",
+    effect: {
+      mixinEvent: "healed",
+      healAmount: 20
+    }
+  },
+
+  "Minotaur Horn": {
+    name: "Minotaur Horn",
+    type: "Key Item",
+    description: "A bloody horn cut from the Minotaur's head."
+  },
+  "Guano": {
+    name: "Guano",
+    type: "Food",
+    description: "Absolutely disgusting but nutrient rich. Increases speed when eaten.",
+    effect: {
+      mixinEvent: "addBuffFromName",
+      buffName: "haste_1"
+    }
   }
+
+
 };
 
 export function generateItem(name){

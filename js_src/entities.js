@@ -25,20 +25,82 @@ EntityFactory.learn({
     knowledge: 10
   },
   statNames: ['maxHp', 'strength', 'agility', 'endurance', 'charisma', 'magic', 'knowledge'],
-  mixinNames: ['TimeTracker', 'WalkerCorporeal', 'Combat', 'PlayerMessage', 'TeamMember', 'HitPoints', 'ActorPlayer', 'MeleeAttacker', 'FOVHandler', 'ItemPile', 'Inventory', 'Equipment', 'Skills', 'SkillLearner', 'LevelProgress', 'CharacterStats', 'ItemConsumer', 'BuffHandler', 'Bloodthirst']
+  mixinNames: ['TimeTracker', 'WalkerCorporeal', 'Combat', 'PlayerMessage', 'TeamMember', 'HitPoints', 'ActorPlayer', 'MeleeAttacker', 'FOVHandler', 'ItemPile', 'Inventory', 'Equipment', 'Skills', 'SkillLearner', 'LevelProgress', 'CharacterStats', 'ItemConsumer', 'BuffHandler']
 });
 
 EntityFactory.learn({
-  name: 'chris',
-  chr: 'C',
-  fg: '#5d4'
+  name: 'Thomas',
+  chr: 'T',
+  fg: '#5d4',
+  radius: 16,
+  team: 'baddies',
+  remember: true,
+  enemyTeams: ['avatar'],
+  friendlyTeams: ['baddies'],
+  dropItem: 'Applesauce',
+  delay: 2000,
+  stats: {
+    maxHp: 40,
+    strength: 12,
+    endurance: 6
+  },
+  priorities: {
+    'NearsightedAttacker': 1,
+    'SightedPathfinder': 2
+  },
+  mixinNames: ['HitPoints', 'AIActor', 'LackOfSkills', 'Combat', 'WalkerCorporeal', 'TeamMember', 'MeleeAttacker', 'ItemDropper', 'FOVHandler', 'NearsightedAttacker', 'SightedEnemyTargeter', 'SightedPathfinder']
 });
 
 EntityFactory.learn({
-  name: 'jdog',
+  name: 'minotaur',
+  chr: 'M',
+  fg: '#40a',
+  radius: 4,
+  team: 'baddies',
+  remember: false,
+  enemyTeams: ['avatar'],
+  friendlyTeams: ['baddies'],
+  dropItem: 'Minotaur Horn',
+  delay: 2000,
+  stats: {
+    maxHp: 100,
+    strength: 12,
+    endurance: 10
+  },
+  priorities: {
+    'NearsightedAttacker': 1,
+    'SightedPathfinder': 2,
+  },
+  mixinNames: ['HitPoints', 'AIActor', 'LackOfSkills', 'Combat', 'WalkerCorporeal', 'TeamMember', 'MeleeAttacker', 'ItemDropper', 'FOVHandler', 'NearsightedAttacker', 'SightedEnemyTargeter', 'SightedPathfinder']
+})
+
+EntityFactory.learn({
+  name: 'bat',
+  chr: 'b',
+  fg: '#ccb',
+  team: 'baddies',
+  enemyTeams: ['avatar'],
+  friendlyTeams: ['baddies'],
+  dropItem: "Guano",
+  delay: 500,
+  stats: {
+    maxHp: 10,
+    strength: 3,
+    endurance: 2
+  },
+  priorities: {
+    'ActorRandomWalker': 1
+  },
+  mixinNames: ['HitPoints', 'AIActor', 'ActorRandomWalker', 'LackOfSkills', 'Combat', 'WalkerCorporeal', 'TeamMember', 'MeleeAttacker', 'ItemDropper']
+
+})
+
+EntityFactory.learn({
+  name: 'hound',
   chr: 'd',
   fg: '#d06',
   radius: 8,
+  dropItem: 'Dog Food',
   team: 'baddies',
   remember: true,
   enemyTeams: ['avatar'],

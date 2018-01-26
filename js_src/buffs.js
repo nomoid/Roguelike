@@ -11,6 +11,17 @@ export let Buffs = {
       healAmount: 1
     }
   },
+  "hp_regen_2": {
+    name: 'Strong HP Regeneration',
+    duration: 100,
+    frequency: 10,
+    description: 'Regenerates ${this.effect.healAmount} HP every ${this.frequency} turns.',
+    effect: {
+      mixinEvent: "healed",
+      healAmount: 8
+    }
+  },
+
   "lifelink_1": {
     name: 'Lifelink',
     duration: 50,
