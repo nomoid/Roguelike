@@ -7,7 +7,7 @@ import {TIME_ENGINE, SCHEDULER, setTimedUnlocker} from './timing.js';
 import {DATASTORE} from './datastore.js';
 import {Color} from './color.js';
 import {generateItem} from './items.js';
-import {generateEquipment, EquipmentSlots} from './equipment.js';
+import {generateEquipment, EquipmentSlots, getHit, getDamage} from './equipment.js';
 import {generateBuff} from './buffs.js';
 import * as U from './util.js';
 import * as S from './skills.js';
@@ -302,33 +302,45 @@ export let Combat = {
       let defender = evtData.target;
 
       let weapon = this.getEquipment().primaryHand;
+      let hit, success, damage;
       if(weapon){
-
+        let weaponHitDice = weapon.equipmentData.getHit();
+        let weaponDamageDice = weapon.equipmentData.getDamage();
+        let weaponSuccessPartition = weapon.equipmentData.partition;
+        let weaponSkill = weapon.equipmentData.skill;
+        S[weaponSkill].modifyHit(weaponHitDice, this.getSkillInfo(weaponSkill).level);
+        hit = U.roll(weaponHitDice.numDice, weaponHitDice.diceVal, weaponHitDice.pick);
+        success = U.successCalc(hit, weaponSuccessPartition);
+        damage = U.roll(weaponDamageDice.numDice, weaponDamageDice.diceVal, weaponDamageDice.pick);
       }
       else{
-        let hit = U.roll(1, 20);
-        let success = U.successCalc(hit, [2, 6, 20]);
-        switch (success) {
-          case 0:
-
-            break;
-          case 1:
-
-            break;
-          case 2:
-
-            break;
-          case 3:
-
-            break;
-
-        }
+        hit = U.roll(1, 20);
+        success = U.successCalc(hit, [2, 6, 20]);
+        damage = Math.floor(1.5*this.getStat('strength'));
+      }
+      switch (success) {
+        case 0://crit fail: hurt yourself
+          this.raiseMixinEvent('takingDamage', {source: this, 'damage': damage});
+          break;
+        case 1://fail: nothing happens
+          this.raiseMixinEvent('attackFailed', {target: defender});
+          defender.raiseMixinEvent('enemyAttackFailed', {src: this})
+          break;
+        case 2://success: regular hit
+          foe.raiseMixinEvent('defending', {'damage': damage, src: this, crit: false});
+          break;
+        case 3://crit: double damage, harder to defend
+          foe.raiseMixinEvent('defending', {'damage': damage*2, src: this, crit: true});
+          break;
       }
 
       foe.raiseMixinEvent('defending', newData);
     },
     'defending': function(evtData){
       let attacker = evtData.src;
+    },
+    'takingDamage': function(evtData){
+      //TODO: this
     }
   }
 }

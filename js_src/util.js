@@ -237,6 +237,7 @@ export function successCalc(result, partition){
     }
   }
   return partition.length;
+}
 //Code adapted from https://stackoverflow.com/questions/6274339/how-can-i-shuffle-an-array
 //Retrieved 2018-01-25
 export function shuffleArray(a) {
