@@ -24,7 +24,7 @@ EntityFactory.learn({
     knowledge: 10
   },
   statNames: ['maxHp', 'strength', 'agility', 'endurance', 'charisma', 'magic', 'knowledge'],
-  mixinNames: ['TimeTracker', 'WalkerCorporeal', 'PlayerMessage', 'TeamMember', 'HitPoints', 'ActorPlayer', 'MeleeAttacker', 'FOVHandler', 'ItemPile', 'Inventory', 'Equipment', 'Skills', 'SkillLearner', 'LevelProgress', 'CharacterStats', 'ItemConsumer', 'BuffHandler', 'Bloodthirst']
+  mixinNames: ['TimeTracker', 'WalkerCorporeal', 'Combat', 'PlayerMessage', 'TeamMember', 'HitPoints', 'ActorPlayer', 'MeleeAttacker', 'FOVHandler', 'ItemPile', 'Inventory', 'Equipment', 'Skills', 'SkillLearner', 'LevelProgress', 'CharacterStats', 'ItemConsumer', 'BuffHandler', 'Bloodthirst']
 });
 
 EntityFactory.learn({
@@ -52,7 +52,7 @@ EntityFactory.learn({
     'SightedPathfinder': 2,
     'ActorRandomWalker': 3
   },
-  mixinNames: ['HitPoints', 'AIActor', 'ActorRandomWalker', 'WalkerCorporeal', 'TeamMember', 'MeleeAttacker', 'ItemDropper', 'FOVHandler', 'NearsightedAttacker', 'SightedEnemyTargeter', 'SightedPathfinder']
+  mixinNames: ['HitPoints', 'AIActor', 'ActorRandomWalker', 'Combat', 'WalkerCorporeal', 'TeamMember', 'MeleeAttacker', 'ItemDropper', 'FOVHandler', 'NearsightedAttacker', 'SightedEnemyTargeter', 'SightedPathfinder']
 });
 
 EntityFactory.learn({
