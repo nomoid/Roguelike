@@ -10,6 +10,7 @@ import {generateEquipment, EquipmentSlots} from './equipment.js';
 import {generateBuff} from './buffs.js';
 import * as U from './util.js';
 import * as S from './skills.js';
+import {getLevelUpInfo} from './stats.js';
 
 let _exampleMixin = {
   META: {
@@ -1471,10 +1472,11 @@ export let LevelProgress = {
       let oldXp = this.getLevelXp();
       let newLevel = S.getCharacterLevelFromXp(oldXp + xp);
       if(newLevel > oldLevel){
-        this.raiseMixinEvent('characterLevelUp', {
-          'oldLevel': oldLevel,
-          level: newLevel
-        });
+        for(let i = 0; i < newLevel - oldLevel; i++){
+          this.raiseMixinEvent('characterLevelUp', {
+            level: oldLevel + i + 1
+          });
+        }
         this.setLevel(newLevel);
       }
       this.setLevelXp(oldXp + xp);
@@ -1576,6 +1578,28 @@ export let SkillLearner = {
   }
 }
 
+export let Race = {
+  META: {
+    mixinName: 'Race',
+    mixinGroupName: 'StatsGroup',
+    stateNamespace: '_Race',
+    stateModel: {
+      race: []
+    },
+    initialize: function(template){
+      this.attr._CharacterStats.race = template.race || 'human';
+    }
+  },
+  METHODS: {
+    getRace(){
+      return this.attr._Race.race;
+    }
+  },
+  LISTENERS: {
+
+  }
+}
+
 export let CharacterStats = {
   META: {
     mixinName: 'CharacterStats',
@@ -1604,5 +1628,59 @@ export let CharacterStats = {
     }
   },
   LISTENERS: {
+    characterLevelUp: function(evtData){
+      let statIncrease = {
+        maxHp: evtData.level,
+        strength: 0,
+        agility: 0,
+        endurance: 0,
+        charisma: 0,
+        magic: 0,
+        knowledge: 0
+      };
+      //Increase all stats every 4 levels
+      if(evtData.level % 4 == 0){
+        statIncrease = {
+          maxHp: evtData.level,
+          strength: 1,
+          agility: 1,
+          endurance: 1,
+          charisma: 1,
+          magic: 1,
+          knowledge: 1
+        };
+      }
+      let levelUpInfo;
+      if(typeof this.getRace === 'function'){
+        levelUpInfo = getLevelUpInfo(this.getRace());
+      }
+      else{
+        levelUpInfo = getLevelUpInfo();
+      }
+      if(levelUpInfo.maxHp){
+        statIncrease.maxHp += levelUpInfo.maxHp;
+      }
+      if(levelUpInfo.fixed){
+        for(let i = 0; i < levelUpInfo.fixed.length; i++){
+          statIncrease[levelUpInfo.fixed[i]] += 1;
+        }
+      }
+      if(levelUpInfo.random){
+        for(let i = 0; i < levelUpInfo.random.length; i++){
+          let count = levelUpInfo.random[i].count;
+          if(!count){
+            count = 1;
+          }
+          let statIncreases = levelUpInfo.random[i].inStats;
+          let shuffled = U.shuffleArray(U.deepCopy(statIncreases));
+          for(let j = 0; j < count; j++){
+            statIncrease[shuffled[j]] += 1;
+          }
+        }
+      }
+      for(let stat in statIncrease){
+        this.setStat(stat, this.getStat(stat) + statIncrease[stat]);
+      }
+    }
   }
 }

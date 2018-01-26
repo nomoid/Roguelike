@@ -10,8 +10,15 @@ EntityFactory.learn({
   fg: Color.AVATAR_FG,
   meleeDamage: 10,
   radius: 16,
+  race: 'human',
   stats: {
     maxHp: 100,
+    strength: 10,
+    agility: 10,
+    endurance: 10,
+    charisma: 10,
+    magic: 10,
+    knowledge: 10
   },
   statNames: ['maxHp', 'strength', 'agility', 'endurance', 'charisma', 'magic', 'knowledge'],
   mixinNames: ['TimeTracker', 'WalkerCorporeal', 'PlayerMessage', 'HitPoints', 'ActorPlayer', 'MeleeAttacker', 'FOVHandler', 'ItemPile', 'Inventory', 'Equipment', 'Skills', 'SkillLearner', 'LevelProgress', 'CharacterStats', 'ItemConsumer', 'BuffHandler', 'Bloodthirst']
