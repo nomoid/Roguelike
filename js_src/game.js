@@ -354,6 +354,7 @@ export let Game = {
         this.switchMode('lose');
         this.renderDisplayMain();
       }
+      /*
       if(src.getName() == 'jdog'){
         console.log('killed a dog');
         console.log(DATASTORE.MAPS[this.getMapId()].getMobAmounts('jdog'));
@@ -366,7 +367,7 @@ export let Game = {
             this.renderDisplayMain();
           }
         }
-      }
+      }*/
     }
     else if(evtLabel == "addItemToMap"){
       DATASTORE.MAPS[this.getMapId()].addItemAt(evtData.item, evtData.x, evtData.y);

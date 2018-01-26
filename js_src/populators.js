@@ -56,8 +56,8 @@ export let TILE_GRID_POPULATOR = {
       if(p < 0.25){
         break;
       }
-      let jdog = EntityFactory.create('jdog', true);
-      map.addEntityAtRandomPosition(jdog);
+      let dog = EntityFactory.create('hound', true);
+      map.addEntityAtRandomPosition(dog);
     }
 
 
@@ -112,12 +112,12 @@ let ItemTables = {
   ],
   'randomFood': [
     {
-      item: 'JDog\'s Ramen',
+      item: 'Apple',
       type: 'item',
       chance: 3
     },
     {
-      item: 'JDog\'s Spicy Ramen',
+      item: 'Bread',
       type: 'item',
       chance: 2
     },
