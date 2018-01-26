@@ -166,7 +166,7 @@ export let Equipment = {
       },
       partition: [6, 8, 12]
     },
-    description: "A short sword. Deals ${this.equipmentData.attack} damage."
+    description: "A short sword. Deals ${this.equipmentData.damage.base} to ${this.equipmentData.damage.base+this.equipmentData.damage.numDice*this.equipmentData.damage.diceVal} damage."
   },
   "longsword": {
     name: "Longsword",
@@ -187,7 +187,7 @@ export let Equipment = {
       },
       partition: [8, 12, 16]
     },
-    description: "A long sword. Cannot be equipped to the secondary hand. Deals ${this.equipmentData.attack} damage."
+    description: "A long sword. Cannot be equipped to the secondary hand. Deals ${this.equipmentData.damage.base} to ${this.equipmentData.damage.base+this.equipmentData.damage.numDice*this.equipmentData.damage.diceVal} damage."
   },
   "handaxe": {
     name: "Handaxe",
@@ -208,7 +208,7 @@ export let Equipment = {
       },
       partition: [6, 9, 14]
     },
-    description: "A lightweight handaxe ideal for axe training. Deals ${this.equipmentData.attack} damage."
+    description: "A lightweight handaxe ideal for axe training. Deals ${this.equipmentData.damage.base} to ${this.equipmentData.damage.base+this.equipmentData.damage.numDice*this.equipmentData.damage.diceVal} damage."
   },
   "axe": {
     name: "Axe",
@@ -229,7 +229,7 @@ export let Equipment = {
       },
       partition: [9, 12, 18]
     },
-    description: "A heavy axe that may be difficult to use. Deals ${this.equipmentData.attack} damage."
+    description: "A two-handed heavy axe that may be difficult to use. Deals ${this.equipmentData.damage.base} to ${this.equipmentData.damage.base+this.equipmentData.damage.numDice*this.equipmentData.damage.diceVal} damage."
   },
   "battle_axe": {
     name: "Battle Axe",
@@ -250,7 +250,7 @@ export let Equipment = {
       },
       partition: [12, 16, 24]
     },
-    description: "A very difficult to handle heavy axe weapon. Deals ${this.equipmentData.attack} damage."
+    description: "A very difficult to handle two-handed heavy axe weapon. Deals ${this.equipmentData.damage.base} to ${this.equipmentData.damage.base+this.equipmentData.damage.numDice*this.equipmentData.damage.diceVal} damage."
   },
   "wooden_shield": {
     name: "Wooden Shield",
@@ -319,7 +319,7 @@ export let Equipment = {
       },
       partition: [8, 12, 16]
     },
-    description: "A special sword forged by the strongest metals. Deals ${this.equipmentData.attack} damage."
+    description: "A special sword forged by the strongest metals. Deals ${this.equipmentData.damage.base} to ${this.equipmentData.damage.base+this.equipmentData.damage.numDice*this.equipmentData.damage.diceVal} damage."
   },
   "legendary_dagger": {
     name: "Legendary Dagger",
@@ -340,7 +340,7 @@ export let Equipment = {
       },
       partition: [0, 0, 8]
     },
-    description: "A special dagger with mysterious properties. Deals ${this.equipmentData.attack} damage."
+    description: "A special dagger with mysterious properties. Deals ${this.equipmentData.damage.base} to ${this.equipmentData.damage.base+this.equipmentData.damage.numDice*this.equipmentData.damage.diceVal} damage."
   },
   "legendary_axe": {
     name: "Legendary Axe",
@@ -361,7 +361,7 @@ export let Equipment = {
       },
       partition: [0, 16, 24]
     },
-    description: "A special axe that provides an aura of protection around its user. Deals ${this.equipmentData.attack} damage."
+    description: "A special axe that provides an aura of protection around its user. Deals ${this.equipmentData.damage.base} to ${this.equipmentData.damage.base+this.equipmentData.damage.numDice*this.equipmentData.damage.diceVal} damage."
   }
 }
 

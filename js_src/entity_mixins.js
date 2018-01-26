@@ -335,7 +335,7 @@ export let PlayerMessage = {
       Message.send(`That ${evtData.target.getName()} is friendly! Don't attack.`);
     },
     damages: function(evtData){
-      Message.send(`You deal ${evtData.damageAmount} damage to the ${evtData.target.getName()}!`);
+      //Message.send(`You deal ${evtData.damageAmount} damage to the ${evtData.target.getName()}!`);
     },
     kills: function(evtData){
       Message.send(`You kill the ${evtData.target.getName()}!`)
@@ -836,6 +836,7 @@ export let AIActor = {
     initialize: function(template){
       this.setRenderDelay(template.renderDelay || -1);
       this.setPriorities(template.priorities);
+      this.setBaseActionDuration(template.delay || 1000);
       SCHEDULER.add(this, true, 0);
     }
   },
@@ -1076,7 +1077,9 @@ export let SightedEnemyTargeter = {
         }
       }
       if(targets.length==0){
-        return this.attr._SightedEnemyTargeter.memoryPos;
+        if(this.attr._SightedEnemyTargeter.remember){
+          return this.attr._SightedEnemyTargeter.memoryPos;
+        }
       }
       let target = targets[minDIndex];
       let pos = `${target.getX()},${target.getY()}`;

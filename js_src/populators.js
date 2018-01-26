@@ -19,8 +19,8 @@ export let TILE_GRID_POPULATOR = {
       if(p < 0.25){
         break;
       }
-      let jdog = EntityFactory.create('jdog', true);
-      map.addEntityAtRandomPosition(jdog);
+      let dog = EntityFactory.create('hound', true);
+      map.addEntityAtRandomPosition(dog);
     }
 
     ROT.RNG.setState(origRngState);
@@ -68,15 +68,19 @@ export let TILE_GRID_POPULATOR = {
 
 let LootTables = {
   'basic': {
-    itemCount: 8,
+    itemCount: 4,
     lootSet: {
-      sword: {
+      weapon: {
         item: 'randomWeapon',
+        chance: 1
+      },
+      armor: {
+        item: 'randomArmor',
         chance: 1
       },
       food: {
         item: 'randomFood',
-        chance: 3
+        chance: 2
       }
     }
   }
