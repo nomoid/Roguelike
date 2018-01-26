@@ -272,6 +272,33 @@ export let PlayerMessage = {
   }
 };
 
+export let Combat = {
+  META: {
+    mixinName: 'Combat',
+    mixinGroupName: 'CombatGroup',
+    stateNamespace: '_Combat',
+    stateModel: {
+
+    },
+    initialize: function(template){
+
+    }
+  },
+  METHODS: {
+
+  },
+  LISTENERS: {
+    'attacking': function(evtData){
+      let defender = evtData.target;
+
+      foe.raiseMixinEvent('defending', newData);
+    },
+    'defending': function(evtData){
+      let attacker = evtData.src;
+    }
+  }
+}
+
 export let HitPoints = {
   META: {
     mixinName: 'HitPoints',
