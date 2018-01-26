@@ -2,7 +2,7 @@
 
 ### Goals
 
-PickledPopcorn is a fairly standard, simple [Roguelike](https://en.wikipedia.org/wiki/Roguelike) game. As such, the player gets
+**Legend of J** is a fairly standard, simple [Roguelike](https://en.wikipedia.org/wiki/Roguelike) game. As such, the player gets
 * character advancement/progression (on the mechanics side of things, not necessarily the story side)
   * some opponents that are too challenging to fight in the early stages of the game are easy to beat by the later stages of the game
 * inventory management

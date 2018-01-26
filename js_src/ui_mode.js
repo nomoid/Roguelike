@@ -51,16 +51,37 @@ export class StartupMode extends UIMode{
     this.game.isPlaying = false;
   }
 
+/*
+ ▄█          ▄████████    ▄██████▄     ▄████████ ███▄▄▄▄   ████████▄        ▄██████▄     ▄████████           ▄█
+███         ███    ███   ███    ███   ███    ███ ███▀▀▀██▄ ███   ▀███      ███    ███   ███    ███          ███
+███         ███    █▀    ███    █▀    ███    █▀  ███   ███ ███    ███      ███    ███   ███    █▀           ███
+███        ▄███▄▄▄      ▄███         ▄███▄▄▄     ███   ███ ███    ███      ███    ███  ▄███▄▄▄              ███
+███       ▀▀███▀▀▀     ▀▀███ ████▄  ▀▀███▀▀▀     ███   ███ ███    ███      ███    ███ ▀▀███▀▀▀              ███
+███         ███    █▄    ███    ███   ███    █▄  ███   ███ ███    ███      ███    ███   ███                 ███
+███▌    ▄   ███    ███   ███    ███   ███    ███ ███   ███ ███   ▄███      ███    ███   ███                 ███
+█████▄▄██   ██████████   ████████▀    ██████████  ▀█   █▀  ████████▀        ▀██████▀    ███             █▄ ▄███
+▀                                                                                                       ▀▀▀▀▀▀
+
+
+
+
+
+
+
+
+
+
+*/
+
   renderMain(display){
     display.drawText(2, 1, "Welcome to...")
-    U.drawTextWithSpaces(display, 2, 2, "  _____ _      _    _          _ _____                                 ");
-    U.drawTextWithSpaces(display, 2, 3, " |  __ (_)    | |  | |        | |  __ \\                                ");
-    U.drawTextWithSpaces(display, 2, 4, " | |__) |  ___| | _| | ___  __| | |__) |__  _ __   ___ ___  _ __ _ __  ");
-    U.drawTextWithSpaces(display, 2, 5, " |  ___/ |/ __| |/ / |/ _ \\/ _` |  ___/ _ \\| '_ \\ / __/ _ \\| '__| '_ \\ ");
-    U.drawTextWithSpaces(display, 2, 6, " | |   | | (__|   <| |  __/ (_| | |  | (_) | |_) | (_| (_) | |  | | | |");
-    U.drawTextWithSpaces(display, 2, 7, " |_|   |_|\\___|_|\\_\\_|\\___|\\__,_|_|   \\___/| .__/ \\___\\___/|_|  |_| |_|");
-    U.drawTextWithSpaces(display, 2, 8, "                                           | |                         ");
-    U.drawTextWithSpaces(display, 2, 9, "                                           |_|                         ");
+    U.drawTextWithSpaces(display, 2, 2, "    _                                      _        ");
+    U.drawTextWithSpaces(display, 2, 3, " \\_|_)                          |         | |    /\\  ");
+    U.drawTextWithSpaces(display, 2, 4, "   |     _   __,  _   _  _    __|     __  | |   |  | ");
+    U.drawTextWithSpaces(display, 2, 5, "  _|    |/  /  | |/  / |/ |  /  |    /  \\_|/    |  | ");
+    U.drawTextWithSpaces(display, 2, 6, " (/\\___/|__/\\_/|/|__/  |  |_/\\_/|_/  \\__/ |__/   \\_|/");
+    U.drawTextWithSpaces(display, 2, 7, "              /|                          |\\      /| ");
+    U.drawTextWithSpaces(display, 2, 8, "              \\|                          |/      \\|");
     display.drawText(2, 15, "Press space key to continue...")
   }
 
