@@ -1511,6 +1511,7 @@ export let SkillLearner = {
     stateNamespace: '_SkillLearner',
     stateModel: {
       beenTo: {
+        'f0': true
         //floor:been(bool)
       }
     },

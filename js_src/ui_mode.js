@@ -188,7 +188,7 @@ export class PlayMode extends UIMode{
         let oldId = this.game.getMapId();
         if(this.game.previousFloor()){
           this.getAvatar().raiseMixinEvent("previousFloor",{
-            floor: DATASTORE.MAPS[oldId].attr.floor - 1
+            floor: this.game.currMap
           });
           this.setupAvatar();
           DATASTORE.MAPS[oldId].removeEntity(DATASTORE.ENTITIES[this.attr.avatarId]);
@@ -200,7 +200,7 @@ export class PlayMode extends UIMode{
         if(DATASTORE.MAPS[oldId].getMobAmounts('jdog')==0){
           if(this.game.nextFloor()){
             this.getAvatar().raiseMixinEvent("nextFloor",{
-              floor: DATASTORE.MAPS[oldId].attr.floor + 1
+              floor: this.game.currMap
             });
             this.setupAvatar();
             DATASTORE.MAPS[oldId].removeEntity(DATASTORE.ENTITIES[this.attr.avatarId]);
