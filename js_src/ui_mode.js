@@ -187,7 +187,9 @@ export class PlayMode extends UIMode{
       else if(evt.key == BINDINGS.GAME.PREV_FLOOR){
         let oldId = this.game.getMapId();
         if(this.game.previousFloor()){
-          Message.send("You have entered the previous floor");
+          this.getAvatar().raiseMixinEvent("previousFloor",{
+            floor: DATASTORE.MAPS[oldId].attr.floor - 1
+          });
           this.setupAvatar();
           DATASTORE.MAPS[oldId].removeEntity(DATASTORE.ENTITIES[this.attr.avatarId]);
           return true;
@@ -197,7 +199,9 @@ export class PlayMode extends UIMode{
         let oldId = this.game.getMapId();
         if(DATASTORE.MAPS[oldId].getMobAmounts('jdog')==0){
           if(this.game.nextFloor()){
-            Message.send("You have entered the next floor");
+            this.getAvatar().raiseMixinEvent("nextFloor",{
+              floor: DATASTORE.MAPS[oldId].attr.floor + 1
+            });
             this.setupAvatar();
             DATASTORE.MAPS[oldId].removeEntity(DATASTORE.ENTITIES[this.attr.avatarId]);
             return true;

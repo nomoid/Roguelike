@@ -254,6 +254,12 @@ export let PlayerMessage = {
     //}
     characterLevelUp: function(evtData){
       Message.send(`You have leveled up to Level ${evtData.level}!`);
+    },
+    previousFloor: function(evtData){
+      Message.send("You have entered the previous floor");
+    },
+    nextFloor: function(evtData){
+      Message.send("You have entered the next floor");
     }
   }
 };
@@ -1419,7 +1425,9 @@ export let Skills = {
           if(S.hasPrereqs(evtData.name, this.getSkills())){
             let newSkillPoints = Math.trunc((skillPoints * S.ExperienceMultiplier - xpNeeded) / S.ExperienceMultiplier);
             this.setSkillPoints(newSkillPoints);
-            this.addSkill(evtData.name, xpNeeded);
+            this.addSkill(evtData.name, xpNeeded, {
+              noParts: true
+            });
           }
           else{
             this.raiseMixinEvent('skillLevelUpFailed', {
@@ -1501,6 +1509,11 @@ export let SkillLearner = {
     mixinName: 'SkillLearner',
     mixinGroupName: 'SkillsGroup',
     stateNamespace: '_SkillLearner',
+    stateModel: {
+      beenTo: {
+        //floor:been(bool)
+      }
+    },
     initialize: function(){
       // do any initialization
     }
@@ -1562,6 +1575,19 @@ export let SkillLearner = {
         }
       }
       return true;
+    },
+    beenTo: function(){
+      return this.attr._SkillLearner.beenTo;
+    },
+    newFloorSkill: function(floor){
+      let beenToFloors = this.beenTo();
+      let floorNum = `f${floor}`;
+      if(!beenToFloors[floorNum]){
+        beenToFloors[floorNum] = true;
+        this.raiseMixinEvent('addSkillPoints',{
+          points: 100
+        });
+      }
     }
   },
   LISTENERS: {
@@ -1574,6 +1600,12 @@ export let SkillLearner = {
           this.gainXpFromEvent(skillName, xpGain[evtName], evtData);
         }
       }
+    },
+    nextFloor: function(evtData){
+      this.newFloorSkill(evtData.floor);
+    },
+    previousFloor: function(evtData){
+      this.newFloorSkill(evtData.floor);
     }
   }
 }

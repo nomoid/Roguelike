@@ -301,7 +301,6 @@ export let Game = {
     if(this.currMap < this._MAX_FLOORS - 1){
       this.currMap++;
       return true;
-
     }
     return false;
   },
