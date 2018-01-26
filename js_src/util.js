@@ -181,6 +181,63 @@ export function romanNumeral(num) {
   return roman;
 }
 
+export function roll(num, diceVal, pickNum, lowest){
+  //pass in highest as false if you want to pick low
+  pickNum = pickNum || num;
+  if(pickNum > num){
+    pickNum = num;
+  }
+  let total = 0;
+  let dice = [];
+  for (let i = 0; i < num; i++){
+    let roll = Math.floor(ROT.RNG.getUniform()*diceVal)+1;
+    dice.push(roll);
+  }
+  for(let p=0; p<pickNum; p++){
+    let min, max, minIndex, maxIndex;
+    if(lowest){
+      min = diceVal+1;
+      minIndex = 0;
+    }
+    else{
+      max = 0;
+      maxIndex = 0;
+    }
+    for(let n=0; n<dice.length; n++){
+      if(lowest){
+        if(dice[n]<min){
+          min = dice[n]
+          minIndex = n;
+        }
+      }
+      else{
+        if(dice[n]>max){
+          max = dice[n];
+          maxIndex = n;
+        }
+      }
+    }
+    if(lowest){
+      total+=min;
+      dice.splice(minIndex, 1);
+    }
+    else{
+      total+=max;
+      dice.splice(maxIndex, 1);
+    }
+  }
+
+  return total;
+}
+
+export function successCalc(result, partition){
+  for(let i = 0; i < partition.length; i++){
+    if(result<partition[i]){
+      return i;
+    }
+  }
+  return partition.length;
+}
 //Code adapted from https://stackoverflow.com/questions/6274339/how-can-i-shuffle-an-array
 //Retrieved 2018-01-25
 export function shuffleArray(a) {

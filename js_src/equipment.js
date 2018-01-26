@@ -70,9 +70,21 @@ export let Equipment = {
     type: "Equipment",
     slot: "One-Handed",
     equipmentData: {
-      attack: 2
+      skill: 'Dagger Fighting',
+      hit: {
+        numDice: 3,
+        diceVal: 4,
+        modifier: 0,
+        pick: 2
+      },
+      damage: {
+        base: 4,
+        numDice: 2,
+        diceVal: 8
+      },
+      partition: [4, 6, 8]
     },
-    description: "A dagger. Deals ${this.equipmentData.attack} damage."
+    description: "A dagger. Deals ${this.equipmentData.damage.base} to ${this.equipmentData.damage.base+this.equipmentData.damage.numDice*this.equipmentData.damage.diceVal} damage."
   },
   "legendary_sword_1": {
     name: "Legendary Sword",
@@ -104,4 +116,12 @@ export let EquipmentOrder = [
 
 export function generateEquipment(name){
   return deepCopy(Equipment[name]);
+}
+
+export function getHit(weapon){
+  return deepCopy(weapon.equipmentData.hit);
+}
+
+export function getDamage(weapon){
+  return deepCopy(weapon.equipmentData.damage);
 }

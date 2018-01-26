@@ -10,12 +10,13 @@ EntityFactory.learn({
   fg: Color.AVATAR_FG,
   meleeDamage: 10,
   radius: 16,
+  race: 'human',
   team: 'avatar',
   enemyTeams: ['baddies'],
   friendlyTeams: ['avatar'],
   race: 'human',
   stats: {
-    maxHp: 10000,
+    maxHp: 100,
     strength: 10,
     agility: 10,
     endurance: 10,
@@ -24,7 +25,7 @@ EntityFactory.learn({
     knowledge: 10
   },
   statNames: ['maxHp', 'strength', 'agility', 'endurance', 'charisma', 'magic', 'knowledge'],
-  mixinNames: ['TimeTracker', 'WalkerCorporeal', 'PlayerMessage', 'HitPoints', 'TeamMember', 'ActorPlayer', 'MeleeAttacker', 'FOVHandler', 'ItemPile', 'Inventory', 'Equipment', 'Skills', 'SkillLearner', 'LevelProgress', 'CharacterStats', 'ItemConsumer', 'BuffHandler', 'Bloodthirst']
+  mixinNames: ['TimeTracker', 'WalkerCorporeal', 'Combat', 'PlayerMessage', 'HitPoints', 'TeamMember', 'ActorPlayer', 'MeleeAttacker', 'FOVHandler', 'ItemPile', 'Inventory', 'Equipment', 'Skills', 'SkillLearner', 'LevelProgress', 'CharacterStats', 'ItemConsumer', 'BuffHandler', 'Bloodthirst']
 });
 
 EntityFactory.learn({
@@ -45,6 +46,8 @@ EntityFactory.learn({
   //targetName: 'avatar',
   stats: {
     maxHp: 40,
+    strength: 5,
+    endurance: 5
   },
   meleeDamage: 10,
   priorities: {
@@ -52,7 +55,7 @@ EntityFactory.learn({
     'SightedPathfinder': 2,
     'ActorRandomWalker': 3
   },
-  mixinNames: ['HitPoints', 'AIActor', 'ActorRandomWalker', 'WalkerCorporeal', 'TeamMember', 'MeleeAttacker', 'ItemDropper', 'FOVHandler', 'NearsightedAttacker', 'SightedEnemyTargeter', 'SightedPathfinder']
+  mixinNames: ['HitPoints', 'AIActor', 'ActorRandomWalker', 'LackOfSkills', 'Combat', 'WalkerCorporeal', 'TeamMember', 'MeleeAttacker', 'ItemDropper', 'FOVHandler', 'NearsightedAttacker', 'SightedEnemyTargeter', 'SightedPathfinder']
 });
 
 EntityFactory.learn({

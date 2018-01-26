@@ -34,6 +34,9 @@ export let Skills = {
     name: 'Dagger Fighting',
     difficulty: 2,
     prerequisite: 'Athletics',
+    modifyHit: function(hitData, level){
+      hitData.numDice += level;
+    },
     xpGain: {
       damages: {
         amount: 100,
@@ -93,11 +96,38 @@ export let Skills = {
       }
     },
     description: 'How well you can use your sword. Increases your chance to hit and your ability use better swords.'
+  },
+  'Blocking': {
+    name: 'Blocking',
+    difficulty: 2,
+    prerequisite: 'Athletics',
+    modifyBlock: function(blockData, level){
+      blockData.modifier += level;
+    },
+    xpGain: {
+
+    },
+    description: 'How well you use shields. Increases your chance to block some damage taken from enemies.',
+  },
+  'Dodging': {
+    name: 'Dodging',
+    difficulty: 2,
+    prerequisite: 'Athletics',
+    modifyDodge: function(dodgeData, level, defending, speedDiff){
+      if(defending){
+        dodgeData.modifier = speedDiff * (1+0.2*level);
+      }
+      dodgeData.diceVal += 3*level;
+    },
+    xpGain: {
+
+    },
+    description: 'How well you dodge enemy attacks.',
   }
 };
 
 export let PlayerSkills = [
-  'Athletics', 'Archery', 'Dagger Fighting', 'Swordfighting'
+  'Athletics', 'Archery', 'Dagger Fighting', 'Swordfighting', 'Blocking', 'Dodging'
 ];
 
 export let PlayerSeenSkills = [
