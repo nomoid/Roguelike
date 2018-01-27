@@ -838,7 +838,9 @@ export let AIActor = {
     },
     initialize: function(template){
       this.setRenderDelay(template.renderDelay || -1);
-      this.setPriorities(template.priorities);
+      if(template.priorities){
+        this.setPriorities(U.deepCopy(template.priorities));
+      }
       this.setBaseActionDuration(template.delay || 1000);
       SCHEDULER.add(this, true, 0);
     }
@@ -2369,7 +2371,7 @@ export let Skills = {
   LISTENERS: {
     initAvatar: function(evtData){
       this.raiseMixinEvent('addSkillPoints', {
-        points: 100
+        points: 10000
       });
       for(let i = 0; i < S.PlayerSkills.length; i++){
         this.addSkill(S.PlayerSkills[i]);
@@ -2617,7 +2619,7 @@ export let Race = {
       race: []
     },
     initialize: function(template){
-      this.attr._CharacterStats.race = template.race || 'human';
+      this.attr._Race.race = template.race || 'human';
     }
   },
   METHODS: {
@@ -2639,7 +2641,7 @@ export let CharacterStats = {
       statNames: []
     },
     initialize: function(template){
-      this.attr._CharacterStats.statNames = template.statNames || [];
+      this.attr._CharacterStats.statNames = U.deepCopy(template.statNames || []);
     }
   },
   METHODS: {

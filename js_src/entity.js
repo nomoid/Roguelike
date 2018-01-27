@@ -3,6 +3,7 @@ import {MixableSymbol} from './mixable_symbol.js';
 import {uniqueId} from './util.js';
 import {DATASTORE} from './datastore.js';
 import {SCHEDULER} from './timing.js';
+import {deepCopy} from './util.js';
 
 export class Entity extends MixableSymbol{
 
@@ -16,7 +17,7 @@ export class Entity extends MixableSymbol{
     this.attr.y = 0;
     this.attr.mapId = 0;
     this.attr.id = uniqueId(`entity${this.attr.name ? '-'+this.attr.name : ''}`);
-    this.attr.stats = entityData.stats || {};
+    this.attr.stats = deepCopy(entityData.stats || {});
     this.attr.level = entityData.level || 1;
   }
 
