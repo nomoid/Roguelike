@@ -66,6 +66,7 @@ export let TILE_GRID_POPULATOR = {
       let zombie = EntityFactory.create('zombie', true);
       zombie.setStat('strength', 3 + Math.trunc(floor/5));
       zombie.setStat('endurance', 3 + Math.trunc(floor/5));
+      zombie.setStat('agility', 3 + Math.trunc(floor/5));
       map.addEntityAtRandomPosition(zombie);
     }
 

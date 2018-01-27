@@ -40,9 +40,10 @@ EntityFactory.learn({
   dropItem: 'Applesauce',
   delay: 2000,
   stats: {
-    maxHp: 40,
-    strength: 12,
-    endurance: 6
+    maxHp: 60,
+    strength: 15,
+    endurance: 6,
+    agility: 5
   },
   priorities: {
     'NearsightedAttacker': 1,
@@ -65,7 +66,8 @@ EntityFactory.learn({
   stats: {
     maxHp: 100,
     strength: 12,
-    endurance: 10
+    endurance: 10,
+    agility: 5
   },
   priorities: {
     'NearsightedAttacker': 1,
@@ -86,7 +88,8 @@ EntityFactory.learn({
   stats: {
     maxHp: 10,
     strength: 3,
-    endurance: 2
+    endurance: 2,
+    agility: 20
   },
   priorities: {
     'ActorRandomWalker': 1
@@ -109,7 +112,8 @@ EntityFactory.learn({
   stats: {
     maxHp: 40,
     strength: 5,
-    endurance: 5
+    endurance: 5,
+    agility: 10
   },
   meleeDamage: 10,
   priorities: {
@@ -135,7 +139,8 @@ EntityFactory.learn({
   stats: {
     maxHp: 100,
     strength: 5,
-    endurance: 5
+    endurance: 5,
+    agility: 5
   },
   meleeDamage: 10,
   priorities: {

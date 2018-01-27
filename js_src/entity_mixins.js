@@ -471,14 +471,16 @@ export let Combat = {
         S.Skills[weaponSkill].modifyHit(weaponHitDice, this.getSkillInfo(weaponSkill).level);
         hit = U.roll(weaponHitDice.numDice, weaponHitDice.diceVal, weaponHitDice.pick)+weaponHitDice.modifier;
         success = U.successCalc(hit, weaponSuccessPartition);
-        console.log(hit + ' ' + success);
-        console.dir(weaponHitDice);
-        damage = U.roll(weaponDamageDice.numDice, weaponDamageDice.diceVal)+weaponDamageDice.base+this.getStat('strength');
+        let modStrength = this.getStat('strength')+this.getSkillInfo('Athletics').level;
+        damage = U.roll(weaponDamageDice.numDice, weaponDamageDice.diceVal)+weaponDamageDice.base+modStrength;
       }
       else{
         hit = U.roll(1, 20);
         success = U.successCalc(hit, [2, 6, 20]);
-        damage = Math.floor(2*this.getStat('strength'));
+        //1 to 2.5 x strength damage at random
+        let randomMultiplier = (ROT.RNG.getUniform()*1.5)+1;
+        let modStrength = this.getStat('strength')+this.getSkillInfo('Athletics').level;
+        damage = Math.floor(randomMultiplier*modStrength);
       }
       switch (success) {
         case 0://crit fail: hurt yourself
@@ -503,9 +505,9 @@ export let Combat = {
       let weapon = evtData.weapon;
 
       //dodging
-      let baseDice = 10;
-      let attackerSpeed = attacker.getStat('agility') + baseDice;
-      let defenderSpeed = this.getStat('agility') + baseDice;
+      let baseDice = 1
+      let attackerSpeed = attacker.getStat('agility') + attacker.getSkillInfo('Athletics') + baseDice;
+      let defenderSpeed = this.getStat('agility') + this.getSkillInfo('Athletics') + baseDice;
       let difference = defenderSpeed - attackerSpeed;
       let attackerDiceData = {};
       let defenderDiceData = {};
@@ -2334,7 +2336,7 @@ export let Skills = {
       let newSkill = skills[name];
       //Get some skill point parts
       if(addPointParts){
-        let partXp = xp;
+        let partXp = xp * 2;
         //If skill is previously at max level, get more skill point parts
         if(oldLevel == S.getMaxLevel(name)){
           partXp *= 2;
@@ -2375,7 +2377,7 @@ export let Skills = {
   LISTENERS: {
     initAvatar: function(evtData){
       this.raiseMixinEvent('addSkillPoints', {
-        points: 10000
+        points: 100
       });
       for(let i = 0; i < S.PlayerSkills.length; i++){
         this.addSkill(S.PlayerSkills[i]);

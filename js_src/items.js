@@ -37,7 +37,7 @@ export let Items = {
   "Applesauce": {
     name: "Applesauce",
     type: "Food",
-    description: "A very tasty snack, often hoarded by Thomas. Heals for ${this.effect.healAmount} and regenerates lots of health for a long time.",
+    description: "A very tasty snack, often hoarded by Thomas. Heals for ${this.effects[0].healAmount} and regenerates lots of health for a long time.",
     effects:[
       {
         mixinEvent: "healed",
@@ -94,7 +94,7 @@ export let Items = {
   "Zombie Flesh": {
     name: "Zombie Flesh",
     type: "Food",
-    description: "The rotting flesh of a zombie. Heals the user but causes food poisioning.",
+    description: "The rotting flesh of a zombie. Heals for ${this.effects[0].healAmount} but causes food poisioning.",
     effects: [
         {
           mixinEvent: "healed",

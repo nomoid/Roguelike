@@ -5,9 +5,10 @@ export function renderAvatar(display, avatar, game, mode){
   let xAxis = 1;
   display.drawText(xAxis, 0, "Player Info");
   display.drawText(xAxis, 2, `Time: ${avatar.getTime()}`);
-  display.drawText(xAxis, 3, `HP: ${avatar.getHp()}/${avatar.getStat('maxHp')}`);
-  display.drawText(xAxis, 4, `Location: ${avatar.getX()}, ${avatar.getY()}`);
-  display.drawText(xAxis, 5, `Floor: ${game.currMap+1}`);
+  display.drawText(xAxis, 3, `Level ${avatar.getLevel()}`);
+  display.drawText(xAxis, 4, `HP: ${avatar.getHp()}/${avatar.getStat('maxHp')}`);
+  display.drawText(xAxis, 5, `Location: ${avatar.getX()}, ${avatar.getY()}`);
+  display.drawText(xAxis, 6, `Floor: ${game.currMap+1}`);
   //display.drawText(xAxis, 6, `${DATASTORE.MAPS[game.getMapId()].getMobAmounts('jdog')} jdogs left`);
   let modeBinding = ModeAvatarBindings[mode];
   if(modeBinding){
