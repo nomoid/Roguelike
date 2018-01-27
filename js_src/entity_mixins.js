@@ -478,7 +478,7 @@ export let Combat = {
         hit = U.roll(1, 20);
         success = U.successCalc(hit, [2, 6, 20]);
         //1 to 2.5 x strength damage at random
-        let randomMultiplier = (ROT.RNG.getUniform()*1.5)+1;
+        let randomMultiplier = (ROT.RNG.getUniform()*2)+1;
         let modStrength = this.getStat('strength')+this.getSkillInfo('Athletics').level;
         damage = Math.floor(randomMultiplier*modStrength);
       }
@@ -2492,6 +2492,7 @@ export let LevelProgress = {
         }
         this.setLevel(newLevel);
       }
+      console.log(oldXp + xp);
       this.setLevelXp(oldXp + xp);
     },
     currentLevelXp(){

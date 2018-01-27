@@ -11,7 +11,7 @@ import {BINDINGS, BINDING_DESCRIPTIONS, setKeybindingsArrowKeys, setKeybindingsW
 import {TIME_ENGINE, loadScheduler, saveScheduler} from './timing.js';
 import {getFunctionality} from './items.js';
 import {EquipmentSlots, EquipmentOrder} from './equipment.js';
-import {renderXp, ExperienceMultiplier, hasPrereqs, prereqString} from './skills.js';
+import {renderXp, ExperienceMultiplier, hasPrereqs, prereqString, getXpForCharacterLevel} from './skills.js';
 import {getStatDisplayName} from './stats.js';
 import * as A from './avatar.js';
 
@@ -1520,7 +1520,13 @@ export class StatsMode extends UIMode{
 
   renderMain(display){
     display.drawText(0, 0, menuTopLine(3));
-    display.drawText(2, 2, `Level: ${this.getAvatar().getLevel()}`);
+    let level = this.getAvatar().getLevel();
+    let currentLevelXp = this.getAvatar().currentLevelXp();
+    let nextLevelXp = this.getAvatar().nextLevelXp();
+    let currentXp = this.getAvatar().getLevelXp();
+    console.log(currentLevelXp + ',' + currentXp + ',' + nextLevelXp);
+    let percentToNextLevel = Math.trunc(((currentXp - currentLevelXp)/(nextLevelXp - currentLevelXp))*100);
+    display.drawText(2, 2, `${percentToNextLevel}% to Level ${level + 1}`);
     let characterStats = this.getAvatar().getCharacterStats();
     for(let i = 0; i < characterStats.length; i++){
       let stat = characterStats[i][0];
