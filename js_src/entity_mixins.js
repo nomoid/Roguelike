@@ -303,10 +303,10 @@ export let PlayerMessage = {
       let src = evtData.src;
       let crit = evtData.theyCrit;
       if(crit){
-        Message.send(`You dodged the ${target.getName()}'s critical strike!`);
+        Message.send(`You dodged the ${src.getName()}'s critical strike!`);
       }
       else{
-        Message.send(`You dodged the ${target.getName()}'s attack.`);
+        Message.send(`You dodged the ${src.getName()}'s attack.`);
       }
     },
     attackSucceeded: function(evtData){
@@ -503,8 +503,9 @@ export let Combat = {
       let weapon = evtData.weapon;
 
       //dodging
-      let attackerSpeed = attacker.getStat('agility');
-      let defenderSpeed = this.getStat('agility');
+      let baseDice = 10;
+      let attackerSpeed = attacker.getStat('agility') + baseDice;
+      let defenderSpeed = this.getStat('agility') + baseDice;
       let difference = defenderSpeed - attackerSpeed;
       let attackerDiceData = {};
       let defenderDiceData = {};
@@ -518,16 +519,19 @@ export let Combat = {
       S.Skills['Dodging'].modifyDodge(attackerDiceData, attacker.getSkillInfo('Dodging').level);
       S.Skills['Dodging'].modifyDodge(defenderDiceData, this.getSkillInfo('Dodging').level, true, difference);
 
-      let attackResult = U.roll(attackerDiceData.diceNum, attackerDiceData.diceVal);
-      let defendResult = U.roll(defenderDiceData.diceNum, defenderDiceData.diceVal);
+      let attackResult = U.roll(attackerDiceData.diceNum, attackerDiceData.diceVal) + attackerDiceData.modifier;
+      let defendResult = U.roll(defenderDiceData.diceNum, defenderDiceData.diceVal) + defenderDiceData.modifier;
       let success = 0;
       if(defendResult > attackResult){
         success = 1;
       }
       if(crit){
         let success2 = 0;
-        let attack2 = U.roll(attackerDiceData.diceNum, attackerDiceData.diceVal);
-        let defend2 = U.roll(defenderDiceData.diceNum, defenderDiceData.diceVal);
+        let attack2 = U.roll(attackerDiceData.diceNum, attackerDiceData.diceVal) + attackerDiceData.modifier;
+        let defend2 = U.roll(defenderDiceData.diceNum, defenderDiceData.diceVal) + defenderDiceData.modifier;
+        if(defend2 > attack2){
+          success2 = 1;
+        }
         success = Math.min(success, success2);
       }
       if(success == 1){
