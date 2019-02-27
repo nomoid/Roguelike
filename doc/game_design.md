@@ -1,4 +1,4 @@
-# Design Doc for Weed Strike
+# Design Doc for Legend of J
 
 ### Goals
 
